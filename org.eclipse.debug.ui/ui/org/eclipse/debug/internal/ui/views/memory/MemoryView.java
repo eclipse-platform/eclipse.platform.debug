@@ -189,7 +189,10 @@ public class MemoryView extends PageBookView implements IDebugView, IMemoryBlock
 					{
 						// if debug element returns null from getAdapter, assume its debug target is going to retrieve memory blocks
 						memRetrieval = debugTarget;
-					}					
+					}				
+					
+					if (memRetrieval == null)
+						return;
 											
 					if (tabFolderHashtable.containsKey(memRetrieval))
 					{
@@ -894,6 +897,9 @@ public class MemoryView extends PageBookView implements IDebugView, IMemoryBlock
 		// if IMemoryBlockRetrieval is null, use debugtarget
 		if (retrieve == null)
 			retrieve = debugTarget;
+		
+		if (retrieve == null)
+			return;
 		
 		key = retrieve;	
 
