@@ -3,7 +3,7 @@
 <plugin
    id="org.eclipse.debug.core"
    name="DebugTools"
-   version="0.9"
+   version="1.0"
    provider-name="Object Technology International, Inc."
    class="org.eclipse.debug.core.DebugPlugin">
 <!-- Required plugins -->
