@@ -11,6 +11,7 @@ Contributors:
 **********************************************************************/
 import java.util.ArrayList;
 
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.externaltools.internal.core.ToolMessages;
 
@@ -18,23 +19,22 @@ import org.eclipse.ui.externaltools.internal.core.ToolMessages;
  * Ant target label provider
  */
 public class AntTargetLabelProvider extends LabelProvider {
-	private ArrayList selectedTargets = null;
-	private String defaultTargetName = null;
+	private ArrayList selectedTargetNames = null;
 
 	/* (non-Javadoc)
 	 * Method declared on ILabelProvider.
 	 */
 	public String getText(Object model) {
-		String targetToDisplay = (String) model;
+		TargetInfo targetToDisplay = (TargetInfo) model;
 		if (targetToDisplay != null) {
-			StringBuffer result = new StringBuffer(targetToDisplay);
-			if (targetToDisplay.equals(defaultTargetName)) {
+			StringBuffer result = new StringBuffer(targetToDisplay.getName());
+			if (targetToDisplay.isDefault()) {
 				result.append(" ("); //$NON-NLS-1$;
 				result.append(ToolMessages.getString("AntTargetLabelProvider.defaultTarget")); //$NON-NLS-1$;
 				result.append(")"); //$NON-NLS-1$;
 			}
-			if (selectedTargets != null) {
-				int targetIndex = selectedTargets.indexOf(targetToDisplay);
+			if (selectedTargetNames != null) {
+				int targetIndex = selectedTargetNames.indexOf(targetToDisplay.getName());
 				if (targetIndex >= 0) {
 					result.append(" ["); //$NON-NLS-1$;
 					result.append(targetIndex + 1);
@@ -43,22 +43,14 @@ public class AntTargetLabelProvider extends LabelProvider {
 			}
 			return result.toString();
 		} else {
-			return "";
+			return null;
 		}
 	}
 
 	/**
 	 * Sets the targets selected in the viewer.
 	 */
-	public void setSelectedTargets(ArrayList value) {
-		selectedTargets = value;
+	public void setSelectedTargetNames(ArrayList value) {
+		selectedTargetNames = value;
 	}
-
-	/**
-	 * Sets the name of the default target
-	 */
-	public void setDefaultTargetName(String name) {
-		defaultTargetName = name;
-	}
-
 }

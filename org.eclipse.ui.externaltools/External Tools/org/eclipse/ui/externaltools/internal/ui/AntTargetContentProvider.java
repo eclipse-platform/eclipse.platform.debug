@@ -9,8 +9,8 @@ http://www.eclipse.org/legal/cpl-v05.html
  
 Contributors:
 **********************************************************************/
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.ui.externaltools.internal.core.AntTargetList;
 
 /**
  * Content provider for targets within an Ant file
@@ -27,8 +27,7 @@ public class AntTargetContentProvider implements IStructuredContentProvider {
 	 * Method declared on IStructuredContentProvider.
 	 */
 	public Object[] getElements(Object input) {
-		AntTargetList targetList = (AntTargetList) input;
-		return targetList.getTargets();
+		return (TargetInfo[]) input;
 	}
 
 	/* (non-Javadoc)

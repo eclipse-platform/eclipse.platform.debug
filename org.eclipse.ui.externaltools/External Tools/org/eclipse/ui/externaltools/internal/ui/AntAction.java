@@ -9,12 +9,11 @@ http://www.eclipse.org/legal/cpl-v05.html
  
 Contributors:
 **********************************************************************/
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.externaltools.internal.core.*;
@@ -49,9 +48,9 @@ public class AntAction extends Action {
 		if (file == null)
 			return;
 
-		AntTargetList targetList = null;
+		TargetInfo[] targets = null;
 		try {
-			targetList = AntUtil.getTargetList(file.getLocation());
+			targets = AntUtil.getTargetList(file.getLocation().toOSString());
 		} catch (CoreException e) {
 			ErrorDialog.openError(
 				window.getShell(),
@@ -61,7 +60,7 @@ public class AntAction extends Action {
 			return;
 		}
 		
-		if (targetList == null) {
+		if (targets == null || targets.length == 0) {
 			MessageDialog.openError(
 				window.getShell(),
 				ToolMessages.getString("AntAction.runErrorTitle"), //$NON-NLS-1$;
@@ -69,7 +68,7 @@ public class AntAction extends Action {
 			return;
 		}
 
-		AntLaunchWizard wizard = new AntLaunchWizard(targetList, file, window);
+		AntLaunchWizard wizard = new AntLaunchWizard(targets, file, window);
 		wizard.setNeedsProgressMonitor(true);
 		WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
 		dialog.create();

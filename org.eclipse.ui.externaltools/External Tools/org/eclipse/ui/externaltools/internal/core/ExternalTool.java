@@ -150,7 +150,9 @@ public class ExternalTool {
 			(String)args.get(TAG_TOOL_DIRECTORY),
 			(String)args.get(TAG_TOOL_REFRESH),
 			showLog);
-		tool.buildTypes = toBuildTypesArray((String)args.get(TAG_TOOL_BUILD_TYPES));
+		String string = (String)args.get(TAG_TOOL_BUILD_TYPES);
+		if (string != null)
+			tool.buildTypes = toBuildTypesArray(string);
 
 		return tool;
 	}
@@ -238,10 +240,12 @@ public class ExternalTool {
 	 * representation for storage in an argument map.
 	 */
 	private static String toBuildTypesString(String[] array) {
-		String s = "";
+		if (array == null) 
+			return ""; //$NON-NLS-1$
+		StringBuffer buf = new StringBuffer();
 		for (int i=0; i < array.length; i++)
-			s = s + array[i] + SEPERATOR;
-		return s;
+			buf.append(array[i] + SEPERATOR);
+		return buf.toString();
 	}
 	
 	/**
@@ -375,7 +379,8 @@ public class ExternalTool {
 			args.put(TAG_TOOL_SHOW_LOG, TRUE);
 		else
 			args.put(TAG_TOOL_SHOW_LOG, FALSE);
-		args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
+		if (buildTypes != null)	
+			args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
 		
 		return args;
 	}

@@ -12,6 +12,7 @@ Contributors:
 import java.net.*;
 import java.util.ArrayList;
 
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
@@ -31,20 +32,21 @@ public class AntLaunchWizardPage extends WizardPage {
 	private static final int SIZING_SELECTION_WIDGET_HEIGHT = 200;
 	private static final int SIZING_SELECTION_WIDGET_WIDTH = 200;
 
-	private AntTargetList targetList;
-	private String initialTargets[];
+	private TargetInfo[] targets;
+	private TargetInfo defaultTarget;
+	private String[] initialTargetNames;
 	private String initialArguments;
 	private boolean initialDisplayLog = true;
-	private ArrayList selectedTargets = new ArrayList();
+	private ArrayList selectedTargetNames = new ArrayList();
 	
 	private CheckboxTableViewer listViewer;
 	private AntTargetLabelProvider labelProvider = new AntTargetLabelProvider();
 	private Button showLog;
 	private Text argumentsField;
 
-	public AntLaunchWizardPage(AntTargetList targetList) {
+	public AntLaunchWizardPage(TargetInfo[] targets) {
 		super("AntScriptPage"); //$NON-NLS-1$;
-		this.targetList = targetList;
+		this.targets = targets;
 		setTitle(ToolMessages.getString("AntLaunchWizard.dialogTitle")); //$NON-NLS-1$;
 		setDescription(ToolMessages.getString("AntLaunchWizard.dialogDescription")); //$NON-NLS-1$;
 		setImageDescriptor(getImageDescriptor("icons/full/wizban/ant_wiz.gif")); //$NON-NLS-1$;
@@ -82,14 +84,12 @@ public class AntLaunchWizardPage extends WizardPage {
 		listViewer.getTable().setLayoutData(data);
 		listViewer.setSorter(new ViewerSorter() {
 			public int compare(Viewer viewer, Object o1, Object o2) {
-				return ((String)o1).compareTo((String) o2);
+				return (((TargetInfo)o1).getName()).compareTo(((TargetInfo) o2).getName());
 			}
 		});
-		if (targetList.getDefaultTarget() != null)
-			labelProvider.setDefaultTargetName(targetList.getDefaultTarget());
 		listViewer.setLabelProvider(labelProvider);
 		listViewer.setContentProvider(new AntTargetContentProvider());
-		listViewer.setInput(targetList);
+		listViewer.setInput(targets);
 
 		// The arguments field
 		label = new Label(composite, SWT.NONE);
@@ -137,9 +137,9 @@ public class AntLaunchWizardPage extends WizardPage {
 	/**
 	 * Returns the targets selected by the user
 	 */
-	public String[] getSelectedTargets() {
-		String[] names = new String[selectedTargets.size()];
-		selectedTargets.toArray(names);
+	public String[] getSelectedTargetNames() {
+		String[] names = new String[selectedTargetNames.size()];
+		selectedTargetNames.toArray(names);
 		return names;
 	}
 	
@@ -155,35 +155,47 @@ public class AntLaunchWizardPage extends WizardPage {
 	 * Setup the initial selected targets in the viewer
 	 */	
 	private void selectInitialTargets() {
-		if (initialTargets != null && initialTargets.length > 0) {
-			String[] targets = targetList.getTargets();
-			for (int i = 0; i < initialTargets.length; i++) {
+		if (initialTargetNames != null && initialTargetNames.length > 0) {
+			for (int i = 0; i < initialTargetNames.length; i++) {
 				for (int j = 0; j < targets.length; j++) {
-					if (targets[j].equals(initialTargets[i])) {
-						String target = targets[j];
-						listViewer.setChecked(target, true);
-						selectedTargets.add(target);
+					if (targets[j].getName().equals(initialTargetNames[i])) {
+						listViewer.setChecked(targets[j], true);
+						selectedTargetNames.add(targets[j].getName());
 						break;
 					}
 				}
 			}
 		} else {
-			String target = targetList.getDefaultTarget();
-			if (target != null) {
-				listViewer.setChecked(target, true);
-				selectedTargets.add(target);
+			TargetInfo defaultTarget = getDefaultTarget();
+			if (defaultTarget != null) {
+				listViewer.setChecked(defaultTarget, true);
+				selectedTargetNames.add(defaultTarget.getName());
 			}
 		}
 		
-		labelProvider.setSelectedTargets(selectedTargets);
+		labelProvider.setSelectedTargetNames(selectedTargetNames);
+	}
+	
+	/**
+	 * Returns the default target, or null if no target
+	 * is the default target.
+	 */
+	private TargetInfo getDefaultTarget() {
+		if (defaultTarget == null) {
+			for (int i=0; i < targets.length; i++) {
+				if (targets[i].isDefault())
+					defaultTarget = targets[i];
+			}
+		}
+		return defaultTarget;
 	}
 	
 	/**
 	 * Sets the initial contents of the target list field.
 	 * Ignored if controls already created.
 	 */
-	public void setInitialTargets(String value[]) {
-		initialTargets = value;
+	public void setInitialTargetNames(String[] value) {
+		initialTargetNames = value;
 	}
 	
 	/**
@@ -206,7 +218,7 @@ public class AntLaunchWizardPage extends WizardPage {
 	 * Validates the page is complete
 	 */
 	private void validatePageComplete() {
-		setPageComplete(selectedTargets.size() > 0 || getArguments().length() > 0);
+		setPageComplete(selectedTargetNames.size() > 0 || getArguments().length() > 0);
 	}
 	
 	
@@ -215,13 +227,13 @@ public class AntLaunchWizardPage extends WizardPage {
 	 */
 	private class TargetCheckListener implements ICheckStateListener {
 		public void checkStateChanged(CheckStateChangedEvent e) {
-			String checkedTarget = (String) e.getElement();
+			TargetInfo checkedTarget = (TargetInfo) e.getElement();
 			if (e.getChecked())
-				selectedTargets.add(checkedTarget);
+				selectedTargetNames.add(checkedTarget.getName());
 			else
-				selectedTargets.remove(checkedTarget);
+				selectedTargetNames.remove(checkedTarget.getName());
 	
-			labelProvider.setSelectedTargets(selectedTargets);
+			labelProvider.setSelectedTargetNames(selectedTargetNames);
 			listViewer.refresh();
 			validatePageComplete();
 		}

@@ -12,6 +12,7 @@ Contributors:
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -36,7 +37,7 @@ public class AntLaunchWizard extends Wizard {
 	/**
 	 * The Ant project described in the xml file.
 	 */
-	private AntTargetList targetList = null;
+	private TargetInfo[] targets = null;
 
 	/**
 	 * The external tool representing the Ant file
@@ -66,9 +67,9 @@ public class AntLaunchWizard extends Wizard {
 	 * @param antProject
 	 * @param antFile
 	 */
-	public AntLaunchWizard(AntTargetList targetList, IFile antFile, IWorkbenchWindow window) {
+	public AntLaunchWizard(TargetInfo[] targets, IFile antFile, IWorkbenchWindow window) {
 		super();
-		this.targetList = targetList;
+		this.targets = targets;
 		this.antFile = antFile;
 		this.window = window;
 		String antPath = antFile.getFullPath().toString();
@@ -87,14 +88,14 @@ public class AntLaunchWizard extends Wizard {
 	 * Method declared on IWizard.
 	 */
 	public void addPages() {
-		page1 = new AntLaunchWizardPage(targetList);
+		page1 = new AntLaunchWizardPage(targets);
 		addPage(page1);
 		
 		String args = antTool.getArguments();
 		StringBuffer buf = new StringBuffer();
-		String[] targets = ToolUtil.extractVariableArguments(args, ExternalTool.VAR_ANT_TARGET, buf);
+		String[] targetNames = ToolUtil.extractVariableArguments(args, ExternalTool.VAR_ANT_TARGET, buf);
 		
-		page1.setInitialTargets(targets);
+		page1.setInitialTargetNames(targetNames);
 		page1.setInitialArguments(buf.toString());
 		page1.setInitialDisplayLog(antTool.getShowLog());
 	}
@@ -143,7 +144,7 @@ public class AntLaunchWizard extends Wizard {
 	 */
 	private void updateTool() {
 		StringBuffer buf = new StringBuffer(page1.getArguments());
-		String[] targets = page1.getSelectedTargets();
+		String[] targets = page1.getSelectedTargetNames();
 		ToolUtil.buildVariableTags(ExternalTool.VAR_ANT_TARGET, targets, buf);
 		
 		antTool.setArguments(buf.toString());

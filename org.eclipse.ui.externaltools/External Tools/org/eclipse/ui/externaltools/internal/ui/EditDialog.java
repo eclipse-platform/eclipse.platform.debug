@@ -12,6 +12,7 @@ Contributors:
 import java.io.File;
 import java.util.ArrayList;
 
+import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.*;
@@ -22,11 +23,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
-import org.eclipse.ui.help.WorkbenchHelp;
-import org.eclipse.ui.model.*;
 import org.eclipse.ui.dialogs.*;
 import org.eclipse.ui.externaltools.internal.core.*;
-import org.eclipse.ui.externaltools.internal.core.ToolUtil.VariableDefinition;
+import org.eclipse.ui.help.WorkbenchHelp;
+import org.eclipse.ui.model.*;
 
 /**
  * Dialog box to enter the required information for running
@@ -810,9 +810,9 @@ public class EditDialog extends TitleAreaDialog {
 					break;
 					
 				case 20 :
-					AntTargetList targetList = null;
+					TargetInfo[] targets;
 					try {
-						targetList = AntUtil.getTargetList(new Path(location));
+						targets = AntUtil.getTargetList(location);
 					} catch (CoreException e) {
 						ErrorDialog.openError(
 							getShell(),
@@ -822,7 +822,7 @@ public class EditDialog extends TitleAreaDialog {
 						break;
 					}
 					
-					if (targetList == null) {
+					if (targets == null || targets.length == 0) {
 						MessageDialog.openError(
 							getShell(),
 							ToolMessages.getString("EditDialog.errorTitle"), //$NON-NLS-1$;
@@ -831,13 +831,17 @@ public class EditDialog extends TitleAreaDialog {
 					}
 
 					TargetSelectionDialog targetDialog;
-					targetDialog = new TargetSelectionDialog(getShell(), targetList);
+					targetDialog = new TargetSelectionDialog(getShell(), targets);
 					targetDialog.open();
-					Object[] targets = targetDialog.getResult();
 					if (targets != null && targets.length > 0) {
 						StringBuffer buf = new StringBuffer();
-						ToolUtil.buildVariableTags(ExternalTool.VAR_ANT_TARGET, (String[])targets, buf);
-						result = buf.toString().trim();
+						String[] targetNames = (String[])targetDialog.getResult();
+						if (targetNames == null) 
+							result = null;
+						else {
+							ToolUtil.buildVariableTags(ExternalTool.VAR_ANT_TARGET, targetNames, buf);
+							result = buf.toString().trim();
+						}
 					}
 					break;
 			}
@@ -1097,26 +1101,27 @@ public class EditDialog extends TitleAreaDialog {
 	}
 	
 	private class TargetSelectionDialog extends SelectionDialog implements ICheckStateListener {
-		private ArrayList selectedTargets = new ArrayList();
+		private ArrayList selectedTargetNames = new ArrayList();
 		private CheckboxTableViewer listViewer;
-		private AntTargetList targetList;
+		private TargetInfo[] targets;
 		private AntTargetLabelProvider labelProvider = new AntTargetLabelProvider();	
 		
-		public TargetSelectionDialog(Shell parent, AntTargetList targetList) {
+		public TargetSelectionDialog(Shell parent, TargetInfo[] targets) {
 			super(parent);
-			this.targetList = targetList;
+			this.targets = targets;
 			setTitle(ToolMessages.getString("EditDialog.varAntTargetLabel")); //$NON-NLS-1$
 			WorkbenchHelp.setHelp(parent, IHelpContextIds.TARGET_SELECTION_DIALOG);
 		}
 		
 		public void checkStateChanged(CheckStateChangedEvent e) {
-			String checkedTarget = (String)e.getElement();
+			TargetInfo checkedTarget = (TargetInfo)e.getElement();
+			
 			if (e.getChecked())
-				selectedTargets.add(checkedTarget);
+				selectedTargetNames.add(checkedTarget.getName());
 			else
-				selectedTargets.remove(checkedTarget);
+				selectedTargetNames.remove(checkedTarget.getName());
 				
-			labelProvider.setSelectedTargets(selectedTargets);
+			labelProvider.setSelectedTargetNames(selectedTargetNames);
 			listViewer.refresh();
 		}
 		
@@ -1133,15 +1138,13 @@ public class EditDialog extends TitleAreaDialog {
 			listViewer.getTable().setLayoutData(data);
 			listViewer.setSorter(new ViewerSorter() {
 				public int compare(Viewer viewer,Object o1,Object o2) {
-					return ((String)o1).compareTo((String)o2);
+					return (((TargetInfo)o1).getName()).compareTo(((TargetInfo) o2).getName());
 				}
 			});
 			
-			if (targetList != null && targetList.getDefaultTarget() != null)
-				labelProvider.setDefaultTargetName(targetList.getDefaultTarget());
 			listViewer.setLabelProvider(labelProvider);
 			listViewer.setContentProvider(new AntTargetContentProvider());
-			listViewer.setInput(targetList);
+			listViewer.setInput(targets);
 			
 			listViewer.addCheckStateListener(this);
 			listViewer.refresh();
@@ -1158,8 +1161,8 @@ public class EditDialog extends TitleAreaDialog {
 		}
 		
 		protected String[] getTargetNames() {
-			String[] result = new String[selectedTargets.size()];
-			selectedTargets.toArray(result);
+			String[] result =  new String[selectedTargetNames.size()];
+			selectedTargetNames.toArray(result);
 			return result;
 		}
 	}
