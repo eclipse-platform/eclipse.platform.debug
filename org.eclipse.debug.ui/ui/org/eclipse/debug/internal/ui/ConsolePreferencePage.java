@@ -5,7 +5,13 @@ package org.eclipse.debug.internal.ui;
  * All Rights Reserved.
  */
 
-import org.eclipse.jface.preference.*;import org.eclipse.swt.graphics.*;import org.eclipse.swt.widgets.Composite;import org.eclipse.ui.IWorkbench;import org.eclipse.ui.IWorkbenchPreferencePage;import org.eclipse.ui.help.WorkbenchHelp;
+import org.eclipse.jface.preference.*;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.help.WorkbenchHelp;
+import org.eclipse.ui.texteditor.PropagatingFontFieldEditor;
 
 /**
  * A page to set the preferences for the console
@@ -47,11 +53,14 @@ public class ConsolePreferencePage extends FieldEditorPreferencePage implements 
 		ColorFieldEditor syserr= new ColorFieldEditor(CONSOLE_SYS_ERR_RGB, DebugUIUtils.getResourceString(ERR), getFieldEditorParent());
 		ColorFieldEditor sysin= new ColorFieldEditor(CONSOLE_SYS_IN_RGB, DebugUIUtils.getResourceString(IN), getFieldEditorParent());
 		
-		FontFieldEditor font= new FontFieldEditor(CONSOLE_FONT, DebugUIUtils.getResourceString(FONT), getFieldEditorParent());
+		PropagatingFontFieldEditor editor= new PropagatingFontFieldEditor(CONSOLE_FONT,
+				DebugUIUtils.getResourceString(FONT), getFieldEditorParent());
+		
 		addField(sysout);
 		addField(syserr);
 		addField(sysin);
-		addField(font);
+		addField(editor);
+		editor.startPropagate(getPreferenceStore(), CONSOLE_FONT);
 	}
 
 	/**
