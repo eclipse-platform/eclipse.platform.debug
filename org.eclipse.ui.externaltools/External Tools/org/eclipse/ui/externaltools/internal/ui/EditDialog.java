@@ -49,6 +49,7 @@ public class EditDialog extends TitleAreaDialog {
 	private static final int SIZING_SELECTION_PANE_WIDTH = 300;	
 	
 	private static final boolean INITIAL_SHOW_LOG = true;
+	private static final boolean INITIAL_BLOCK = true;
 	
 	private Text nameField;
 	private Text locationField;
@@ -65,6 +66,7 @@ public class EditDialog extends TitleAreaDialog {
 	private Button fullBuild;
 	private Button incrementalBuild;
 	private Button autoBuild;
+	private Button block;
 	
 	private boolean editMode = false;
 	private boolean toolIsBuilder;
@@ -251,13 +253,22 @@ public class EditDialog extends TitleAreaDialog {
 		buttonData[3].bottom = new FormAttachment(directoryField, 0, SWT.BOTTOM);
 		directoryBrowseButton.setLayoutData(buttonData[3]);
 		checkForMaxWidth(directoryBrowseButton);
+
+		// Create block checkbox
+		block = new Button(topComp, SWT.CHECK);
+		block.setText(ToolMessages.getString("EditDialog.blockLabel")); //$NON-NLS-1$
+		block.setSelection(INITIAL_BLOCK);
+		data = new FormData();
+		data.left = new FormAttachment(0,0);
+		data.top = new FormAttachment(directoryField, GROUP_SPACE+buttonLabelHeightDiff, SWT.BOTTOM);
+		block.setLayoutData(data);			
 		
 		// Create refresh check box and label.
 		Label refreshLabel = new Label(topComp, SWT.NONE);
 		refreshLabel.setText(ToolMessages.getString("EditDialog.refreshOption")); //$NON-NLS-1$
 		data = new FormData();
 		data.left = new FormAttachment(0,0);
-		data.top = new FormAttachment(directoryField, GROUP_SPACE+buttonLabelHeightDiff, SWT.BOTTOM);
+		data.top = new FormAttachment(block, GROUP_SPACE, SWT.BOTTOM);
 		refreshLabel.setLayoutData(data);
 		
 		// Create refresh text field.
@@ -332,6 +343,7 @@ public class EditDialog extends TitleAreaDialog {
 			argumentsField.setText(tool.getArguments());
 			directoryField.setText(tool.getWorkingDirectory());
 			showLog.setSelection(tool.getShowLog());
+			block.setSelection(tool.getBlock());
 			if (toolIsBuilder) {
 				fullBuild.setSelection(tool.runForBuildType(tool.BUILD_TYPE_FULL));
 				incrementalBuild.setSelection(tool.runForBuildType(tool.BUILD_TYPE_INCREMENTAL));
@@ -556,7 +568,8 @@ public class EditDialog extends TitleAreaDialog {
 		tool.setLocation(command);
 		tool.setArguments(argumentsField.getText().trim());
 		tool.setWorkingDirectory(directoryField.getText().trim());
-		tool.setRefreshScope(refreshScope);
+		tool.setBlock(block.getSelection());
+		tool.setRefreshScope(block.getSelection() ? refreshScope : "");
 		tool.setShowLog(showLog.getSelection());
 		
 		ArrayList list = new ArrayList();

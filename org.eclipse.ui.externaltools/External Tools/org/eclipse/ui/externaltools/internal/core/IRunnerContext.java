@@ -53,4 +53,10 @@ public interface IRunnerContext {
 	 * external tool should appear on the log console.
 	 */
 	public boolean getShowLog();
+	
+	/**
+	 * Returns whether or not the the calling application should block
+	 * until the tool terminates execution
+	 */
+	public boolean getBlock();	
 }

@@ -9,9 +9,7 @@ http://www.eclipse.org/legal/cpl-v05.html
  
 Contributors:
 **********************************************************************/
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import org.eclipse.core.resources.ICommand;
 
@@ -38,6 +36,7 @@ public class ExternalTool {
 	private static final String TAG_TOOL_REFRESH = "!{tool_refresh}"; //$NON-NLS-1$
 	private static final String TAG_TOOL_SHOW_LOG = "!{tool_show_log}"; //$NON-NLS-1$
 	private static final String TAG_TOOL_BUILD_TYPES = "!{tool_build_types}"; //$NON-NLS-1$
+	private static final String TAG_TOOL_BLOCK = "!{tool_block}"; //$NON-NLS-1$
 	
 	// Known kind of tools
 	public static final String TOOL_TYPE_PROGRAM = "org.eclipse.ui.externaltools.type.program"; //$NON-NLS-1$
@@ -92,6 +91,7 @@ public class ExternalTool {
 	private String directory = EMPTY_VALUE;
 	private String refreshScope = EMPTY_VALUE;
 	private boolean showLog = true;
+	private boolean block = true;
 	private String[] buildTypes;
 	
 	/**
@@ -105,7 +105,7 @@ public class ExternalTool {
 	/**
 	 * Creates a fully initialized external tool.
 	 */
-	public ExternalTool(String type, String name, String location, String arguments, String directory, String refreshScope, boolean showLog) {
+	public ExternalTool(String type, String name, String location, String arguments, String directory, String refreshScope, boolean showLog, boolean block) {
 		this();
 		if (type != null)
 			this.type = type;
@@ -120,6 +120,7 @@ public class ExternalTool {
 		if (refreshScope != null)
 			this.refreshScope = refreshScope;
 		this.showLog = showLog;
+		this.block = block;
 	}
 	
 	/**
@@ -141,6 +142,13 @@ public class ExternalTool {
 			showLog = false;
 		else
 			showLog = true;
+
+		String sBlock = (String)args.get(TAG_TOOL_BLOCK);
+		boolean block;
+		if (FALSE.equals(sBlock))
+			block = false;
+		else
+			block = true;
 			
 		ExternalTool tool = new ExternalTool(
 			type,
@@ -149,7 +157,8 @@ public class ExternalTool {
 			(String)args.get(TAG_TOOL_ARGUMENTS),
 			(String)args.get(TAG_TOOL_DIRECTORY),
 			(String)args.get(TAG_TOOL_REFRESH),
-			showLog);
+			showLog,
+			block);
 		String string = (String)args.get(TAG_TOOL_BUILD_TYPES);
 		if (string != null)
 			tool.buildTypes = toBuildTypesArray(string);
@@ -285,6 +294,14 @@ public class ExternalTool {
 	}
 	
 	/**
+	 * Returns whether or not the the calling application should block
+	 * until the tool terminates execution
+	 */
+	public boolean getBlock() {
+		return block;	
+	}	
+	
+	/**
 	 * Sets the type of external tool.
 	 */
 	public void setType(String type) {
@@ -354,6 +371,14 @@ public class ExternalTool {
 	}
 	
 	/**
+	 * Sets whether or not the the calling application should block
+	 * until the tool terminates execution
+	 */
+	public void setBlock(boolean block) {
+		this.block = block;
+	}
+	
+	/**
 	 * Sets the types of builds for which this external tool runs if it
 	 * is a builder on a project.
 	 */
@@ -381,6 +406,10 @@ public class ExternalTool {
 			args.put(TAG_TOOL_SHOW_LOG, FALSE);
 		if (buildTypes != null)	
 			args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
+		if (block)
+			args.put(TAG_TOOL_BLOCK, TRUE);
+		else
+			args.put(TAG_TOOL_BLOCK, FALSE);
 		
 		return args;
 	}

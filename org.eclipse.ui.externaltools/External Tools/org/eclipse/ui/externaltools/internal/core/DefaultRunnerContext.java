@@ -114,6 +114,14 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	public boolean getShowLog() {
 		return tool.getShowLog();	
 	}
+	
+	/**
+	 * Returns whether or not the the calling application should block
+	 * until the tool terminates execution
+	 */
+	public boolean getBlock() {
+		return tool.getBlock();	
+	}	
 
 	/**
 	 * Expands the variables found in the text.
@@ -381,7 +389,28 @@ public final class DefaultRunnerContext implements IRunnerContext {
 					}
 				});
 			} else {
-				executeRunner(monitor);
+				if (getBlock()) {
+					executeRunner(monitor);
+				} else {
+					new Thread(new Runnable() {
+						public void run() {
+							try {
+								executeRunner(null);
+							} catch (final CoreException e) {
+								shell.getDisplay().syncExec(new Runnable() { 
+									public void run() {
+										ErrorDialog.openError(
+											shell,
+											ToolMessages.getString("DefaultRunnerContext.errorShellTitle"), //$NON-NLS-1$
+											ToolMessages.getString("DefaultRunnerContext.errorMessage"), //$NON-NLS-1$
+											e.getStatus());
+									}
+								});							
+							} catch (InterruptedException e) {	
+							}
+						}
+					}).start();
+				}
 			}
 		} catch (final CoreException e) {
 			shell.getDisplay().syncExec(new Runnable() { 
