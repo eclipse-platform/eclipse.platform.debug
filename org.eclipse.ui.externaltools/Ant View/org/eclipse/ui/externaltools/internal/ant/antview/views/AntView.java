@@ -27,6 +27,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.externaltools.internal.ant.antview.actions.ClearAction;
 import org.eclipse.ui.externaltools.internal.ant.antview.actions.MsgLvlAction;
 import org.eclipse.ui.externaltools.internal.ant.antview.actions.RefreshAction;
+import org.eclipse.ui.externaltools.internal.ant.antview.actions.RemoveProjectAction;
 import org.eclipse.ui.externaltools.internal.ant.antview.actions.RunAction;
 import org.eclipse.ui.externaltools.internal.ant.antview.core.IAntViewConstants;
 import org.eclipse.ui.externaltools.internal.ant.antview.core.ResourceMgr;
@@ -103,6 +104,7 @@ public class AntView extends ViewPart {
 
 		IToolBarManager toolBarMgr = actionBars.getToolBarManager();
 		toolBarMgr.add((Action)actionMap.get(IAntViewConstants.IMAGE_RUN));
+		toolBarMgr.add((Action)actionMap.get(IAntViewConstants.IMAGE_REMOVE));
 		toolBarMgr.add((Action)actionMap.get(IAntViewConstants.IMAGE_CLEAR));
 		toolBarMgr.add((Action)actionMap.get(IAntViewConstants.IMAGE_REFRESH));
 
@@ -139,6 +141,7 @@ public class AntView extends ViewPart {
 		manager.add((Action)actionMap.get(IAntViewConstants.IMAGE_RUN));
 		manager.add((Action)actionMap.get(IAntViewConstants.IMAGE_REFRESH));
 		manager.add((Action)actionMap.get(IAntViewConstants.IMAGE_CLEAR));
+		manager.add((Action)actionMap.get(IAntViewConstants.IMAGE_REMOVE));
 
 		MenuManager submenu =
 			new MenuManager(ResourceMgr.getString("Label.DisplayLevel"));
@@ -154,6 +157,11 @@ public class AntView extends ViewPart {
 	private void makeActions() {			
 		actionMap = new Hashtable();
 
+		actionMap.put(
+			IAntViewConstants.IMAGE_REMOVE,
+			new RemoveProjectAction(
+				"Remove",
+				ResourceMgr.getImageDescriptor(IAntViewConstants.IMAGE_REMOVE)));
 		actionMap.put(
 			IAntViewConstants.IMAGE_RUN,
 			new RunAction(

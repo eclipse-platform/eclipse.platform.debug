@@ -73,9 +73,9 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 	 */
 	public Object[] getElements(Object parent) {
 		if (parent.equals(ResourcesPlugin.getWorkspace())) {
-			if (treeRoot == null)
+			if (getTreeRoot() == null)
 				initialize();
-			return getChildren(treeRoot);
+			return getChildren(getTreeRoot());
 		}
 		if (parent instanceof TreeNode)
 			return getChildren(parent);
@@ -110,6 +110,10 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 			return ((TreeNode) parent).hasChildren();
 		return false;
 	}
+	
+	public void removeNode(TreeNode node) {
+		node.getParent().removeChild(node);
+	}
 
 	/**
 	 * Method reset.
@@ -117,13 +121,13 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 	public void reset() {
 		saveTargetVector();
 		clear();
-		treeRoot = null;
+		setTreeRoot(null);
 	}
 	/**
 	 * Method clear.
 	 */
 	public void clear() {
-		Vector targetVector = (Vector) treeRoot.getProperty("TargetVector");
+		Vector targetVector = (Vector) getTreeRoot().getProperty("TargetVector");
 		if (null == targetVector)
 			return;
 		Enumeration targets = targetVector.elements();
@@ -138,7 +142,7 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 	 * @return Vector
 	 */
 	public Vector getTargetVector() {
-		return (Vector) treeRoot.getProperty("TargetVector");
+		return (Vector) getTreeRoot().getProperty("TargetVector");
 	}
 	/**
 	 * Method initialize.
@@ -147,8 +151,8 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		workspace.removeResourceChangeListener(this);
 
-		treeRoot = new TreeNode("");
-		treeRoot.setProperty("TargetVector", new Vector());
+		setTreeRoot(new TreeNode(""));
+		getTreeRoot().setProperty("TargetVector", new Vector());
 
 		final ArrayList buildFileList = new ArrayList();
 		final String buildFileName = Preferences.getString(IAntViewConstants.PREF_ANT_BUILD_FILE);
@@ -173,7 +177,7 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 		}
 
 		if (0 == buildFileList.size()) {
-			treeRoot.addChild(new ErrorNode(ResourceMgr.getString("Tree.NoProjects") + " " + "(" + Preferences.getString(PREF_ANT_BUILD_FILE) + ")"));
+			getTreeRoot().addChild(new ErrorNode(ResourceMgr.getString("Tree.NoProjects") + " " + "(" + Preferences.getString(PREF_ANT_BUILD_FILE) + ")"));
 			workspace.addResourceChangeListener(this);
 			return;
 		}
@@ -181,7 +185,7 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 		Iterator buildFiles = buildFileList.iterator();
 		while (buildFiles.hasNext()) {
 			IPath file = (IPath) buildFiles.next();
-			treeRoot.addChild(parseAntBuildFile(file.toString()));
+			getTreeRoot().addChild(parseAntBuildFile(file.toString()));
 		}
 		restoreTargetVector();
 		workspace.addResourceChangeListener(this);
@@ -204,7 +208,9 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 			return new ProjectErrorNode(filename, "No targets found");
 		}
 		Project project = new Project();
-		project.setName(infos[0].getProject());
+		if (infos[0].getProject() != null) {
+			project.setName(infos[0].getProject());
+		}
 		for (int i = 0; i < infos.length; i++) {
 			TargetInfo info = infos[i];
 			if (info.isDefault()) {
@@ -305,17 +311,17 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 		while (changedResources.hasNext()) {
 			IResource fileResource = (IResource) changedResources.next();
 			String buildFile = fileResource.getLocation().toString();
-			TreeNode rootChild[] = treeRoot.getChildren();
+			TreeNode rootChild[] = getTreeRoot().getChildren();
 			for (int i = 0; i < rootChild.length; i++) {
 				String nodeBuildFile = (String) rootChild[i].getProperty("BuildFile");
 				if (null == nodeBuildFile)
 					continue;
 				if (buildFile.equals(nodeBuildFile)) {
-					treeRoot.removeChild(rootChild[i]);
+					getTreeRoot().removeChild(rootChild[i]);
 					break;
 				}
 			}
-			treeRoot.addChild(parseAntBuildFile(buildFile));
+			getTreeRoot().addChild(parseAntBuildFile(buildFile));
 		}
 		restoreTargetVector();
 		AntView antView = AntUtil.getAntView();
@@ -325,7 +331,7 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 	}
 
 	private void saveTargetVector() {
-		Vector targetVector = (Vector) treeRoot.getProperty("TargetVector");
+		Vector targetVector = (Vector) getTreeRoot().getProperty("TargetVector");
 		if (null == targetVector) {
 			return;
 		}
@@ -340,7 +346,7 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 
 	private void restoreTargetVector() {
 		HashMap targetMap = new HashMap();
-		TreeNode rootChildren[] = treeRoot.getChildren();
+		TreeNode rootChildren[] = getTreeRoot().getChildren();
 		for (int i = 0; i < rootChildren.length; i++) {
 			TreeNode targetNodes[] = rootChildren[i].getChildren();
 			for (int j = 0; j < targetNodes.length; j++) {
@@ -385,5 +391,13 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 		String[] array = new String[strings.size()];
 		strings.toArray(array);
 		return array;
+	}
+
+	private void setTreeRoot(TreeNode treeRoot) {
+		this.treeRoot = treeRoot;
+	}
+
+	public TreeNode getTreeRoot() {
+		return treeRoot;
 	}
 }

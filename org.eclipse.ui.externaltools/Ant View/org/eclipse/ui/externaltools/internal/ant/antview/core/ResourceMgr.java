@@ -52,6 +52,7 @@ public class ResourceMgr {
 		ResourceMgr.setImage(IAntViewConstants.IMAGE_ERROR);
 
 		ResourceMgr.setImageDescriptor(IAntViewConstants.IMAGE_RUN);
+		ResourceMgr.setImageDescriptor(IAntViewConstants.IMAGE_REMOVE);
 		ResourceMgr.setImageDescriptor(IAntViewConstants.IMAGE_CLEAR);
 		ResourceMgr.setImageDescriptor(IAntViewConstants.IMAGE_REFRESH);
 	}
