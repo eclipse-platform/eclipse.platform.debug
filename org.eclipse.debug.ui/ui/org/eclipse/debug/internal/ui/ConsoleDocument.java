@@ -377,7 +377,7 @@ public class ConsoleDocument extends AbstractDocument implements IDebugEventList
 	 * UI will be updated.
 	 */
 	protected void update(Runnable runnable) {
-		if (fConsoleViewer != null && !fConsoleViewer.getControl().isDisposed()) {
+		if (fConsoleViewer != null && fConsoleViewer.getControl() != null && !fConsoleViewer.getControl().isDisposed()) {
 			fConsoleViewer.getControl().getDisplay().asyncExec(runnable);
 		} else {
 			Display display= DebugUIPlugin.getDefault().getDisplay();
