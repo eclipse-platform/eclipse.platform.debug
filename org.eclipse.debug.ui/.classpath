@@ -10,6 +10,6 @@
         path="WORKSPACE_ROOT/org.eclipse.core.runtime/runtime.jar" sourcepath="WORKSPACE_ROOT/org.eclipse.core.runtime/runtimesrc.zip"/>
     <classpathentry kind="var"
         path="WORKSPACE_ROOT/org.eclipse.swt/swt.jar" sourcepath="WORKSPACE_ROOT/org.eclipse.swt/swtsrc.zip"/>
-    <classpathentry kind="src" path="/org.eclipse.ui"/>
+    <classpathentry kind="var" path="WORKSPACE_ROOT/org.eclipse.ui/workbench.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
