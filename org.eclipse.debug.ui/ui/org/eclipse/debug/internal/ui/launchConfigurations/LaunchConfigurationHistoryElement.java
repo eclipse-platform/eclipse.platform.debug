@@ -169,6 +169,9 @@ public class LaunchConfigurationHistoryElement {
 	 * @see Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
 		if (o instanceof LaunchConfigurationHistoryElement) {
 			LaunchConfigurationHistoryElement e= (LaunchConfigurationHistoryElement)o;
 			if (isConfigurationBased()) {

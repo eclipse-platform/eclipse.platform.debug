@@ -1109,6 +1109,18 @@ public class DebugUIPlugin extends AbstractUIPlugin implements ILaunchListener,
 		all.addAll(fDebugHistory);
 		all.addAll(fRunHistory);
 		
+		// fix for bug 14877 - remove entries with no configuration if using configs
+		if (usingConfigurationStyleLaunching()) {
+			List remove = new ArrayList();
+			Iterator iter = all.iterator();
+			while (iter.hasNext()) {
+				LaunchConfigurationHistoryElement item = (LaunchConfigurationHistoryElement)iter.next();
+				if (item.getLaunchConfiguration() == null) {
+					remove.add(item);
+				}
+			}		
+			all.removeAll(remove);
+		}
 
 		Iterator iter = all.iterator();
 		while (iter.hasNext()) {
