@@ -169,62 +169,77 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	 * @return the ArrayList of arguments
 	 */
 	private ArrayList argStringToArrayList(String s) {
-		// The list of arguments.
-		ArrayList list = new ArrayList();
-		StringTokenizer tok = new StringTokenizer(s, " \"", true); //$NON-NLS-1$
-		boolean inQuotes = false;
-		String token;
-		String lookahead = null;
-		// StringBuffer to construct an argument before it is added to the list.
-		StringBuffer arg = new StringBuffer();
+		ArrayList list = new ArrayList(10);
+		if (s == null)
+			return list;
 		
-		while (tok.hasMoreTokens() || lookahead != null) {
-			// If there a lookahead token, use it as the next token.
-			if (lookahead != null) {
-				token = lookahead;
-				lookahead = null;
-			} else { // Otherwise, get the next token from the tokenizer.
-				token = tok.nextToken();
+		boolean inQuotes = false;
+		boolean inVar = false;
+		int start = 0;
+		int end = s.length();
+		StringBuffer arg = new StringBuffer(end);
+		
+		while (start < end) {
+			char ch = s.charAt(start);
+			start++;
+			
+			switch (ch) {
+				case ' ' :	//$NON-NLS-1$
+					if (inQuotes || inVar) {
+						arg.append(ch);
+					} else {
+						if (arg.length() > 0) {
+							list.add(arg.toString());
+							arg.setLength(0);
+						}
+					}
+					break;
+
+				case '"' :	//$NON-NLS-1$
+					if (inVar) {
+						arg.append(ch);
+					} else {
+						if (start < end) {
+							if (s.charAt(start) == '"') { //$NON-NLS-1$
+								// Two quotes together represents one quote
+								arg.append(ch);
+								start++;
+							} else {
+								inQuotes = !inQuotes;
+							}
+						} else {
+							// A lone quote at the end, just drop it.
+							inQuotes = false;
+						}
+					}
+					break;
+					
+				case '$' :	//$NON-NLS-1$
+					arg.append(ch);
+					if (!inVar && start < end) {
+						if (s.charAt(start) == '{') { //$NON-NLS-1$
+							arg.append('{'); //$NON-NLS-1$
+							inVar = true;
+							start++;
+						}
+					}
+					break;
+
+				case '}' :	//$NON-NLS-1$
+					arg.append(ch);
+					inVar = false;
+					break;
+
+				default :
+					arg.append(ch);
+					break;
 			}
 			
-			// If we reach a quote...
-			if (token.equals("\"")) { //$NON-NLS-1$
-				// If the quote was the last token...
-				if (!tok.hasMoreTokens()) {
-					if (inQuotes) {
-						inQuotes = false;	
-					} else {
-						arg.append("\""); //$NON-NLS-1$
-					};
-				} else {
-					lookahead = tok.nextToken();
-					// If the next character is also a quote...
-					if (lookahead.equals("\"")) { //$NON-NLS-1$
-						// Add a single quote to the argument.
-						arg.append("\""); //$NON-NLS-1$
-						lookahead = null;
-					} else {
-						inQuotes = !inQuotes;
-					}
-				}
-			} 
-			// If we reach a space outside a quoted argument...
-			else if (token.equals(" ") && !inQuotes) { //$NON-NLS-1$
-				// Add the complete argument to the list.
-				list.add(arg.toString());
-				// Clear the buffer.
-				arg.setLength(0);
-			} 
-			else { // We have reached a normal token.
-				// Append it to the argument buffer.
-				arg.append(token);
-			}
 		}
-		// If there is an argument that hasn't been added 
-		// to the list, add it.
+		
 		if (arg.length() > 0)
 			list.add(arg.toString());
-		
+			
 		return list;
 	}
 
