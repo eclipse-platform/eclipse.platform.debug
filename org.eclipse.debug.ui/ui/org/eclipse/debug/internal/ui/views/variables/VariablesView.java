@@ -265,6 +265,15 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	private Iterator fSelectionIterator = null;	
 	
 	/**
+	 * The last part and selection change notification
+	 * sent by the debug view. Cached, since selection
+	 * changes are ignored when the variable is not visible.
+	 * Used to update when the view becomes visible again.
+	 */
+	private ISelection fLastSelection = null;
+	private IWorkbenchPart fLastPart = null;
+		
+	/**
 	 * Various listeners used to update the enabled state of actions and also to
 	 * populate the detail pane.
 	 */
@@ -1084,7 +1093,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @see ISelectionListener#selectionChanged(IWorkbenchPart, ISelection)
 	 */
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if (!isAvailable()) {
+		fLastPart = part;
+		fLastSelection = selection;
+		if (!isAvailable() || !isVisible()) {
 			return;
 		}
 		
@@ -1167,5 +1178,20 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 			}
 		}
 		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.AbstractDebugView#becomesHidden()
+	 */
+	protected void becomesHidden() {
+		setViewerInput(new StructuredSelection());
+		super.becomesHidden();
+	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.AbstractDebugView#becomesVisible()
+	 */
+	protected void becomesVisible() {
+		super.becomesVisible();
+		selectionChanged(fLastPart, fLastSelection);
 	}
 }
