@@ -16,6 +16,9 @@
       <import plugin="org.eclipse.ant.core"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jdt.debug.ui"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.ui"/>
    </requires>
 
 
@@ -44,8 +47,19 @@
 				enablesFor="1"
 				class="org.eclipse.ui.externaltools.internal.ui.AntRunActionDelegate">
 			</action>
-		</objectContribution>			
-	</extension>
+		</objectContribution>	
+	  <viewerContribution
+		id="org.eclipse.jdt.debug.OpenOnConsoleTypeActions"
+		targetID="org.eclipse.ui.externaltools.LogConsoleView">
+		<action
+			id="org.eclipse.jdt.ui.actions.OpenOnConsoleType"
+			label="%PopupMenu.openOnConsoleType"
+			menubarPath="additions"
+			tooltip="%Popup.openOnConsoleTypeTip"
+			class="org.eclipse.ui.externaltools.internal.ui.OpenOnLogConsoleTypeAction">
+		</action>
+	  </viewerContribution>
+   </extension>
 
 	<extension point="org.eclipse.ui.actionSets">
 		<actionSet
