@@ -70,25 +70,58 @@ public final class ExternalToolBuilder extends IncrementalProjectBuilder {
 		if (ExternalToolsPlugin.getDefault().getBundle().getState() != Bundle.ACTIVE) {
 			return null;
 		}
+		
+		if (kind == FULL_BUILD) {
+			ILaunchConfiguration config = BuilderUtils.configFromBuildCommandArgs(getProject(), args, new String[1]);
+			if (config != null && buildKindCompatible(kind, config) && configEnabled(config)) {
+				launchBuild(kind, config, monitor);
+			}
+			if (shouldForgetBuildState(args)) {
+				forgetLastBuiltState();
+			}
+			return getProjectsWithinScope();
+		}
 		//need to build all external tools from one builder (see bug 39713)
 		//if not a full build
 		ICommand[] commands = getProject().getDescription().getBuildSpec();
-		if (kind != FULL_BUILD) {
-			projectsWithinScope= new ArrayList();
-		}
+		projectsWithinScope= new ArrayList();
 		for (int i = 0; i < commands.length; i++) {
 			if (ID.equals(commands[i].getBuilderName())){
 				ILaunchConfiguration config = BuilderUtils.configFromBuildCommandArgs(getProject(), commands[i].getArguments(), new String[1]);
 				if (config != null && buildKindCompatible(kind, config) && configEnabled(config)) {
-					if (kind == FULL_BUILD) {
-						launchBuild(kind, config, monitor);
-					} else {
-						doBuildBasedOnScope(kind, config, monitor);
-					}
+					doBuildBasedOnScope(kind, config, monitor);
 				}
 			}
 		}
 		return getProjectsWithinScope();
+	}
+	
+	private boolean shouldForgetBuildState(Map args) throws CoreException {
+		//if I am not the last external tool builder and there are other full build external tool builders after me I need
+		//to forget the last build state so that these builders will be called.
+
+		ICommand[] commands = getProject().getDescription().getBuildSpec();
+		int currentBuilderIndex= -1;
+		for (int i = 0; i < commands.length; i++) {
+			ICommand command= commands[i];
+			if (ID.equals(command.getBuilderName())){
+				if (command.getArguments().equals(args)) {
+					if (i + 1 == commands.length) {
+						//last builder
+						return false;
+					}
+					currentBuilderIndex= i;
+				} else if (currentBuilderIndex > -1 && i > currentBuilderIndex) {
+					ILaunchConfiguration config = BuilderUtils.configFromBuildCommandArgs(getProject(), command.getArguments(), new String[1]);
+					if (config != null && buildKindCompatible(FULL_BUILD, config) && configEnabled(config)) {
+						//another full build external tool builder needs to be triggered
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	/**
