@@ -183,21 +183,21 @@ public class BreakpointManager implements IBreakpointManager, IResourceChangeLis
 	 * @see IBreakpointManager
 	 */
 	public int getLineNumber(IMarker marker) {
-		return getBreakpoint(marker).getAttribute(IMarker.LINE_NUMBER, -1);		
+		return getBreakpoint(marker).getLineNumber();
 	}
 
 	/**
 	 * @see IBreakpointManager
 	 */
 	public int getCharStart(IMarker marker) {
-		return getBreakpoint(marker).getAttribute(IMarker.CHAR_START, -1);
+		return getBreakpoint(marker).getCharStart();
 	}
 
 	/**
 	 * @see IBreakpointManager
 	 */
 	public int getCharEnd(IMarker marker) {
-		return getBreakpoint(marker).getAttribute(IMarker.CHAR_END, -1);
+		return getBreakpoint(marker).getCharEnd();
 	}
 
 	/**
@@ -288,7 +288,7 @@ public class BreakpointManager implements IBreakpointManager, IResourceChangeLis
 	 */
 	protected void verifyBreakpoint(IBreakpoint breakpoint) throws DebugException {
 		try {
-			String id= (String) breakpoint.getAttribute(IDebugConstants.MODEL_IDENTIFIER);
+			String id= breakpoint.getModelIdentifier();
 			if (id == null) {
 				throw new DebugException(new Status(IStatus.ERROR, DebugPlugin.getDefault().getDescriptor().getUniqueIdentifier(), 
 					IDebugStatusConstants.CONFIGURATION_INVALID, DebugCoreUtils.getResourceString(REQUIRED_ATTRIBUTES), null));

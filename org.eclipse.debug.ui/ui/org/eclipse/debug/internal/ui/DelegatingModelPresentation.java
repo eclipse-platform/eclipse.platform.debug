@@ -183,11 +183,8 @@ public class DelegatingModelPresentation implements IDebugModelPresentation {
 			if (element instanceof IMarker) {
 				IMarker marker= (IMarker) element;
 				IBreakpoint breakpoint= DebugPlugin.getDefault().getBreakpointManager().getBreakpoint(marker);
-				try {
-					if (breakpoint.exists() && breakpoint.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
-						return DebugUIUtils.getResourceString(BREAKPOINT_LABEL);
-					}
-				} catch (CoreException e) {
+				if (breakpoint.exists()) {
+					return DebugUIUtils.getResourceString(BREAKPOINT_LABEL);
 				}
 			}
 		return DebugUIUtils.getResourceString(UNKNOWN);
@@ -230,7 +227,7 @@ public class DelegatingModelPresentation implements IDebugModelPresentation {
 							try {
 								IMarker marker= (IMarker) element;
 								IBreakpoint breakpoint= DebugPlugin.getDefault().getBreakpointManager().getBreakpoint(marker);
-								if (breakpoint.exists() && breakpoint.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
+								if (breakpoint.exists()) {
 									if (breakpoint.isEnabled()) {
 										return DebugPluginImages.getImage(IDebugUIConstants.IMG_OBJS_BREAKPOINT);
 									} else {

@@ -157,26 +157,24 @@ public interface IBreakpointManager {
 	boolean isRegistered(IMarker marker);		
 	
 	/**
-	 * Returns the value of the <code>LINE_NUMBER</code> attribute of the
+	 * Returns the value of the line number attribute of the
 	 * given breakpoint or -1 if the attribute is not present or
-	 * an exception occurs while accessing the attribute. This is a
-	 * convenience method for <code>IMarker.getAttribute(String, int)</code>.
-	 *
+	 * an exception occurs while accessing the attribute.
+	 * 
 	 * @param breakpoint the breakpoint
 	 * @return the breakpoint's line number, or -1 if unknown
 	 */
-	int getLineNumber(IMarker breakpoint);
+	int getLineNumber(IMarker marker);
 	
 	/**
-	 * Returns the value of the <code>CHAR_START</code> attribute of the
+	 * Returns the value of the char start attribute of the
 	 * given breakpoint or -1 if the attribute is not present, or
-	 * an exception occurs while accessing the attribute. This is a
-	 * convenience method for <code>IMarker.getAttribute(String, int)</code>
+	 * an exception occurs while accessing the attribute.
 	 * 
 	 * @param breakpoint the breakpoint
 	 * @return the breakpoint's char start value, or -1 if unknown
 	 */
-	int getCharStart(IMarker breakpoint);
+	int getCharStart(IMarker marker);
 	
 	/**
 	 * Returns the value of the <code>CHAR_END</code> attribute of the
@@ -187,7 +185,7 @@ public interface IBreakpointManager {
 	 * @param breakpoint the breakpoint
 	 * @return the breakpoint's char end value, or -1 if unknown
 	 */
-	int getCharEnd(IMarker breakpoint);
+	int getCharEnd(IMarker marker);
 	
 	/**
 	 * Returns the value of the <code>MODEL_IDENTIFIER</code> attribute of the

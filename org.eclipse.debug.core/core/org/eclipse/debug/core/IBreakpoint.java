@@ -169,26 +169,7 @@ public interface IBreakpoint {
 	 */
 	public static final int SEVERITY_INFO = 0;
 	
-/**
- * Configures the given breakpoint's <code>MODEL_IDENTIFIER</code>
- * and <code>ENABLED</code> attributes to the given values.
- * This is a convenience method for
- * <code>IMarker.setAttribute(String, Object)</code> and
- * <code>IMarker.setAttribute(String, boolean)</code>.
- * <code>IMarker.setAttribute(String, int)</code>.
- *
- * @param breakpoint the breakpoint marker to configure
- * @param modelIdentifier the identifier of the debug model plug-in
- *    the breakpoint is associated with
- * @param enabled the initial value of the enabled attribute of the
- *	breakpoint marker
- * 
- * @exception CoreException if setting an attribute fails
- * @see IMarker#setAttribute(String, Object)
- * @see IMarker#setAttribute(String, boolean)
- * @see IMarker#setAttribute(String, int)
- */
-public void configure(String modelIdentifier, boolean enabled) throws CoreException;
+
 /**
  * Deletes this marker from its associated resource.  This method has no
  * effect if this marker does not exist.
@@ -234,78 +215,38 @@ public IMarker getMarker();
  * Returns the model identifier for this breakpoint.
  */
 public String getModelIdentifier();
+
 /**
- * Returns the attribute with the given name.  The result is an instance of one
- * of the following classes: <code>String</code>, <code>Integer</code>, 
- * or <code>Boolean</code>.
- * Returns <code>null</code> if the attribute is undefined.
+ * Returns the value of the <code>LINE_NUMBER</code> attribute of the
+ * given breakpoint or -1 if the attribute is not present or
+ * an exception occurs while accessing the attribute. This is a
+ * convenience method for <code>IMarker.getAttribute(String, int)</code>.
  *
- * @param attributeName the name of the attribute
- * @return the value, or <code>null</code> if the attribute is undefined.
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
+ * @param breakpoint the breakpoint
+ * @return the breakpoint's line number, or -1 if unknown
  */
-public Object getAttribute(String attributeName) throws CoreException;
+public int getLineNumber();
 /**
- * Returns the integer-valued attribute with the given name.  
- * Returns the given default value if the attribute is undefined.
- * or the marker does not exist or is not an integer value.
- *
- * @param attributeName the name of the attribute
- * @param defaultValue the value to use if no value is found
- * @return the value or the default value if no value was found.
+ * Returns the value of the <code>CHAR_START</code> attribute of the
+ * given breakpoint or -1 if the attribute is not present, or
+ * an exception occurs while accessing the attribute. This is a
+ * convenience method for <code>IMarker.getAttribute(String, int)</code>
+ * 
+ * @param breakpoint the breakpoint
+ * @return the breakpoint's char start value, or -1 if unknown
  */
-public int getAttribute(String attributeName, int defaultValue);
+public int getCharStart();
 /**
- * Returns the string-valued attribute with the given name.  
- * Returns the given default value if the attribute is undefined
- * or the marker does not exist or is not a string value.
+ * Returns the value of the <code>CHAR_END</code> attribute of the
+ * given breakpoint or -1 if the attribute is not present or
+ * an exception occurs while accessing the attribute.
+ * This is a convenience method for <code>IMarker.getAttribute(String, int)</code>.
  *
- * @param attributeName the name of the attribute
- * @param defaultValue the value to use if no value is found
- * @return the value or the default value if no value was found.
+ * @param breakpoint the breakpoint
+ * @return the breakpoint's char end value, or -1 if unknown
  */
-public String getAttribute(String attributeName, String defaultValue);
-/**
- * Returns the boolean-valued attribute with the given name.  
- * Returns the given default value if the attribute is undefined
- * or the marker does not exist or is not a boolean value.
- *
- * @param attributeName the name of the attribute
- * @param defaultValue the value to use if no value is found
- * @return the value or the default value if no value was found.
- */
-public boolean getAttribute(String attributeName, boolean defaultValue);
-/**
- * Returns a map with all the attributes for the marker.
- * If the marker has no attributes then <code>null</code> is returned.
- *
- * @return a map of attribute keys and values (key type : <code>String</code> 
- *		value type : <code>String</code>, <code>Integer</code>, or 
- *		<code>Boolean</code>) or <code>null</code>.
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public Map getAttributes() throws CoreException;
-/**
- * Returns the attributes with the given names.  The result is an an array 
- * whose elements correspond to the elements of the given attribute name
- * array.  Each element is <code>null</code> or an instance of one
- * of the following classes: <code>String</code>, <code>Integer</code>, 
- * or <code>Boolean</code>.
- *
- * @param attributeNames the names of the attributes
- * @return the values of the given attributes.
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public Object[] getAttributes(String[] attributeNames) throws CoreException;
+public int getCharEnd();
+
 /**
  * Returns the id of the marker.  The id of a marker is unique
  * relative to the resource with which the marker is associated.
@@ -322,7 +263,7 @@ public long getId();
  */
 public IResource getResource();
 /**
- * Returns the type of this marker.
+ * Returns the type of this breakpoint.
  *
  * @return the type of this marker
  * @exception CoreException if this method fails. Reasons include:
@@ -344,112 +285,7 @@ public boolean isDisabled() throws CoreException;
  * current state.
  */
 public void toggleEnabled() throws CoreException;
-/**
- * Returns whether the type of this marker is considered to be a subtype of
- * the given marker type. 
- *
- * @return boolean <code>true</code>if the marker's type
- *		is the same as (or a subtype of) the given type.
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public boolean isSubtypeOf(String superType) throws CoreException;
-/**
- * Sets the integer-valued attribute with the given name.  
- * <p>
- * This method changes resources; these changes will be reported
- * in a subsequent resource change event, including an indication 
- * that this marker has been modified.
- * </p>
- *
- * @param attributeName the name of the attribute
- * @param value the value
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public void setAttribute(String attributeName, int value) throws CoreException;
-/**
- * Sets the attribute with the given name.  The value must be <code>null</code> or 
- * an instance of one of the following classes: 
- * <code>String</code>, <code>Integer</code>, or <code>Boolean</code>.
- * If the value is <code>null</code>, the attribute is considered to be undefined.
- * <p>
- * This method changes resources; these changes will be reported
- * in a subsequent resource change event, including an indication 
- * that this marker has been modified.
- * </p>
- *
- * @param attributeName the name of the attribute
- * @param value the value, or <code>null</code> if the attribute is to be undefined
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public void setAttribute(String attributeName, Object value) throws CoreException;
-/**
- * Sets the boolean-valued attribute with the given name.  
- * <p>
- * This method changes resources; these changes will be reported
- * in a subsequent resource change event, including an indication 
- * that this marker has been modified.
- * </p>
- *
- * @param attributeName the name of the attribute
- * @param value the value
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public void setAttribute(String attributeName, boolean value) throws CoreException;
-/**
- * Sets the given attribute key-value pairs on this marker.
- * The values must be <code>null</code> or an instance of 
- * one of the following classes: <code>String</code>, 
- * <code>Integer</code>, or <code>Boolean</code>.
- * If a value is <code>null</code>, the new value of the 
- * attribute is considered to be undefined.
- * <p>
- * This method changes resources; these changes will be reported
- * in a subsequent resource change event, including an indication 
- * that this marker has been modified.
- * </p>
- *
- * @param attributeNames an array of attribute names
- * @param values an array of attribute values
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public void setAttributes(String[] attributeNames, Object[] values) throws CoreException;
-/**
- * Sets the attributes for this marker to be the ones contained in the
- * given table. The values must be an instance of one of the following classes: 
- * <code>String</code>, <code>Integer</code>, or <code>Boolean</code>.
- * Attributes previously set on the marker but not included in the given map
- * are considered to be removals. Setting the given map to be <code>null</code>
- * is equivalent to removing all marker attributes.
- * <p>
- * This method changes resources; these changes will be reported
- * in a subsequent resource change event, including an indication 
- * that this marker has been modified.
- * </p>
- *
- * @param attributes a map of attribute names to attribute values 
- *		(key type : <code>String</code> value type : <code>String</code>, 
- *		<code>Integer</code>, or <code>Boolean</code>) or <code>null</code>
- * @exception CoreException if this method fails. Reasons include:
- * <ul>
- * <li> This marker does not exist.</li>
- * </ul>
- */
-public void setAttributes(Map attributes) throws CoreException;
+
 /**
  * Install a breakpoint request for this breakpoint in the given target.
  * 
