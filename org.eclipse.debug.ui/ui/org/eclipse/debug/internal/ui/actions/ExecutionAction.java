@@ -8,13 +8,9 @@ package org.eclipse.debug.internal.ui.actions;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationDialog;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IActionDelegateWithEvent;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
@@ -37,42 +33,10 @@ public abstract class ExecutionAction implements IActionDelegateWithEvent {
 		if (dwindow == null) {
 			return;
 		}
-		IStructuredSelection selection= resolveSelection(dwindow);
+		IStructuredSelection selection= DebugUIPlugin.resolveSelection(dwindow);
 		LaunchConfigurationDialog dialog = new LaunchConfigurationDialog(DebugUIPlugin.getShell(), selection, getMode());		
 		dialog.setOpenMode(LaunchConfigurationDialog.LAUNCH_CONFIGURATION_DIALOG_LAUNCH_LAST);
 		dialog.open();
-	}
-	
-	/**
-	 * Determines and returns the selection that provides context for the launch,
-	 * or <code>null</code> if there is no selection.
-	 */
-	protected static IStructuredSelection resolveSelection(IWorkbenchWindow window) {
-		if (window == null) {
-			return null;
-		}
-		ISelection selection= window.getSelectionService().getSelection();
-		if (selection == null || selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
-			// there is no obvious selection - go fishing
-			selection= null;
-			IWorkbenchPage page= window.getActivePage();
-			if (page == null) {
-				//workspace is closed
-				return null;
-			}
-
-			// first, see if there is an active editor, and try its input element
-			IEditorPart editor= page.getActiveEditor();
-			Object element= null;
-			if (editor != null) {
-				element= editor.getEditorInput();
-			}
-
-			if (selection == null && element != null) {
-				selection= new StructuredSelection(element);
-			}
-		}
-		return (IStructuredSelection)selection;
 	}
 	
 	/**
