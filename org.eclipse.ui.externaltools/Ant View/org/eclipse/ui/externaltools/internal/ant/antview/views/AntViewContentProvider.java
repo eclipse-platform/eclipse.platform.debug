@@ -192,57 +192,6 @@ public class AntViewContentProvider implements IStructuredContentProvider, ITree
 	 * @return TreeNode
 	 */
 	private TreeNode parseAntBuildFile(String filename) {
-		//		Document document;
-		//        try {
-		//           SAXBuilder builder = new SAXBuilder();
-		//           document = builder.build(new java.io.File(filename));
-		//        } catch (JDOMException e) {
-		//           String err = "";
-		//           try {
-		//             SAXParseException cause = (SAXParseException) e.getCause();
-		//        	 err = ResourceMgr.getString("Tree.Line") 
-		//                     + ": "
-		//                     + cause.getLineNumber()
-		//                     + "  - " 
-		//                     + cause.getLocalizedMessage();
-		//           } catch (ClassCastException cce) {
-		//             err = e.getLocalizedMessage();
-		//           }
-		//           return new ProjectErrorNode(filename, err);
-		//        }
-		//        
-		//        Element root = document.getRootElement();
-		//        if (!(root.getName().equals("project"))) {
-		//           return new ProjectErrorNode(filename, ResourceMgr.getString("Tree.NoProjectElement"));
-		//        }
-		//        if (null == root.getAttribute("default")) {
-		//           return new ProjectErrorNode(filename, ResourceMgr.getString("Tree.NoDefaultTarget"));     	
-		//        }
-		//
-		//        Project project = new Project();  
-		//        project.setDefault(root.getAttribute("default").getValue());  
-		//        if (null != root.getAttribute("name")) {
-		//            project.setName(root.getAttribute("name").getValue());
-		//        } else {
-		//        	project.setName(ResourceMgr.getString("Tree.Unknown"));
-		//        }
-		//        Iterator xmlTargets = root.getChildren("target").iterator();
-		//        while (xmlTargets.hasNext()) {
-		//        	Element element = (Element) xmlTargets.next();
-		//        	if (null == element.getAttribute("name")) {
-		//        		continue;
-		//        	}
-		//        	Target target = new Target();
-		//        	target.setName(element.getAttribute("name").getValue());
-		//        	if (null != element.getAttribute("depends")) { 
-		//        		target.setDepends(element.getAttribute("depends").getValue());
-		//        	}
-		//        	if (null != element.getAttribute("description")) {
-		//        		target.setDescription(element.getAttribute("description").getValue());
-		//        	}
-		//        	project.addTarget(element.getAttribute("name").getValue(), target);
-		//        }
-
 		AntRunner runner = new AntRunner();
 		runner.setBuildFileLocation(filename);
 		TargetInfo[] infos = null;
