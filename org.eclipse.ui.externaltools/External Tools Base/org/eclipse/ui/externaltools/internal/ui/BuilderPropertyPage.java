@@ -150,6 +150,10 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 			if (oldConfig == null) {
 				return;
 			}
+            //Replace the movedFrom config in the list of newly created configs
+            if (newConfigList.remove(oldConfig)) {
+                newConfigList.add(configuration);
+            }
 			
 			Display.getDefault().asyncExec(new Runnable() {	
 				public void run() {
@@ -163,10 +167,6 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 							viewer.update(configuration, null);
 							break;
 						}
-					}
-					//Also replace the movedFrom config in the list of newly created configs
-					if (newConfigList.remove(oldConfig)) {
-						newConfigList.add(configuration);
 					}
 				}
 			});
