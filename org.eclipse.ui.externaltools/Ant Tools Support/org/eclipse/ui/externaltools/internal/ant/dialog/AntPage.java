@@ -10,10 +10,10 @@ Contributors:
 **********************************************************************/
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -125,7 +125,9 @@ public abstract class AntPage {
 	 */
 	private void createTable(Composite parent) {
 		Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
-		table.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridData data= new GridData(GridData.FILL_BOTH);
+		data.widthHint = IDialogConstants.ENTRY_FIELD_WIDTH;
+		table.setLayoutData(data);
 		contentProvider = new AntPageContentProvider();
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(contentProvider);
@@ -145,7 +147,11 @@ public abstract class AntPage {
 		if (tableViewer == null || tableViewer.getControl().isDisposed())
 			return null;
 		Object[] elements = contentProvider.getElements(tableViewer.getInput());
-		return Arrays.asList(elements);
+		List contents= new ArrayList(elements.length);
+		for (int i = 0; i < elements.length; i++) {
+			contents.add(elements[i]);
+		}
+		return contents;
 	}
 	
 	/**
@@ -264,5 +270,9 @@ public abstract class AntPage {
 	
 	protected AntPreferencePage getPreferencePage() {
 		return preferencePage;
+	}
+	
+	protected TableViewer getTableViewer() {
+		return tableViewer;
 	}
 }

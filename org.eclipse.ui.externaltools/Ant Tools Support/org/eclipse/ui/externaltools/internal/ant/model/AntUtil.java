@@ -14,6 +14,10 @@ import java.util.StringTokenizer;
 import org.eclipse.ant.core.AntRunner;
 import org.eclipse.ant.core.TargetInfo;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.externaltools.internal.ant.antview.views.AntView;
 import org.eclipse.ui.externaltools.model.IExternalToolConstants;
 
 /**
@@ -66,6 +70,23 @@ public final class AntUtil {
 		AntRunner runner = new AntRunner();
 		runner.setBuildFileLocation(path);
 	 	return runner.getAvailableTargets();
+	}
+	
+	/**
+	 * Returns the currently displayed Ant View if it is open.
+	 * 
+	 * @return the Ant View open in the current workbench page or
+	 * <code>null</code> if there is none.
+	 */
+	public static AntView getAntView() {
+		IWorkbenchWindow window= PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (window != null) {
+			IWorkbenchPage page= window.getActivePage(); 
+			if (page != null) {
+				return (AntView) page.findView(IExternalToolConstants.ANT_VIEW_ID);
+			}
+		}
+		return null;
 	}
 	
 	/**

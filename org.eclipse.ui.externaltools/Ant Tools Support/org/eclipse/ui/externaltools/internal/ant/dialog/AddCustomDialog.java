@@ -42,7 +42,7 @@ public class AddCustomDialog extends Dialog {
 	private Button okButton;
 	private Text nameField;
 	private Text classField;
-	private Combo libraryField;
+	private org.eclipse.swt.widgets.List libraryField;
 
 	private List libraryUrls;
 
@@ -100,7 +100,7 @@ public class AddCustomDialog extends Dialog {
 		label.setLayoutData(data);
 
 		label = new Label(dialogArea, SWT.NONE);
-		label.setText(ToolMessages.getString("AddTaskDialog.name")); //$NON-NLS-1$;
+		label.setText(ToolMessages.getString("AddCustomDialog.name")); //$NON-NLS-1$;
 		nameField = new Text(dialogArea, SWT.BORDER);
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		data.widthHint = IDialogConstants.ENTRY_FIELD_WIDTH;
@@ -112,7 +112,7 @@ public class AddCustomDialog extends Dialog {
 		});
 
 		label = new Label(dialogArea, SWT.NONE);
-		label.setText(ToolMessages.getString("AddTaskDialog.class")); //$NON-NLS-1$;
+		label.setText(ToolMessages.getString("AddCustomDialog.class")); //$NON-NLS-1$;
 		classField = new Text(dialogArea, SWT.BORDER);
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		data.widthHint = IDialogConstants.ENTRY_FIELD_WIDTH;
@@ -124,8 +124,9 @@ public class AddCustomDialog extends Dialog {
 		});
 
 		label = new Label(dialogArea, SWT.NONE);
-		label.setText(ToolMessages.getString("AddTaskDialog.library")); //$NON-NLS-1$;
-		libraryField = new Combo(dialogArea, SWT.READ_ONLY | SWT.BORDER);
+		label.setText(ToolMessages.getString("AddCustomDialog.library")); //$NON-NLS-1$;
+		libraryField = new org.eclipse.swt.widgets.List(dialogArea, SWT.READ_ONLY | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		data.widthHint = IDialogConstants.ENTRY_FIELD_WIDTH;
 		libraryField.setLayoutData(data);

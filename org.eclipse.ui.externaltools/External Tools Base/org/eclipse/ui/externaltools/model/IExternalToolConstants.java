@@ -63,6 +63,11 @@ public interface IExternalToolConstants {
 	 * Log Console view identifier (value <code>org.eclipse.ui.externaltools.LogConsoleView</code>).
 	 */
 	public static final String LOG_CONSOLE_VIEW_ID = PLUGIN_ID + ".LogConsoleView"; //$NON-NLS-1$
+	
+	/**
+	 * Ant View identifier (value <code>org.eclipse.ui.externaltools.AntView</code>).
+	 */
+	public static final String ANT_VIEW_ID = PLUGIN_ID + ".AntView"; //$NON-NLS-1$
 
 
 	// ------- Tool Types -------

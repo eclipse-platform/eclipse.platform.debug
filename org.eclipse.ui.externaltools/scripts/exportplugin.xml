@@ -25,6 +25,7 @@
 		<zip zipfile="${dest}/externaltoolssrc.zip">
 			<fileset dir="Ant Runner Support"/>
 			<fileset dir="Ant Tools Support"/>
+			<fileset dir="Ant View"/>
 			<fileset dir="External Tools Base"/>
 			<fileset dir="Program Tools Support"/>
 		</zip>

@@ -25,7 +25,9 @@ import org.eclipse.ui.externaltools.model.IRunnerLog;
 public class AntFileRunner implements IExternalToolRunner {
 	private static final String ANT_LOGGER_CLASS = "org.eclipse.ui.externaltools.internal.ant.logger.AntBuildLogger"; //$NON-NLS-1$
 	private static final String BASE_DIR_PREFIX = "-Dbasedir="; //$NON-NLS-1$
-
+	
+	private static final String INPUT_HANDLER_CLASS = "org.eclipse.ui.externaltools.internal.ant.inputhandler.AntInputHandler"; //$NON-NLS-1$
+	
 	/**
 	 * Creates an ant build file runner
 	 */
@@ -84,7 +86,7 @@ public class AntFileRunner implements IExternalToolRunner {
 						IRunnerLog.LEVEL_VERBOSE);
 				}
 			}
-
+			runner.setInputHandler(INPUT_HANDLER_CLASS);
 			if (!monitor.isCanceled()) {
 				runner.run(monitor);
 			}

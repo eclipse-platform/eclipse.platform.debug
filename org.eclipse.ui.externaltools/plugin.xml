@@ -12,6 +12,7 @@
       </library>
    </runtime>
    <requires>
+   	  <import plugin="org.apache.ant"/>
       <import plugin="org.apache.xerces"/>
       <import plugin="org.eclipse.ant.core"/>
       <import plugin="org.eclipse.core.resources"/>
@@ -289,6 +290,13 @@
 			category="org.eclipse.ui.externaltools.views"
 			class="org.eclipse.ui.externaltools.internal.ui.LogConsoleView">
 		</view>
+      <view
+            id="org.eclipse.ui.externaltools.AntView"
+            name="%View.antView"
+            icon="icons/full/cview16/ant_view.gif"
+            category="org.eclipse.ui.externaltools.views"
+            class="org.eclipse.ui.externaltools.internal.ant.antview.views.AntView">
+      </view>
 	</extension>
 
 	<extension point="org.eclipse.ui.preferencePages">
@@ -298,6 +306,12 @@
 			class="org.eclipse.ui.externaltools.internal.ant.dialog.AntPreferencePage"
 			category="org.eclipse.ui.externaltools.ToolsPreferencePage">
 		</page>
+	    <page
+	        id="org.eclipse.ui.externaltools.AntViewPreferencePage"
+	        name="%View.antView"
+	        class="org.eclipse.ui.externaltools.internal.ant.antview.preferences.PreferencePage"
+	        category="org.eclipse.ui.externaltools.ToolsPreferencePage">
+	    </page>
 	</extension>
 
 	<extension point="org.eclipse.core.resources.builders"
@@ -323,7 +337,7 @@
 	<extension point="org.eclipse.ui.popupMenus">
 		<objectContribution
 			id="org.eclipse.ui.externaltools.RunAnt"
-			objectClass="org.eclipse.core.resources.IResource"
+			objectClass="org.eclipse.core.resources.IFile"
 			adaptable="true"
 			nameFilter="*.xml">
 			<action
