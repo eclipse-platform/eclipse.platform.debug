@@ -12,18 +12,19 @@ package org.eclipse.debug.internal.ui.views.expression;
 
 import java.util.Iterator;
 import java.util.Map;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IExpression;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
 import org.eclipse.debug.internal.ui.views.DebugUIViewsMessages;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
 import org.eclipse.debug.internal.ui.views.variables.VariablesViewContentProvider;
 import org.eclipse.debug.internal.ui.views.variables.VariablesViewer;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
@@ -115,18 +116,15 @@ public class ExpressionInformationControl extends PopupInformationControl {
 		VariablesView expressionsView = (VariablesView)page.findView(IDebugUIConstants.ID_EXPRESSION_VIEW);
 		if (expressionsView != null && expressionsView.isVisible()) {
 			return expressionsView;
-		} else {
-			VariablesView variablesView = (VariablesView)page.findView(IDebugUIConstants.ID_VARIABLE_VIEW);
-			if (variablesView != null && variablesView.isVisible()) {
-				return variablesView;
-			} else {
-				if (expressionsView != null) {
-					return expressionsView;
-				} else {
-					return variablesView;
-				}
-			}
 		}
+		VariablesView variablesView = (VariablesView)page.findView(IDebugUIConstants.ID_VARIABLE_VIEW);
+		if (variablesView != null && variablesView.isVisible()) {
+			return variablesView;
+		}
+		if (expressionsView != null) {
+			return expressionsView;
+		} 
+		return variablesView;
 	}
 
 	/*
@@ -183,7 +181,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 		
 		viewer = new VariablesViewer(sashForm, SWT.NO_TRIM);
 		viewer.setContentProvider(new ExpressionPopupContentProvider());
-		modelPresentation = DebugUITools.newDebugModelPresentation();
+		modelPresentation = new VariablesViewModelPresentation();
 		viewer.setLabelProvider(modelPresentation);
 		
 		valueDisplay = new StyledText(sashForm, SWT.NO_TRIM | SWT.WRAP | SWT.V_SCROLL);
@@ -307,4 +305,14 @@ public class ExpressionInformationControl extends PopupInformationControl {
 			page.bringToTop(part);
 		}
 	}
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.text.IInformationControl#dispose()
+     */
+    public void dispose() {
+        super.dispose();
+        if (modelPresentation != null) {
+            modelPresentation.dispose();
+        }
+        exp.dispose();
+    }
 }
