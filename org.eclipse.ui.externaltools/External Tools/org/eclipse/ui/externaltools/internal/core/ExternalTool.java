@@ -72,6 +72,9 @@ public class ExternalTool {
 	public static final String BUILD_TYPE_AUTO = "auto"; //$NON-NLS-1$
 	public static final String BUILD_TYPE_NONE = "none"; //$NON-NLS-1$
 	
+	public static final String[] DEFAULT_BUILD_TYPES = 
+		{BUILD_TYPE_INCREMENTAL, BUILD_TYPE_FULL, BUILD_TYPE_AUTO};
+	
 	private static final String SEPERATOR = ";"; //$NON-NLS-1$	
 	
 	// Known refresh scopes
@@ -92,7 +95,7 @@ public class ExternalTool {
 	private String refreshScope = EMPTY_VALUE;
 	private boolean showLog = true;
 	private boolean block = true;
-	private String[] buildTypes;
+	private String[] buildTypes = DEFAULT_BUILD_TYPES;
 	
 	/**
 	 * Creates an empty initialized external tool.
@@ -160,7 +163,9 @@ public class ExternalTool {
 			showLog,
 			block);
 		String string = (String)args.get(TAG_TOOL_BUILD_TYPES);
-		if (string != null)
+		if (string == null)
+			tool.buildTypes = DEFAULT_BUILD_TYPES;
+		else
 			tool.buildTypes = toBuildTypesArray(string);
 
 		return tool;
@@ -383,7 +388,10 @@ public class ExternalTool {
 	 * is a builder on a project.
 	 */
 	public void setBuildTypes(String[] buildTypes) {
-		this.buildTypes = buildTypes;
+		if (buildTypes == null)
+			this.buildTypes = DEFAULT_BUILD_TYPES;
+		else
+			this.buildTypes = buildTypes;
 	}
 
 	/**
@@ -404,8 +412,7 @@ public class ExternalTool {
 			args.put(TAG_TOOL_SHOW_LOG, TRUE);
 		else
 			args.put(TAG_TOOL_SHOW_LOG, FALSE);
-		if (buildTypes != null)	
-			args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
+		args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
 		if (block)
 			args.put(TAG_TOOL_BLOCK, TRUE);
 		else
