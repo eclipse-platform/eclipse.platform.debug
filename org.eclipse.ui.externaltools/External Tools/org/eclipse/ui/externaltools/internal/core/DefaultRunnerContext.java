@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -151,12 +150,12 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	 * Expands the variable
 	 */
 	private void expandVariable(ToolUtil.VariableDefinition varDef, StringBuffer buf) {
-		if (tool.VAR_WORKSPACE_LOC.equals(varDef.name)) {
+		if (tool.VAR_DIR_WORKSPACE.equals(varDef.name)) {
 			buf.append(Platform.getLocation().toString());
 			return;
 		}
 		
-		if (tool.VAR_PROJECT_LOC.equals(varDef.name)) {
+		if (tool.VAR_DIR_PROJECT.equals(varDef.name)) {
 			IPath location = null;
 			if (varDef.argument != null && varDef.argument.length() > 0) {
 				IProject namedProject = ResourcesPlugin.getWorkspace().getRoot().getProject(varDef.argument);
@@ -168,19 +167,6 @@ public final class DefaultRunnerContext implements IRunnerContext {
 			if (location != null)
 				buf.append(location.toString());
 			return;
-		}
-		
-		if (tool.VAR_RESOURCE_LOC.equals(varDef.name)) {
-			String location = null;
-			if (varDef.argument != null && varDef.argument.length() > 0) {
-				location = ResourcesPlugin.getWorkspace().getRoot().getLocation() + varDef.argument;
-			} else {
-				if (currentProject != null)
-					location = currentProject.getLocation().toString(); // should get current resource
-			}
-			if (location != null)
-				buf.append(location);
-			return;			
 		}
 		
 		if (tool.VAR_ANT_TARGET.equals(varDef.name)) {
