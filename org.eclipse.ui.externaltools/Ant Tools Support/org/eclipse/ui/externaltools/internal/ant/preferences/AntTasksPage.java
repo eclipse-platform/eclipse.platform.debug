@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.externaltools.internal.model.ToolMessages;
 
 /**
  * Sub-page that allows the user to enter custom tasks
@@ -55,8 +54,8 @@ public class AntTasksPage extends AntPage {
 	 * Allows the user to enter a custom task.
 	 */
 	private void addTaskButtonPressed() {
-		String title = ToolMessages.getString("AntTasksPage.addTaskDialogTitle"); //$NON-NLS-1$
-		String msg = ToolMessages.getString("AntTasksPage.addTaskDialogDescription"); //$NON-NLS-1$
+		String title = AntPreferencesMessages.getString("AntTasksPage.addTaskDialogTitle"); //$NON-NLS-1$
+		String msg = AntPreferencesMessages.getString("AntTasksPage.addTaskDialogDescription"); //$NON-NLS-1$
 		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
 		if (dialog.open() == Dialog.CANCEL)
 			return;
@@ -77,7 +76,7 @@ public class AntTasksPage extends AntPage {
 				addTaskButtonPressed();
 				break;
 			case EDIT_TASK_BUTTON :
-				editTaskButtonPressed();
+				edit(getSelection());
 				break;
 			case REMOVE_BUTTON :
 				removeButtonPressed();
@@ -90,7 +89,7 @@ public class AntTasksPage extends AntPage {
 	 */
 	public TabItem createTabItem(TabFolder folder) {
 		TabItem item = new TabItem(folder, SWT.NONE);
-		item.setText(ToolMessages.getString("AntTasksPage.title")); //$NON-NLS-1$
+		item.setText(AntPreferencesMessages.getString("AntTasksPage.title")); //$NON-NLS-1$
 		item.setImage(labelProvider.getTaskImage());
 		item.setData(this);
 		item.setControl(createControl(folder));
@@ -100,18 +99,21 @@ public class AntTasksPage extends AntPage {
 	/**
 	 * Allows the user to edit a custom Ant task.
 	 */	
-	private void editTaskButtonPressed() {
-		String title = ToolMessages.getString("AntTasksPage.editTaskDialogTitle"); //$NON-NLS-1$
-		String msg = ToolMessages.getString("AntTasksPage.editTaskDialogDescription"); //$NON-NLS-1$
-		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
-		Task task = (Task) getSelectedElement();
-		if (task == null)
+	protected void edit(IStructuredSelection selection) {
+		Task task= (Task)selection.getFirstElement();
+		if (task == null) {
 			return;
+		}
+		String title = AntPreferencesMessages.getString("AntTasksPage.editTaskDialogTitle"); //$NON-NLS-1$
+		String msg = AntPreferencesMessages.getString("AntTasksPage.editTaskDialogDescription"); //$NON-NLS-1$
+		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
+		
 		dialog.setClassName(task.getClassName());
 		dialog.setTaskName(task.getTaskName());
 		dialog.setLibrary(task.getLibrary());
-		if (dialog.open() == Dialog.CANCEL)
+		if (dialog.open() == Dialog.CANCEL) {
 			return;
+		}
 
 		task.setTaskName(dialog.getTaskName());
 		task.setClassName(dialog.getClassName());
@@ -126,17 +128,7 @@ public class AntTasksPage extends AntPage {
 		return labelProvider;
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on AntPage.
-	 */
-	protected void tableSelectionChanged(IStructuredSelection newSelection) {
-		int size = newSelection.size();
-		editButton.setEnabled(size == 1);
-		removeButton.setEnabled(size > 0);
-	}
-	
-	
-	/**
+		/**
 	 * Label provider for task elements
 	 */
 	private static final class AntTasksLabelProvider extends LabelProvider implements ITableLabelProvider {

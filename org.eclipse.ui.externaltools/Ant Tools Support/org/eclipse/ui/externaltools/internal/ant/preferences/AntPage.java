@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,7 +34,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.externaltools.internal.model.ToolMessages;
 
 /**
  * Provides the generic implementation for a sub-page in the
@@ -88,7 +89,7 @@ public abstract class AntPage {
 	 */
 	protected Button createButton(Composite parent, String labelKey, int buttonId) {
 		Button button = new Button(parent, SWT.PUSH);
-		button.setText(ToolMessages.getString(labelKey));
+		button.setText(AntPreferencesMessages.getString(labelKey));
 		button.setData(new Integer(buttonId));
 		button.addSelectionListener(selectionAdapter);
 		preferencePage.setButtonGridData(button);
@@ -98,7 +99,7 @@ public abstract class AntPage {
 	/**
 	 * Creates the group which will contain the buttons.
 	 */
-	private void createButtonGroup(Composite top) {
+	protected void createButtonGroup(Composite top) {
 		Composite buttonGroup = new Composite(top, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		layout.marginHeight = 0;
@@ -123,12 +124,12 @@ public abstract class AntPage {
 	/**
 	 * Creates the table viewer.
 	 */
-	private void createTable(Composite parent) {
+	protected void createTable(Composite parent) {
 		Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER);
 		GridData data= new GridData(GridData.FILL_BOTH);
 		data.widthHint = IDialogConstants.ENTRY_FIELD_WIDTH;
 		table.setLayoutData(data);
-		contentProvider = new AntPageContentProvider();
+		contentProvider = getContentProvider();
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(contentProvider);
 		tableViewer.setLabelProvider(getLabelProvider());
@@ -137,6 +138,21 @@ public abstract class AntPage {
 				tableSelectionChanged((IStructuredSelection) event.getSelection());
 			}
 		});
+		
+		tableViewer.addDoubleClickListener(new IDoubleClickListener() {
+			public void doubleClick(DoubleClickEvent event) {
+				edit((IStructuredSelection)event.getSelection());
+			}
+		});
+	}
+
+	/**
+	 * Returns the content provider to use for the table viewer
+	 * 
+	 * @return AntPageContentProvider
+	 */
+	protected AntPageContentProvider getContentProvider() {
+		return new AntPageContentProvider();
 	}
 
 	/**
@@ -144,8 +160,9 @@ public abstract class AntPage {
 	 * if this widget has not yet been created or has been disposed.
 	 */
 	public List getContents() {
-		if (tableViewer == null || tableViewer.getControl().isDisposed())
+		if (tableViewer == null || tableViewer.getControl().isDisposed()) {
 			return null;
+		}
 		Object[] elements = contentProvider.getElements(tableViewer.getInput());
 		List contents= new ArrayList(elements.length);
 		for (int i = 0; i < elements.length; i++) {
@@ -161,13 +178,13 @@ public abstract class AntPage {
 	protected abstract ITableLabelProvider getLabelProvider();
 	
 	/**
-	 * Returns the first selected element in the viewer, or
-	 * <code>null</code> if none.
+	 * Returns the selection in the viewer, or <code>null</code> if none.
 	 */
-	protected final Object getSelectedElement() {
-		if (tableViewer == null || tableViewer.getControl().isDisposed())
+	protected final IStructuredSelection getSelection() {
+		if (tableViewer == null || tableViewer.getControl().isDisposed()) {
 			return null;
-		return ((IStructuredSelection) tableViewer.getSelection()).getFirstElement();
+		}
+		return ((IStructuredSelection) tableViewer.getSelection());
 	}
 	
 	/**
@@ -194,23 +211,20 @@ public abstract class AntPage {
 	 * if this widget has not yet been created or has been disposed.
 	 */
 	public void setInput(List inputs) {
-		if (tableViewer == null || tableViewer.getControl().isDisposed())
+		if (tableViewer == null || tableViewer.getControl().isDisposed()) {
 			return;
+		}
 		tableViewer.setInput(inputs);
 		tableSelectionChanged((IStructuredSelection) tableViewer.getSelection());
-	}
-	/**
-	 * Handles selection changes in the table viewer.
-	 */
-	protected void tableSelectionChanged(IStructuredSelection newSelection) {
 	}
 
 	/**
 	 * Updates the content element in the table viewer.
 	 */
 	protected final void updateContent(Object element) {
-		if (tableViewer == null || tableViewer.getControl().isDisposed())
+		if (tableViewer == null || tableViewer.getControl().isDisposed()) {
 			return;
+		}
 		tableViewer.update(element, null);
 	}
 	
@@ -236,9 +250,9 @@ public abstract class AntPage {
 	 * Content provider that maintains a generic list of objects which
 	 * are shown in a table viewer.
 	 */
-	private static final class AntPageContentProvider implements IStructuredContentProvider {
-		private ArrayList elements = new ArrayList();
-		private TableViewer viewer;
+	protected static class AntPageContentProvider implements IStructuredContentProvider {
+		protected List elements = new ArrayList();
+		protected TableViewer viewer;
 	
 		public void add(Object o) {
 			if (elements.contains(o)) {
@@ -274,5 +288,17 @@ public abstract class AntPage {
 	
 	protected TableViewer getTableViewer() {
 		return tableViewer;
+	}
+
+	/**
+	 * Handles selection changes in the table viewer.
+	 */
+	protected void tableSelectionChanged(IStructuredSelection newSelection) {
+		int size = newSelection.size();
+		editButton.setEnabled(size == 1);
+		removeButton.setEnabled(size > 0);
+	}
+	
+	protected void edit(IStructuredSelection selection) {
 	}
 }

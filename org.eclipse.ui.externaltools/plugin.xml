@@ -303,7 +303,7 @@
 		<page 
 			id="org.eclipse.ui.externaltools.AntPreferencePage" 
 			name="%PreferencePage.antPreferences"
-			class="org.eclipse.ui.externaltools.internal.ant.dialog.AntPreferencePage"
+			class="org.eclipse.ui.externaltools.internal.ant.preferences.AntPreferencePage"
 			category="org.eclipse.ui.externaltools.ToolsPreferencePage">
 		</page>
 	    <page

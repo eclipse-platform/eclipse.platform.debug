@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -17,10 +17,10 @@ import org.eclipse.ant.core.AntCorePlugin;
 import org.eclipse.ant.core.AntCorePreferences;
 import org.eclipse.ant.core.Task;
 import org.eclipse.ant.core.Type;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -29,7 +29,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.externaltools.internal.model.ExternalToolsPlugin;
 import org.eclipse.ui.externaltools.internal.model.IHelpContextIds;
-import org.eclipse.ui.externaltools.internal.model.ToolMessages;
 import org.eclipse.ui.help.WorkbenchHelp;
 
 /**
@@ -40,12 +39,13 @@ public class AntPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	private AntClasspathPage classpathPage;
 	private AntTasksPage tasksPage;
 	private AntTypesPage typesPage;
+	private AntGlobalPage globalPage;
 	
 	/**
 	 * Creates the preference page
 	 */
 	public AntPreferencePage() {
-		setDescription(ToolMessages.getString("AntPreferencePage.description")); //$NON-NLS-1$
+		setDescription(AntPreferencesMessages.getString("AntPreferencePage.description")); //$NON-NLS-1$
 		setPreferenceStore(ExternalToolsPlugin.getDefault().getPreferenceStore());
 	}
 	
@@ -62,7 +62,6 @@ public class AntPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		WorkbenchHelp.setHelp(parent, IHelpContextIds.ANT_PREFERENCE_PAGE);
 
 		TabFolder folder = new TabFolder(parent, SWT.NONE);
-		folder.setLayout(new GridLayout());
 		folder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		classpathPage = new AntClasspathPage(this);
@@ -72,10 +71,14 @@ public class AntPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		typesPage = new AntTypesPage(this);
 		typesPage.createTabItem(folder);
 
+		globalPage= new AntGlobalPage(this);
+		globalPage.createTabItem(folder);
+	
 		AntCorePreferences prefs = AntCorePlugin.getPlugin().getPreferences();
 		classpathPage.setInput(Arrays.asList(prefs.getCustomURLs()));
 		tasksPage.setInput(Arrays.asList(prefs.getCustomTasks()));
 		typesPage.setInput(Arrays.asList(prefs.getCustomTypes()));
+		globalPage.initialize();
 
 		return folder;
 	}
@@ -90,6 +93,7 @@ public class AntPreferencePage extends PreferencePage implements IWorkbenchPrefe
 		classpathPage.setInput(Arrays.asList(prefs.getDefaultCustomURLs()));
 		tasksPage.setInput(Arrays.asList(prefs.getCustomTasks()));
 		typesPage.setInput(Arrays.asList(prefs.getCustomTypes()));
+		globalPage.performDefaults();
 	}
 	
 	/* (non-Javadoc)
@@ -128,7 +132,12 @@ public class AntPreferencePage extends PreferencePage implements IWorkbenchPrefe
 	 * @return the <code>GridData</code> set on the specified button
 	 */
 	/*package*/ GridData setButtonGridData(Button button) {
-		return setButtonLayoutData(button);
+		GridData data = new GridData(GridData.FILL_HORIZONTAL);
+		data.heightHint = convertVerticalDLUsToPixels(IDialogConstants.BUTTON_HEIGHT);
+		int widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+		data.widthHint = Math.max(widthHint, button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
+		button.setLayoutData(data);
+		return data;
 	}
 	
 	protected List getLibraryURLs() {

@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -12,13 +12,13 @@ Contributors:
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class AntDialogMessages {
+public class AntPreferencesMessages {
 
-	private static final String BUNDLE_NAME = "org.eclipse.ui.externaltools.internal.ant.dialog.AntDialogMessages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "org.eclipse.ui.externaltools.internal.ant.preferences.AntPreferencesMessages"; //$NON-NLS-1$
 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
-	private AntDialogMessages() {
+	private AntPreferencesMessages() {
 	}
 
 	public static String getString(String key) {

@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.

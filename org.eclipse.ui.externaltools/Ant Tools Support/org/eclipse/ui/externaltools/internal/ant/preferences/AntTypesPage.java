@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.externaltools.internal.model.ExternalToolsPlugin;
-import org.eclipse.ui.externaltools.internal.model.ToolMessages;
 
 /**
  * Sub-page that allows the user to enter custom types
@@ -55,8 +54,8 @@ public class AntTypesPage extends AntPage {
 	 * Allows the user to enter a custom type.
 	 */
 	private void addTypeButtonPressed() {
-		String title = ToolMessages.getString("AntTypesPage.addTypeDialogTitle"); //$NON-NLS-1$
-		String msg = ToolMessages.getString("AntTypesPage.addTypeDialogDescription"); //$NON-NLS-1$
+		String title = AntPreferencesMessages.getString("AntTypesPage.addTypeDialogTitle"); //$NON-NLS-1$
+		String msg = AntPreferencesMessages.getString("AntTypesPage.addTypeDialogDescription"); //$NON-NLS-1$
 		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
 		if (dialog.open() == Dialog.CANCEL) {
 			return;
@@ -78,7 +77,7 @@ public class AntTypesPage extends AntPage {
 				addTypeButtonPressed();
 				break;
 			case EDIT_TYPE_BUTTON :
-				editTypeButtonPressed();
+				edit(getSelection());
 				break;
 			case REMOVE_BUTTON :
 				removeButtonPressed();
@@ -91,7 +90,7 @@ public class AntTypesPage extends AntPage {
 	 */
 	public TabItem createTabItem(TabFolder folder) {
 		TabItem item = new TabItem(folder, SWT.NONE);
-		item.setText(ToolMessages.getString("AntTypesPage.typesPageTitle")); //$NON-NLS-1$
+		item.setText(AntPreferencesMessages.getString("AntTypesPage.typesPageTitle")); //$NON-NLS-1$
 		item.setImage(labelProvider.getTypeImage());
 		item.setData(this);
 		item.setControl(createControl(folder));
@@ -101,13 +100,15 @@ public class AntTypesPage extends AntPage {
 	/**
 	 * Allows the user to edit a custom Ant type.
 	 */	
-	private void editTypeButtonPressed() {
-		String title = ToolMessages.getString("AntTypesPage.editTypeDialogTitle"); //$NON-NLS-1$
-		String msg = ToolMessages.getString("AntTypesPage.editTypeDialogDescription"); //$NON-NLS-1$
-		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
-		Type type = (Type) getSelectedElement();
-		if (type == null)
+	protected void edit(IStructuredSelection selection) {
+		Type type = (Type) selection.getFirstElement();
+		if (type == null) {
 			return;
+		}
+		String title = AntPreferencesMessages.getString("AntTypesPage.editTypeDialogTitle"); //$NON-NLS-1$
+		String msg = AntPreferencesMessages.getString("AntTypesPage.editTypeDialogDescription"); //$NON-NLS-1$
+		AddCustomDialog dialog = new AddCustomDialog(getShell(), getPreferencePage().getLibraryURLs(), title, msg);
+		
 		dialog.setClassName(type.getClassName());
 		dialog.setTaskName(type.getTypeName());
 		dialog.setLibrary(type.getLibrary());
@@ -128,17 +129,7 @@ public class AntTypesPage extends AntPage {
 		return labelProvider;
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on AntPage.
-	 */
-	protected void tableSelectionChanged(IStructuredSelection newSelection) {
-		int size = newSelection.size();
-		editButton.setEnabled(size == 1);
-		removeButton.setEnabled(size > 0);
-	}
-
-
-	/**
+		/**
 	 * Label provider for type elements
 	 */
 	private static final class AntTypesLabelProvider extends LabelProvider implements ITableLabelProvider {

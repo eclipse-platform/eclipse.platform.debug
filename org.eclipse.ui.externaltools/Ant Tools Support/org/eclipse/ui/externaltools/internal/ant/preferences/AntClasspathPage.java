@@ -1,4 +1,4 @@
-package org.eclipse.ui.externaltools.internal.ant.dialog;
+package org.eclipse.ui.externaltools.internal.ant.preferences;
 
 /**********************************************************************
 Copyright (c) 2002 IBM Corp. and others. All rights reserved.
@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.externaltools.internal.model.ExternalToolsPlugin;
-import org.eclipse.ui.externaltools.internal.model.ToolMessages;
 import org.eclipse.ui.externaltools.internal.ui.IExternalToolsUIConstants;
 
 /**
@@ -77,7 +76,7 @@ public class AntClasspathPage extends AntPage {
 	 */
 	private void addFolderButtonPressed() {
 		DirectoryDialog dialog = new DirectoryDialog(getShell());
-		dialog.setMessage(AntDialogMessages.getString("AntClasspathPage.&Choose_a_folder_to_add_to_the_classpath__1")); //$NON-NLS-1$
+		dialog.setMessage(AntPreferencesMessages.getString("AntClasspathPage.&Choose_a_folder_to_add_to_the_classpath__1")); //$NON-NLS-1$
 		
 		String result = dialog.open();
 		if (result != null) {
@@ -149,18 +148,28 @@ public class AntClasspathPage extends AntPage {
 	 */
 	public TabItem createTabItem(TabFolder folder) {
 		TabItem item = new TabItem(folder, SWT.NONE);
-		item.setText(ToolMessages.getString("AntClasspathPage.title")); //$NON-NLS-1$;
+		item.setText(AntPreferencesMessages.getString("AntClasspathPage.title")); //$NON-NLS-1$;
 		item.setImage(labelProvider.getClasspathImage());
 		item.setData(this);
 		item.setControl(createControl(folder));
 		return item;
 	}
+	
 
 	/* (non-Javadoc)
 	 * Method declared on AntPage.
 	 */
 	protected ITableLabelProvider getLabelProvider() {
 		return labelProvider;
+	}
+	
+	/**
+	 * Returns the content provider to use for the table viewer
+	 * 
+	 * @return AntPageContentProvider
+	 */
+	protected AntPageContentProvider getContentProvider() {
+		return new AntClasspathContentProvider();
 	}
 	
 	/* (non-Javadoc)
@@ -284,6 +293,24 @@ public class AntClasspathPage extends AntPage {
 				classpathImage = desc.createImage();
 			}
 			return classpathImage;
+		}
+	}
+	/**
+	 * Content provider that maintains a generic list of objects which
+	 * are shown in a table viewer.
+	 */
+	private static class AntClasspathContentProvider extends AntPageContentProvider {
+		public void add(Object o) {
+			URL newURL= (URL)o;
+			Iterator itr= elements.iterator();
+			while (itr.hasNext()) {
+				URL url = (URL) itr.next();
+				if (url.sameFile(newURL)) {
+					return;
+				}
+			}
+			elements.add(o);
+			viewer.add(o);
 		}
 	}
 }
