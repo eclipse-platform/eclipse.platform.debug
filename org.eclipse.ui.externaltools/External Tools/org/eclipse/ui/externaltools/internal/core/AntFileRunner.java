@@ -10,9 +10,7 @@ http://www.eclipse.org/legal/cpl-v05.html
 Contributors:
 **********************************************************************/
 import org.eclipse.ant.core.AntRunner;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.*;
 
 /**
  * Responsible for running ant files.
@@ -36,15 +34,18 @@ public class AntFileRunner extends ExternalToolsRunner {
 		try {
 			String[] targets = runnerContext.getAntTargets();
 			AntRunner runner = new AntRunner();
-			String args = runnerContext.getExpandedArguments();
+			String[] args = runnerContext.getExpandedArguments();
 			String baseDir = runnerContext.getExpandedWorkingDirectory();
 			if (baseDir.length() > 0) {
-				String baseDirArg;
-				if (ToolUtil.hasSpace(baseDir))
-					baseDirArg = BASE_DIR_PREFIX + "\"" + baseDir + "\""; //$NON-NLS-2$ //$NON-NLS-1$
-				else
-					baseDirArg = BASE_DIR_PREFIX + baseDir;
-				runner.setArguments(args + " " + baseDirArg ); //$NON-NLS-1$
+				String baseDirArg = BASE_DIR_PREFIX + baseDir;
+
+				String[] newArgs = new String[args.length+1];
+				for (int i=0; i< newArgs.length; i++) {
+					newArgs[i] = args[i];	
+				}
+				newArgs[newArgs.length - 1] = baseDirArg;
+
+				runner.setArguments(newArgs); //$NON-NLS-1$
 			} else {
 				runner.setArguments(args);	
 			}

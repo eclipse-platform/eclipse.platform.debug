@@ -10,12 +10,13 @@ http://www.eclipse.org/legal/cpl-v05.html
 Contributors:
 **********************************************************************/
 import java.io.File;
+import java.util.*;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 
 /**
@@ -28,7 +29,7 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	private IWorkingSetManager workingSetManager;
 	private ArrayList antTargets = new ArrayList();
 	private String expandedLocation;
-	private String expandedArguments;
+	private String[] expandedArguments;
 	private String expandedDirectory;
 	private String buildType = ExternalTool.BUILD_TYPE_NONE;
 	
@@ -85,16 +86,21 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	 */
 	public String getExpandedLocation() {
 		if (expandedLocation == null)
-			expandedLocation = expandVariables(tool.getLocation(), false);
+			expandedLocation = expandArgument(tool.getLocation(), false);
 		return expandedLocation;
 	}
 
 	/* (non-Javadoc)
 	 * Method declared on IRunnerContext.
 	 */
-	public String getExpandedArguments() {
-		if (expandedArguments == null)
-			expandedArguments = expandVariables(tool.getArguments(), true);
+	public String[] getExpandedArguments() {
+		if (expandedArguments == null) {
+			String[] unexpandedArguments = (String[])(argStringToArrayList(tool.getArguments()).toArray(new String[0]));
+			expandedArguments = new String[unexpandedArguments.length];
+			for (int i=0; i<unexpandedArguments.length; i++) {
+				expandedArguments[i] = expandArgument(unexpandedArguments[i], false);
+			}
+		}
 		return expandedArguments;
 	}
 
@@ -103,7 +109,7 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	 */
 	public String getExpandedWorkingDirectory() {
 		if (expandedDirectory == null)
-			expandedDirectory = expandVariables(tool.getWorkingDirectory(), false);
+			expandedDirectory = expandArgument(tool.getWorkingDirectory(), false);
 		return expandedDirectory;
 	}
 	
@@ -126,7 +132,7 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	/**
 	 * Expands the variables found in the text.
 	 */
-	private String expandVariables(String text, boolean addQuotes) {
+	private String expandArgument(String text, boolean addQuotes) {
 		StringBuffer buffer = new StringBuffer();
 		
 		int start = 0;
@@ -155,6 +161,71 @@ public final class DefaultRunnerContext implements IRunnerContext {
 		}
 		
 		return buffer.toString();
+	}
+	
+	/**
+	 * Parses the given string into an ArrayList of arguments.
+	 * 
+	 * @return the ArrayList of arguments
+	 */
+	private ArrayList argStringToArrayList(String s) {
+		// The list of arguments.
+		ArrayList list = new ArrayList();
+		StringTokenizer tok = new StringTokenizer(s, " \"", true); //$NON-NLS-1$
+		boolean inQuotes = false;
+		String token;
+		String lookahead = null;
+		// StringBuffer to construct an argument before it is added to the list.
+		StringBuffer arg = new StringBuffer();
+		
+		while (tok.hasMoreTokens() || lookahead != null) {
+			// If there a lookahead token, use it as the next token.
+			if (lookahead != null) {
+				token = lookahead;
+				lookahead = null;
+			} else { // Otherwise, get the next token from the tokenizer.
+				token = tok.nextToken();
+			}
+			
+			// If we reach a quote...
+			if (token.equals("\"")) { //$NON-NLS-1$
+				// If the quote was the last token...
+				if (!tok.hasMoreTokens()) {
+					if (inQuotes) {
+						inQuotes = false;	
+					} else {
+						arg.append("\""); //$NON-NLS-1$
+					};
+				} else {
+					lookahead = tok.nextToken();
+					// If the next character is also a quote...
+					if (lookahead.equals("\"")) { //$NON-NLS-1$
+						// Add a single quote to the argument.
+						arg.append("\""); //$NON-NLS-1$
+						lookahead = null;
+					} else {
+						inQuotes = !inQuotes;
+					}
+				}
+			} 
+			// If we reach a space outside a quoted argument...
+			else if (token.equals(" ") && !inQuotes) { //$NON-NLS-1$
+				// Add the complete argument to the list.
+				list.add(arg.toString());
+				// Clear the buffer.
+				arg.setLength(0);
+			} 
+			else { // We have reached a normal token.
+				// Append it to the argument buffer.
+				arg.append(token);
+			}
+		}
+		// If there is an argument that hasn't been added 
+		// to the list, add it.
+		if (arg.length() > 0)
+			list.add(arg.toString());
+		
+		return list;
 	}
 
 	/**

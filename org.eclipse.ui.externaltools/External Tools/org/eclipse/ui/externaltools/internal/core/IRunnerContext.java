@@ -39,7 +39,7 @@ public interface IRunnerContext {
 	 * variables embedded in the arguments have been fully
 	 * expanded.
 	 */
-	public String getExpandedArguments();
+	public String[] getExpandedArguments();
 	
 	/**
 	 * Returns the working directory to run the external tool in.

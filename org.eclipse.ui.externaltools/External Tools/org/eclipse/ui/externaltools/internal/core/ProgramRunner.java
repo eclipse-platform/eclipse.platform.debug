@@ -31,20 +31,29 @@ public class ProgramRunner extends ExternalToolsRunner {
 	 * Method declared in ExternalToolsRunner.
 	 */
 	public void execute(IProgressMonitor monitor, IRunnerContext runnerContext) throws CoreException, InterruptedException {
-		String commandLine = runnerContext.getExpandedLocation() + " " + runnerContext.getExpandedArguments(); //$NON-NLS-1$;
+		String[] args = runnerContext.getExpandedArguments();
+		String[] commands = new String[args.length+1];
+
+		commands[0] = runnerContext.getExpandedLocation();
+		for (int i = 0; i < args.length; i++) {
+			commands[i+1] = args[i];
+		}
 		try {
-			File workingDir = null;
-			if (runnerContext.getExpandedWorkingDirectory().length() > 0)
-				workingDir = new File(runnerContext.getExpandedWorkingDirectory());
+			File workingDirectory = null;
+
+			if (runnerContext.getExpandedWorkingDirectory().length() > 0) {
+				workingDirectory = new File(runnerContext.getExpandedWorkingDirectory());
+			}
+
 			startMonitor(monitor, runnerContext, monitor.UNKNOWN);
 			boolean[] finished = new boolean[1];
 			
 			finished[0] = false;
 			Process p;
-			if (workingDir != null)
-				p = Runtime.getRuntime().exec(commandLine, null, workingDir);
+			if (workingDirectory != null)
+				p = Runtime.getRuntime().exec(commands, null, workingDirectory);
 			else
-				p = Runtime.getRuntime().exec(commandLine);		
+				p = Runtime.getRuntime().exec(commands);		
 			new Thread(getRunnable(p.getInputStream(), LogConsoleDocument.getInstance(), LogConsoleDocument.MSG_INFO, finished, runnerContext.getShowLog())).start();
 			new Thread(getRunnable(p.getErrorStream(), LogConsoleDocument.getInstance(), LogConsoleDocument.MSG_ERR, finished, runnerContext.getShowLog())).start();
 	
