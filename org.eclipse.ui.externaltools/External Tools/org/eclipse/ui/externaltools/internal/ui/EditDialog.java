@@ -112,10 +112,6 @@ public class EditDialog extends TitleAreaDialog {
 		
 		if (!editMode)
 			getButton(IDialogConstants.OK_ID).setEnabled(false);
-			
-		// Now that both the dialog area and buttons have been
-		// created, update the message description.
-		validateFields();
 	}
 	
 	/* (non-Javadoc)
@@ -328,7 +324,7 @@ public class EditDialog extends TitleAreaDialog {
 		hookButtonActions();
 		hookFieldValidation();
 		nameField.setFocus();
-
+		
 		return dialogComp;
 	}
 	
@@ -495,7 +491,6 @@ public class EditDialog extends TitleAreaDialog {
 			setMessage(ToolMessages.getString("EditDialog.missingToolLocation"), IMessageProvider.WARNING); //$NON-NLS-1$
 			return;
 		}
-		String fileName = value;
 		
 		value = directoryField.getText().trim();
 		if (value.length() > 0) {
@@ -512,11 +507,6 @@ public class EditDialog extends TitleAreaDialog {
 				setMessage(ToolMessages.getString("EditDialog.missingToolDirectory"), IMessageProvider.WARNING); //$NON-NLS-1$
 				return;
 			}
-		}
-		
-		if (fileName.endsWith(".xml")) { //$NON-NLS-1$
-			setMessage(ToolMessages.getString("EditDialog.howToSelectAntTargets"), IMessageProvider.INFORMATION); //$NON-NLS-1$
-			return;
 		}
 		
 		if (editMode)
