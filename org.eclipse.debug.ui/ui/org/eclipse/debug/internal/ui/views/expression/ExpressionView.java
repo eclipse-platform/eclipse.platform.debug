@@ -134,4 +134,12 @@ public class ExpressionView extends VariablesView {
 		getDetailViewer().setEditable(false);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.AbstractDebugView#createActions()
+	 */
+	protected void createActions() {
+		super.createActions();
+		setInitialContent();
+	}
+
 }

@@ -93,6 +93,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.INullSelectionListener;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.texteditor.FindReplaceAction;
@@ -263,15 +264,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * Iterator for multi-selection details computation
 	 */
 	private Iterator fSelectionIterator = null;	
-	
-	/**
-	 * The last part and selection change notification
-	 * sent by the debug view. Cached, since selection
-	 * changes are ignored when the variable is not visible.
-	 * Used to update when the view becomes visible again.
-	 */
-	private ISelection fLastSelection = null;
-	private IWorkbenchPart fLastPart = null;
 		
 	/**
 	 * Various listeners used to update the enabled state of actions and also to
@@ -656,16 +648,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
 
 	/**
-	 * Initializes the viewer input on creation
-	 */
-	protected void setInitialContent() {
-		ISelection selection= getSite().getPage().getSelection(IDebugUIConstants.ID_DEBUG_VIEW);
-		if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-			setViewerInput((IStructuredSelection) selection);
-		}
-	}
-
-	/**
 	 * Create the context menu particular to the detail pane.  Note that anyone
 	 * wishing to contribute an action to this menu must use
 	 * <code>IDebugUIConstants.VARIABLE_VIEW_DETAIL_ID</code> as the
@@ -737,9 +719,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		fSelectionActions.add(ITextEditorActionConstants.CUT);
 		fSelectionActions.add(ITextEditorActionConstants.PASTE);
 		updateAction(ITextEditorActionConstants.FIND);
-		
-		// set initial content here, as viewer has to be set
-		setInitialContent();
 	} 
 	
 	/**
@@ -1093,8 +1072,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @see ISelectionListener#selectionChanged(IWorkbenchPart, ISelection)
 	 */
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		fLastPart = part;
-		fLastSelection = selection;
 		if (!isAvailable() || !isVisible()) {
 			return;
 		}
@@ -1192,6 +1169,10 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 */
 	protected void becomesVisible() {
 		super.becomesVisible();
-		selectionChanged(fLastPart, fLastSelection);
+		IViewPart part = getSite().getPage().findView(IDebugUIConstants.ID_DEBUG_VIEW);
+		if (part != null) {
+			ISelection selection = getSite().getPage().getSelection(IDebugUIConstants.ID_DEBUG_VIEW);
+			selectionChanged(part, selection);
+		}
 	}
 }
