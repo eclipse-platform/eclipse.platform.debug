@@ -89,8 +89,7 @@ public final class BuilderPropertyPage extends PropertyPage {
 	 */
 	private ICommand createTool() {
 		try {
-			EditDialog dialog;
-			dialog = new EditDialog(getShell(), null);
+			EditDialog dialog = new EditDialog(getShell(), null, true);
 			if (dialog.open() == Window.OK) {
 				ExternalTool tool = dialog.getExternalTool();
 				ICommand command = getInputProject().getDescription().newCommand();
@@ -111,8 +110,7 @@ public final class BuilderPropertyPage extends PropertyPage {
 		ExternalTool tool = ExternalTool.fromArgumentMap(command.getArguments());
 		if (tool == null)
 			return;
-		EditDialog dialog;
-		dialog = new EditDialog(getShell(), tool);
+		EditDialog dialog = new EditDialog(getShell(), tool, true);
 		if (dialog.open() == Window.OK) {
 			tool = dialog.getExternalTool();
 			tool.toBuildCommand(command);

@@ -30,7 +30,7 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	private String expandedLocation;
 	private String expandedArguments;
 	private String expandedDirectory;
-	private String buildType = ToolUtil.BUILD_TYPE_NONE;
+	private String buildType = ExternalTool.BUILD_TYPE_NONE;
 	
 	/**
 	 * Create a new context
@@ -483,12 +483,12 @@ public final class DefaultRunnerContext implements IRunnerContext {
 	 */
 	/*package*/ void setBuildType(int kind) {
 		if (kind == IncrementalProjectBuilder.INCREMENTAL_BUILD)
-			buildType = ToolUtil.BUILD_TYPE_INCREMENTAL;
+			buildType = ExternalTool.BUILD_TYPE_INCREMENTAL;
 		else if (kind == IncrementalProjectBuilder.FULL_BUILD)
-			buildType = ToolUtil.BUILD_TYPE_FULL;
+			buildType = ExternalTool.BUILD_TYPE_FULL;
 		else if (kind == IncrementalProjectBuilder.AUTO_BUILD)
-			buildType = ToolUtil.BUILD_TYPE_AUTO;
+			buildType = ExternalTool.BUILD_TYPE_AUTO;
 		else 
-			buildType = ToolUtil.BUILD_TYPE_NONE;
+			buildType = ExternalTool.BUILD_TYPE_NONE;
 	}
 }

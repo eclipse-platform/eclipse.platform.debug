@@ -11,6 +11,7 @@ Contributors:
 **********************************************************************/
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.ICommand;
 
@@ -36,6 +37,7 @@ public class ExternalTool {
 	private static final String TAG_TOOL_DIRECTORY = "!{tool_dir}"; //$NON-NLS-1$
 	private static final String TAG_TOOL_REFRESH = "!{tool_refresh}"; //$NON-NLS-1$
 	private static final String TAG_TOOL_SHOW_LOG = "!{tool_show_log}"; //$NON-NLS-1$
+	private static final String TAG_TOOL_BUILD_TYPES = "!{tool_build_types}"; //$NON-NLS-1$
 	
 	// Known kind of tools
 	public static final String TOOL_TYPE_PROGRAM = "org.eclipse.ui.externaltools.type.program"; //$NON-NLS-1$
@@ -62,7 +64,17 @@ public class ExternalTool {
 
 	public static final String VAR_ANT_TARGET = "ant_target"; //$NON-NLS-1$
 	public static final String VAR_BUILD_TYPE = "build_type"; //$NON-NLS-1$
-
+	
+	/**
+	 * Build types (what type of build is occuring when a tool is run)
+	 */
+	public static final String BUILD_TYPE_INCREMENTAL = "incremental"; //$NON-NLS-1$
+	public static final String BUILD_TYPE_FULL = "full"; //$NON-NLS-1$
+	public static final String BUILD_TYPE_AUTO = "auto"; //$NON-NLS-1$
+	public static final String BUILD_TYPE_NONE = "none"; //$NON-NLS-1$
+	
+	private static final String SEPERATOR = ";"; //$NON-NLS-1$	
+	
 	// Known refresh scopes
 	public static final String REFRESH_SCOPE_NONE = "none"; //$NON-NLS-1$;
 	public static final String REFRESH_SCOPE_WORKSPACE = "workspace"; //$NON-NLS-1$;
@@ -80,6 +92,7 @@ public class ExternalTool {
 	private String directory = EMPTY_VALUE;
 	private String refreshScope = EMPTY_VALUE;
 	private boolean showLog = true;
+	private String[] buildTypes;
 	
 	/**
 	 * Creates an empty initialized external tool.
@@ -129,7 +142,7 @@ public class ExternalTool {
 		else
 			showLog = true;
 			
-		return new ExternalTool(
+		ExternalTool tool = new ExternalTool(
 			type,
 			name,
 			location,
@@ -137,6 +150,9 @@ public class ExternalTool {
 			(String)args.get(TAG_TOOL_DIRECTORY),
 			(String)args.get(TAG_TOOL_REFRESH),
 			showLog);
+		tool.buildTypes = toBuildTypesArray((String)args.get(TAG_TOOL_BUILD_TYPES));
+
+		return tool;
 	}
 
 	/**
@@ -172,6 +188,80 @@ public class ExternalTool {
 	 */
 	public String getWorkingDirectory() {
 		return directory;
+	}
+
+	/**
+	 * Returns whether the tool runs for the given build kind.
+	 * 
+	 * @param kind The kind of build. Either
+	 * ExternalToolsBuilder.FULL_BUILD,
+	 * ExternalToolsBuilder.INCREMENTAL_BUILD,
+	 * or ExternalToolsBuilder.AUTO_BUILD.
+	 */
+	public boolean runForBuildKind(int kind) {
+		return runForBuildType(convertToType(kind));
+	}
+
+	/**
+	 * Returns whether the tool runs for the given build type.
+	 * 
+	 * @param type The type of build. Either
+	 * BUILD_TYPE_FULL, BUILD_TYPE_INCREMENTAL, or BUILD_TYPE_AUTO.
+	 */	
+	public boolean runForBuildType(String type) {
+		for (int i=0; i<buildTypes.length; i++) {
+			if (buildTypes[i].equals(type))
+				return true;
+		}
+		return false;		
+	}
+	
+	/**
+	 * Converts a build kind (either ExternalToolBuilder.FULL_BUILD,
+	 * ExternalToolBuilder.INCREMENTAL_BUILD, or
+	 * ExternalToolBuilder.AUTO_BUILD) to a build type (either
+	 * BUILD_TYPE_FULL, BUILD_TYPE_INCREMENTAL, or BUILD_TYPE_AUTO).
+	 */
+	private String convertToType(int kind) {
+		if (kind == ExternalToolsBuilder.FULL_BUILD)
+			return BUILD_TYPE_FULL;
+		if (kind == ExternalToolsBuilder.INCREMENTAL_BUILD)
+			return BUILD_TYPE_INCREMENTAL;
+		if (kind == ExternalToolsBuilder.AUTO_BUILD)
+			return BUILD_TYPE_AUTO;
+		// Should never reach here.
+		return null;
+	}
+	
+	/**
+	 * Translates an array of build types to a single String 
+	 * representation for storage in an argument map.
+	 */
+	private static String toBuildTypesString(String[] array) {
+		String s = "";
+		for (int i=0; i < array.length; i++)
+			s = s + array[i] + SEPERATOR;
+		return s;
+	}
+	
+	/**
+	 * Translates a single String representation of build types
+	 * used for storage in an argument map to an array of build 
+	 * types.
+	 */
+	private static String[] toBuildTypesArray(String string) {
+		if (string==null)
+			return new String[0];
+		StringTokenizer tokenizer =
+			new StringTokenizer(string, SEPERATOR);
+		int tokenCount = tokenizer.countTokens();
+		String[] elements = new String[tokenCount];
+
+		for (int i = 0; i < tokenCount; i++) {
+			elements[i] = tokenizer.nextToken();
+		}
+
+		return elements;
 	}
 	
 	/**
@@ -260,6 +350,14 @@ public class ExternalTool {
 	}
 	
 	/**
+	 * Sets the types of builds for which this external tool runs if it
+	 * is a builder on a project.
+	 */
+	public void setBuildTypes(String[] buildTypes) {
+		this.buildTypes = buildTypes;
+	}
+
+	/**
 	 * Stores the external tool as an argument map that can be
 	 * used later on to recreate this external tool.
 	 * 
@@ -277,6 +375,7 @@ public class ExternalTool {
 			args.put(TAG_TOOL_SHOW_LOG, TRUE);
 		else
 			args.put(TAG_TOOL_SHOW_LOG, FALSE);
+		args.put(TAG_TOOL_BUILD_TYPES, toBuildTypesString(buildTypes));
 		
 		return args;
 	}

@@ -185,7 +185,7 @@ public class ConfigurationDialog extends TitleAreaDialog {
 		newButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				EditDialog dialog;
-				dialog = new EditDialog(getShell(), null);
+				dialog = new EditDialog(getShell(), null, false);
 				if (dialog.open() == Window.OK) {
 					ExternalTool tool = dialog.getExternalTool();
 					tools.add(tool);
@@ -274,7 +274,7 @@ public class ConfigurationDialog extends TitleAreaDialog {
 		if (currentSelection == null)
 			return;
 		EditDialog dialog;
-		dialog = new EditDialog(getShell(), currentSelection);
+		dialog = new EditDialog(getShell(), currentSelection, false);
 		dialog.open();
 		listViewer.update(currentSelection, null);
 		updateDetails();

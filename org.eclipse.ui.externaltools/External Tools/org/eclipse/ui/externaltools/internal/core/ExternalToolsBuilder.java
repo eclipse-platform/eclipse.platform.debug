@@ -46,7 +46,8 @@ public final class ExternalToolsBuilder extends IncrementalProjectBuilder {
 			DefaultRunnerContext context = new DefaultRunnerContext(tool, getProject(), PlatformUI.getWorkbench().getWorkingSetManager());
 			context.setBuildType(kind);
 			try {
-				context.run(monitor);
+				if (tool.runForBuildKind(kind))
+					context.run(monitor);
 			} catch (InterruptedException e) {
 				// Do nothing, the operation was cancelled by the user
 			} finally {

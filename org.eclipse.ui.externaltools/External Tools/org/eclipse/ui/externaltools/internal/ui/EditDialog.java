@@ -62,8 +62,12 @@ public class EditDialog extends TitleAreaDialog {
 	private Button directoryBrowseButton;
 	private Button refreshOptionButton;
 	private Button showLog;
+	private Button fullBuild;
+	private Button incrementalBuild;
+	private Button autoBuild;
 	
 	private boolean editMode = false;
+	private boolean toolIsBuilder;
 	private ExternalTool tool;
 	private String refreshScope;
 
@@ -78,7 +82,7 @@ public class EditDialog extends TitleAreaDialog {
 	 * @param parentShell the parent SWT shell
 	 * @param tool the tool tool to edit, <code>null</code> if new
 	 */
-	public EditDialog(Shell parentShell, ExternalTool tool) {
+	public EditDialog(Shell parentShell, ExternalTool tool, boolean isBuilderTool) {
 		super(parentShell);
 		if (tool == null) {
 			this.tool = new ExternalTool();
@@ -87,6 +91,7 @@ public class EditDialog extends TitleAreaDialog {
 			this.tool = tool;
 			this.editMode = true;
 		}
+		this.toolIsBuilder = isBuilderTool;
 	}
 	
 	/* (non-Javadoc)
@@ -282,6 +287,35 @@ public class EditDialog extends TitleAreaDialog {
 		data.top = new FormAttachment(refreshField, GROUP_SPACE, SWT.BOTTOM);
 		showLog.setLayoutData(data);
 		
+		if (toolIsBuilder) {
+			// Create checkboxes for which build types to run on.
+			Composite buildComp = new Composite(topComp, SWT.NONE); 
+			data = new FormData();
+			data.left = new FormAttachment(0,0);
+			data.top = new FormAttachment(showLog, GROUP_SPACE, SWT.BOTTOM);
+			buildComp.setLayoutData(data);
+			
+			GridLayout gridLayout = new GridLayout(4, false);
+			gridLayout.marginHeight = 0;
+			gridLayout.marginWidth = 0;
+			buildComp.setLayout(gridLayout);
+	
+			Label buildLabel = new Label(buildComp, SWT.NONE);
+			buildLabel.setText("Run on:\t");
+				
+			fullBuild = new Button(buildComp, SWT.CHECK);
+			fullBuild.setText("Full build");
+			fullBuild.setSelection(true);
+	
+			incrementalBuild = new Button(buildComp, SWT.CHECK);
+			incrementalBuild.setText("Incremental build");
+			incrementalBuild.setSelection(true);
+	
+			autoBuild = new Button(buildComp, SWT.CHECK);
+			autoBuild.setText("Auto-build");				
+			autoBuild.setSelection(true);			
+		}
+		
 		// give all the buttons the same width
 		for (int i=0; i<buttonData.length; i++) {
 			buttonData[i].width = maxButtonWidth;	
@@ -298,6 +332,11 @@ public class EditDialog extends TitleAreaDialog {
 			argumentsField.setText(tool.getArguments());
 			directoryField.setText(tool.getWorkingDirectory());
 			showLog.setSelection(tool.getShowLog());
+			if (toolIsBuilder) {
+				fullBuild.setSelection(tool.runForBuildType(tool.BUILD_TYPE_FULL));
+				incrementalBuild.setSelection(tool.runForBuildType(tool.BUILD_TYPE_INCREMENTAL));
+				autoBuild.setSelection(tool.runForBuildType(tool.BUILD_TYPE_AUTO));	
+			}
 		}
 		refreshScope = tool.getRefreshScope();
 		updateRefreshField();
@@ -519,6 +558,17 @@ public class EditDialog extends TitleAreaDialog {
 		tool.setWorkingDirectory(directoryField.getText().trim());
 		tool.setRefreshScope(refreshScope);
 		tool.setShowLog(showLog.getSelection());
+		
+		ArrayList list = new ArrayList();
+		if (toolIsBuilder) {
+			if (fullBuild.getSelection())
+				list.add(tool.BUILD_TYPE_FULL);
+			if (incrementalBuild.getSelection())
+				list.add(tool.BUILD_TYPE_INCREMENTAL);
+			if (autoBuild.getSelection())
+				list.add(tool.BUILD_TYPE_AUTO);	
+		}	
+		tool.setBuildTypes((String[])list.toArray(new String[list.size()]));
 		
 		super.okPressed();
 	}
