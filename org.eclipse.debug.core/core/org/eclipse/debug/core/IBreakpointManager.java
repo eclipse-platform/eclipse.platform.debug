@@ -8,6 +8,7 @@ package org.eclipse.debug.core;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.internal.core.Breakpoint;
 
 /**
  * The breakpoint manager manages the collection of breakpoints
@@ -62,55 +63,6 @@ import org.eclipse.core.runtime.CoreException;
 public interface IBreakpointManager {
 
 	/**
-	 * Configures the given breakpoint's <code>MODEL_IDENTIFIER</code>
-	 * and <code>ENABLED</code> attributes to the given values.
-	 * This is a convenience method for
-	 * <code>IMarker.setAttribute(String, Object)</code> and
-	 * <code>IMarker.setAttribute(String, boolean)</code>.
-	 * <code>IMarker.setAttribute(String, int)</code>.
-	 *
-	 * @param breakpoint the breakpoint marker to configure
-	 * @param modelIdentifier the identifier of the debug model plug-in
-	 *    the breakpoint is associated with
-	 * @param enabled the initial value of the enabled attribute of the
-	 *	breakpoint marker
-	 * 
-	 * @exception CoreException if setting an attribute fails
-	 * @see IMarker#setAttribute(String, Object)
-	 * @see IMarker#setAttribute(String, boolean)
-	 * @see IMarker#setAttribute(String, int)
-	 */
-	void configureBreakpoint(IMarker breakpoint, String modelIdentifier, boolean enabled) throws CoreException;
-	
-	/**
-	 * Configures the given breakpoint's <code>MODEL_IDENTIFIER</code>,
-	 * <code>ENABLED</code>, <code>LINE_NUMBER</code>, <code>CHAR_START</code>,
-	 * and <code>CHAR_END</code> attributes to the given values.
-	 * This is a convenience method for
-	 * <code>IMarker.setAttribute(String, Object)</code>, 
-	 * <code>IMarker.setAttribute(String, boolean)</code>, and
-	 * <code>IMarker.setAttribute(String, int)</code>.
-	 * 
-	 * @param breakpoint the line breakpoint marker to configure
-	 * @param modelIdentifier the identifier of the debug model plug-in 
-	 *    the breakpoint is associated with
-	 * @param enabled the initial value of the enabled attribute of the
-	 *	breakpoint marker
-	 * @param lineNumber the line number the breakpoint is associated with, or -1
-	 *    if unknown
-	 * @param charStart the index in an associated source element, of the first
-	 *    character associated with the breakoint, or -1 if unknown
-	 * @param charEnd the index in an associated source element, of the last
-	 *    character associated with the breakoint, or -1 if unknown
-	 *
-	 * @exception CoreException if setting an attribute fails
-	 * @see IMarker#setAttribute(String, Object)
-	 * @see IMarker#setAttribute(String, boolean)
-	 * @see IMarker#setAttribute(String, int)
-	 */
-	void configureLineBreakpoint(IMarker breakpoint, String modelIdentifier, boolean enabled, int lineNumber, int charStart, int charEnd) throws CoreException;
-	
-	/**
 	 * Adds the given breakpoint to the collection of active breakpoints
 	 * in the workspace and notifies all registered listeners. This has no effect
 	 * if the given breakpoint is already registered.
@@ -124,7 +76,14 @@ public interface IBreakpointManager {
 	 *	attribute.</li>
 	 * </ul>
 	 */
-	void addBreakpoint(IMarker breakpoint) throws DebugException;
+	void addBreakpoint(IBreakpoint breakpoint) throws DebugException;
+
+	/**
+	 * Create a breakpoint for the given marker and add it.
+	 * 
+	 * @return the breakpoint that is created
+	 */
+	IBreakpoint loadMarker(IMarker marker) throws DebugException;
 	
 	/**
 	 * Returns a collection of all existing breakpoints.
@@ -132,7 +91,15 @@ public interface IBreakpointManager {
 	 *
 	 * @return an array of breakpoint markers
 	 */
-	IMarker[] getBreakpoints();
+	IBreakpoint[] getBreakpoints();
+	
+	/**
+	 * Returns a collection of all existing markers.
+	 * Returns an empty array if no markers exist.
+	 *
+	 * @return an array of breakpoint markers
+	 */
+	IMarker[] getMarkers();	
 	
 	/**
 	 * Returns a collection of all breakpoints registered for the
@@ -142,23 +109,26 @@ public interface IBreakpointManager {
 	 * @param modelIdentifier identifier of a debug model plug-in
 	 * @return an array of breakpoint markers
 	 */
-	IMarker[] getBreakpoints(String modelIdentifier);
+	IBreakpoint[] getBreakpoints(String modelIdentifier);
 	
 	/**
-	 * Returns the value of the <code>ENABLED</code> attribute of the
-	 * given breakpoint - <code>true</code> if the breakpoint is enabled,
-	 * otherwise <code>false</code>. By default, if the attribute has not
-	 * been set, a breakpoint is considered enabled.
-	 * Note, this method returns <code>false</code>
-	 * if an exception occurs while accessing the attribute. This is
-	 * a convenience method for
-	 * <code>IMarker.getAttribute(String, boolean)</code>.
+	 * Returns a collection of all markers registered for the
+	 * given debug model. Answers an empty array if no markers are registered
+	 * for the given debug model.
 	 *
-	 * @param breakpoint the breakpoint
-	 * @return whether the breakpoint is enabled
-	 * @see IMarker#getAttribute(String, boolean)
+	 * @param modelIdentifier identifier of a debug model plug-in
+	 * @return an array of breakpoint markers
 	 */
-	boolean isEnabled(IMarker breakpoint);
+	IMarker[] getMarkers(String modelIdentifier);	
+	
+	/**
+	 * Returns the breakpoint that is associated with marker or
+	 * <code>null</code> if no such breakpoint exists
+	 * 
+	 * @param marker the marker
+	 * @return the breakpoint associated with the marker or null if none exists
+	 */
+	IBreakpoint getBreakpoint(IMarker marker);
 	
 	/**
 	 * Sets the value of the <code>ENABLED</code> attribute of the
@@ -176,7 +146,15 @@ public interface IBreakpointManager {
 	 *
 	 * @return whether the breakpoint is registered
 	 */
-	boolean isRegistered(IMarker marker);	
+	boolean isRegistered(IBreakpoint breakpoint);	
+	
+	/**
+	 * Returns whether the given marker is currently
+	 * registered with this breakpoint manager.
+	 *
+	 * @return whether the marker is registered
+	 */
+	boolean isRegistered(IMarker marker);		
 	
 	/**
 	 * Returns the value of the <code>LINE_NUMBER</code> attribute of the
@@ -232,7 +210,18 @@ public interface IBreakpointManager {
 	 * @param delete whether the breakpoint marker should be deleted
 	 * @exception CoreException if an exception occurs while deleting the marker.
 	 */
-	void removeBreakpoint(IMarker breakpoint, boolean delete) throws CoreException;
+	void removeBreakpoint(IBreakpoint breakpoint, boolean delete) throws CoreException;
+
+	/**
+	 * Removes the breakpoint associated with the given marker from the breakpoint manager, and notifies all
+	 * registered listeners. The marker is deleted if the <code>delete</code> flag is
+	 * true. Has no effect if the given breakpoint is not currently registered.
+	 *
+	 * @param marker the marker to remove
+	 * @param delete whether the breakpoint marker should be deleted
+	 * @exception CoreException if an exception occurs while deleting the marker.
+	 */
+	void removeBreakpoint(IMarker marker, boolean delete) throws CoreException;
 
 	/**
 	 * Adds the given listener to the collection of registered breakpoint listeners.

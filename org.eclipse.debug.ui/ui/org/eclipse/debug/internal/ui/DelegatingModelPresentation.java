@@ -181,9 +181,10 @@ public class DelegatingModelPresentation implements IDebugModelPresentation {
 			}
 		} else
 			if (element instanceof IMarker) {
-				IMarker m= (IMarker) element;
+				IMarker marker= (IMarker) element;
+				IBreakpoint breakpoint= DebugPlugin.getDefault().getBreakpointManager().getBreakpoint(marker);
 				try {
-					if (m.exists() && m.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
+					if (breakpoint.exists() && breakpoint.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
 						return DebugUIUtils.getResourceString(BREAKPOINT_LABEL);
 					}
 				} catch (CoreException e) {
@@ -227,9 +228,10 @@ public class DelegatingModelPresentation implements IDebugModelPresentation {
 					} else
 						if (element instanceof IMarker) {
 							try {
-								IMarker m= (IMarker) element;
-								if (m.exists() && m.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
-									if (DebugPlugin.getDefault().getBreakpointManager().isEnabled(m)) {
+								IMarker marker= (IMarker) element;
+								IBreakpoint breakpoint= DebugPlugin.getDefault().getBreakpointManager().getBreakpoint(marker);
+								if (breakpoint.exists() && breakpoint.isSubtypeOf(IDebugConstants.BREAKPOINT_MARKER)) {
+									if (breakpoint.isEnabled()) {
 										return DebugPluginImages.getImage(IDebugUIConstants.IMG_OBJS_BREAKPOINT);
 									} else {
 										return DebugPluginImages.getImage(IDebugUIConstants.IMG_OBJS_BREAKPOINT_DISABLED);
@@ -394,13 +396,10 @@ public class DelegatingModelPresentation implements IDebugModelPresentation {
 			id= value.getModelIdentifier();
 		} else
 			if (element instanceof IMarker) {
-				IMarker m= (IMarker) element;
-				try {
-					if (m.exists()) {
-						id= (String) m.getAttribute(IDebugConstants.MODEL_IDENTIFIER);
-					}
-				} catch (CoreException e) {
-					DebugUIUtils.logError(e);
+				IMarker marker= (IMarker) element;
+				IBreakpoint breakpoint= DebugPlugin.getDefault().getBreakpointManager().getBreakpoint(marker);
+				if (breakpoint.exists()) {
+					id= breakpoint.getModelIdentifier();
 				}
 			}
 		if (id != null) {

@@ -8,8 +8,7 @@ package org.eclipse.debug.internal.ui;
 import java.util.*;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.IBreakpointManager;
+import org.eclipse.debug.core.*;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jface.action.*;
@@ -19,6 +18,7 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
+import org.eclipse.ui.actions.SelectionProviderAction;
 import org.eclipse.ui.help.ViewContextComputer;
 import org.eclipse.ui.help.WorkbenchHelp;
 import org.eclipse.ui.model.WorkbenchViewerSorter;
@@ -38,8 +38,8 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 	private RemoveBreakpointAction fRemoveBreakpointAction;
 	private RemoveAllBreakpointsAction fRemoveAllBreakpointsAction;
 	private EnableDisableBreakpointAction fEnableDisableBreakpointAction;
+	private Vector fBreakpointListenerActions;
 	private ShowQualifiedAction fShowQualifiedNamesAction;
-	private List fContributedActions = new ArrayList(0);
 	
 	/**
 	 * @see IWorkbenchPart
@@ -54,7 +54,7 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 
 		createContextMenu(((TableViewer)fViewer).getTable());
 				
-		fViewer.setInput(DebugPlugin.getDefault().getBreakpointManager());
+		fViewer.setInput(getBreakpointManager());
 		fViewer.addDoubleClickListener(this);
 		fViewer.getControl().addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
@@ -83,6 +83,7 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 	 * Initializes the actions of this view
 	 */
 	protected void initializeActions() {
+		fBreakpointListenerActions = new Vector(2);
 		fRemoveBreakpointAction= new RemoveBreakpointAction(fViewer);
 		fRemoveBreakpointAction.setHoverImageDescriptor(DebugPluginImages.getImageDescriptor(IDebugUIConstants.IMG_LCL_REMOVE));
 		fRemoveBreakpointAction.setDisabledImageDescriptor(DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_DLCL_REMOVE));
@@ -106,20 +107,17 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 		fOpenMarkerAction.setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_OPEN_MARKER));
 
 		fEnableDisableBreakpointAction= new EnableDisableBreakpointAction(fViewer);
-		DebugPlugin.getDefault().getBreakpointManager().addBreakpointListener(fEnableDisableBreakpointAction);
-		DebugPlugin.getDefault().getBreakpointManager().addBreakpointListener(fRemoveAllBreakpointsAction);	
+		addBreakpointListenerAction(fEnableDisableBreakpointAction);
+		addBreakpointListenerAction(fRemoveAllBreakpointsAction);		
 	}
 
 	/**
 	 * Cleans up the actions when this part is disposed
 	 */
 	protected void cleanupActions() {
-		if (fEnableDisableBreakpointAction != null) {
-			DebugPlugin.getDefault().getBreakpointManager().removeBreakpointListener(fEnableDisableBreakpointAction);
+		for (int i=0; i < fBreakpointListenerActions.size(); i++) {
+			DebugPlugin.getDefault().getBreakpointManager().removeBreakpointListener((IBreakpointListener)fBreakpointListenerActions.get(i));
 		} 
-		if (fRemoveAllBreakpointsAction != null) {		
-			DebugPlugin.getDefault().getBreakpointManager().removeBreakpointListener(fRemoveAllBreakpointsAction);
-		}
 	}
 
 	/**
@@ -169,7 +167,6 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 	 * Adds items to the context menu
 	 */
 	protected void fillContextMenu(IMenuManager menu) {
-		updateContributedActions();
 		menu.add(new Separator(IDebugUIConstants.EMPTY_NAVIGATION_GROUP));
 		menu.add(new Separator(IDebugUIConstants.NAVIGATION_GROUP));
 		menu.add(fOpenMarkerAction);
@@ -187,22 +184,11 @@ public class BreakpointsView extends AbstractDebugView implements IDoubleClickLi
 	/**
 	 * Add an action to the contributed actions collection
 	 */
-	public void addContributedAction(IUpdate update) {
-		fContributedActions.add(update);
+	public void addBreakpointListenerAction(IBreakpointListener action) {
+		fBreakpointListenerActions.add(action);
+		DebugPlugin.getDefault().getBreakpointManager().addBreakpointListener(action);		
 	}
 
-	/**
-	 * Update the contributed actions that the BreakpointsView knows about.
-	 * This gives contributed actions a chance to refresh their state.
-	 */
-	protected void updateContributedActions() {
-		Iterator actions= fContributedActions.iterator();
-		while (actions.hasNext()) {
-			IUpdate update= (IUpdate)actions.next();
-			update.update();
-		}
-	}
-	
 	/**
 	 * @see IDoubleClickListener
 	 */

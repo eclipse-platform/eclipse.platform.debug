@@ -5,9 +5,10 @@ package org.eclipse.debug.core.model;
  * All Rights Reserved.
  */
 
-import org.eclipse.debug.core.IBreakpointListener;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.debug.core.IBreakpoint;
+import org.eclipse.debug.core.IBreakpointListener;
 
 /**
  * Breakpoint support defines functionality for
@@ -45,7 +46,7 @@ public interface IBreakpointSupport extends IBreakpointListener {
 	 * @param breakpoint the breakpoint being added/removed/changed
 	 * @return whether this target is currently interested in the breakpoint
 	 */
-	boolean supportsBreakpoint(IMarker breakpoint);
+	boolean supportsBreakpoint(IBreakpoint breakpoint);
 	
 	/**
 	 * Installs the given breakpoint in this target. The breakpoint should
@@ -54,20 +55,20 @@ public interface IBreakpointSupport extends IBreakpointListener {
 	 *
 	 * @param breakpoint the added breakpoint
 	 * @see IBreakpointListener
-	 * @see #supportsBreakpoint(IMarker)
+	 * @see #supportsBreakpoint(IBreakpoint)
 	 */
-	public void breakpointAdded(IMarker breakpoint);
-	
+	public void breakpointAdded(IBreakpoint breakpoint);
+
 	/**
 	 * Uninstalls the given breakpoint from this target if currently installed.
 	 * This method is only called if this listener supports the given breakpoint.
 	 *
 	 * @param breakpoint the removed breakpoint
 	 * @see IBreakpointListener 
-	 * @see #supportsBreakpoint(IMarker)
+	 * @see #supportsBreakpoint(IBreakpoint)
 	 */
-	public void breakpointRemoved(IMarker breakpoint, IMarkerDelta delta);
-	
+	public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta);
+
 	/**
 	 * An attribute of the given breakpoint has changed, as described
 	 * by the delta. If the breakpoint is applicable to this target
@@ -77,9 +78,9 @@ public interface IBreakpointSupport extends IBreakpointListener {
 	 *
 	 * @param breakpoint the changed breakpoint
 	 * @see IBreakpointListener
-	 * @see #supportsBreakpoint(IMarker)
+	 * @see #supportsBreakpoint(IBreakpoint)
 	 */
-	public void breakpointChanged(IMarker breakpoint, IMarkerDelta delta);
+	public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta);
 
 }
 
