@@ -60,7 +60,6 @@ public class ConsolePreferencePage extends FieldEditorPreferencePage implements 
 		addField(syserr);
 		addField(sysin);
 		addField(editor);
-		editor.startPropagate(getPreferenceStore(), CONSOLE_FONT);
 	}
 
 	/**
@@ -87,5 +86,9 @@ public class ConsolePreferencePage extends FieldEditorPreferencePage implements 
 		FontData fontData= PreferenceConverter.getFontData(pstore, CONSOLE_FONT);
 		return fontData;
 	}
+	
+	public static void initDefaults(IPreferenceStore store) {
+		PropagatingFontFieldEditor.startPropagate(store, CONSOLE_FONT);
+	}	
 }
 

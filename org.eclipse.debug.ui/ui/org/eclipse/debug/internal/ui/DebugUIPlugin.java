@@ -521,6 +521,7 @@ public static Object createExtension(final IConfigurationElement element, final 
 		for (int i = 0; i < launches.length; i++) {
 			launchRegistered(launches[i]);
 		}
+		ConsolePreferencePage.initDefaults(getPreferenceStore());
 	}
 
 	/**
