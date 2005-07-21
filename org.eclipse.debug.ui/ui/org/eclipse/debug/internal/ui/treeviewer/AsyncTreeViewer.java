@@ -151,11 +151,13 @@ public class AsyncTreeViewer extends Viewer {
         IPresentationAdapter adapter = getPresentationAdapter(element);
         if (adapter != null) {
             Item[] items = getItems(element);
-            for (int i = 0; i < items.length; i++) {
-                TreeItem item = (TreeItem)items[i];
-                ILabelUpdate labelUpdate = new LabelUpdate(item, this);
-                schedule(labelUpdate);   
-                adapter.retrieveLabel(element, null, labelUpdate);                
+            if (items != null) {
+                for (int i = 0; i < items.length; i++) {
+                    TreeItem item = (TreeItem)items[i];
+                    ILabelUpdate labelUpdate = new LabelUpdate(item, this);
+                    schedule(labelUpdate);   
+                    adapter.retrieveLabel(element, null, labelUpdate);                
+                }
             }
         }
     }

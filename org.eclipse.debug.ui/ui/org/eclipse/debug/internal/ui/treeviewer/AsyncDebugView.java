@@ -13,6 +13,8 @@ package org.eclipse.debug.internal.ui.treeviewer;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchesListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -25,13 +27,47 @@ public class AsyncDebugView extends ViewPart {
         fViewer.setInput(DebugPlugin.getDefault().getLaunchManager());
         
         DebugPlugin.getDefault().addDebugEventListener(new IDebugEventSetListener() {
-            public void handleDebugEvents(DebugEvent[] events) {
+            public void handleDebugEvents(final DebugEvent[] events) {
+                fViewer.getControl().getDisplay().asyncExec(new Runnable() {
+                    public void run() {
+                        for (int i = 0; i < events.length; i++) {
+                            DebugEvent event = events[i];
+                            switch (event.getKind()) {
+                                case DebugEvent.RESUME:
+                                    fViewer.update(event.getSource());
+                                    break;
+                                default:
+                                    fViewer.refresh(event.getSource());
+                                    break;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        DebugPlugin.getDefault().getLaunchManager().addLaunchListener(new ILaunchesListener() {
+        
+            public void launchesChanged(ILaunch[] launches) {
+                refresh();
+            }
+        
+            public void launchesAdded(ILaunch[] launches) {
+                refresh();
+            }
+        
+            public void launchesRemoved(ILaunch[] launches) {
+                refresh();
+            }
+            
+            private void refresh() {
                 fViewer.getControl().getDisplay().asyncExec(new Runnable() {
                     public void run() {
                         fViewer.refresh();
                     }
                 });
             }
+        
         });
         
     }

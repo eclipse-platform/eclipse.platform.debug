@@ -56,6 +56,12 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
     private static IDeferredWorkbenchAdapter fgVariableAdapter = new DeferredVariable();
     private static IDeferredWorkbenchAdapter fgExpressionAdapter = new DeferredExpression();
     private static IDeferredWorkbenchAdapter fgExpressionManagerAdapter = new DeferredExpressionManager();
+    
+    private static IPresentationAdapter fgAsyncManager = new AsyncLauchManagerAdapter();
+    private static IPresentationAdapter fgAsyncLaunch = new AsyncLaunchAdapter();
+    private static IPresentationAdapter fgAsyncTarget = new AsyncTargetAdapter();
+    private static IPresentationAdapter fgAsyncThread = new AsyncThreadAdapter();
+    private static IPresentationAdapter fgAsyncFrame = new AsyncStackFrameAdapter();
 
     /* (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
@@ -97,22 +103,21 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
         	}
         }
         
-        // TODO: use singelton adapters
         if (adapterType.equals(IPresentationAdapter.class)) {
             if (adaptableObject instanceof ILaunchManager) {
-                return new AsyncLauchManagerAdapter();
+                return fgAsyncManager;
             }
             if (adaptableObject instanceof ILaunch) {
-                return new AsyncLaunchAdapter();
+                return fgAsyncLaunch;
             }
             if (adaptableObject instanceof IDebugTarget) {
-                return new AsyncTargetAdapter();
+                return fgAsyncTarget;
             }
             if (adaptableObject instanceof IThread) {
-                return new AsyncThreadAdapter();
+                return fgAsyncThread;
             }
             if (adaptableObject instanceof IStackFrame) {
-                return new AsyncStackFrameAdapter();
+                return fgAsyncFrame;
             }
         }
         return null;
