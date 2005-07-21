@@ -35,6 +35,12 @@ import org.eclipse.swt.widgets.TreeItem;
 /**
  * TODO: sorting/filtering should be implemented above content viewer
  * TODO: tree editor not implemented
+ * 
+ * TODO: input element not visibile
+ * TODO: context support for adapters
+ * TODO: variables viewer (dup elements)
+ * TODO: selection support
+ * TODO: expand support
  */
 public class AsyncTreeViewer extends Viewer {
 
