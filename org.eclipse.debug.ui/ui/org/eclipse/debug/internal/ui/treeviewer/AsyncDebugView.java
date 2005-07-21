@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.treeviewer;
 
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -21,6 +23,13 @@ public class AsyncDebugView extends ViewPart {
     public void createPartControl(Composite parent) {
         fViewer = new AsyncTreeViewer(parent);
         fViewer.setInput(DebugPlugin.getDefault().getLaunchManager());
+        
+        DebugPlugin.getDefault().addDebugEventListener(new IDebugEventSetListener() {
+            public void handleDebugEvents(DebugEvent[] events) {
+                fViewer.refresh();
+            }
+        });
+        
     }
 
     public void setFocus() {

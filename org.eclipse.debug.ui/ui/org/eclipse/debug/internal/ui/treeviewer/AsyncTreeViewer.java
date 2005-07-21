@@ -33,8 +33,8 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
 /**
- * TODO: sorting/filtering should be implemented above content viewer TODO: tree
- * editor not implemented
+ * TODO: sorting/filtering should be implemented above content viewer
+ * TODO: tree editor not implemented
  */
 public class AsyncTreeViewer extends Viewer {
 
@@ -309,18 +309,16 @@ public class AsyncTreeViewer extends Viewer {
     }
 
     protected synchronized void unmapAllElements() {
-        if (fElementsToItems != null) {
-            Iterator iterator = fElementsToItems.keySet().iterator();
-            while (iterator.hasNext()) {
-                Object element = iterator.next();
-                Object object = fElementsToItems.get(element);
-                if (object instanceof Item) {
-                    ((Item) object).dispose();
-                } else {
-                    Iterator items = ((List) object).iterator();
-                    while (items.hasNext()) {
-                        ((Item) items.next()).dispose();
-                    }
+        Iterator iterator = fElementsToItems.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object element = iterator.next();
+            Object object = fElementsToItems.get(element);
+            if (object instanceof Item) {
+                ((Item) object).dispose();
+            } else {
+                Iterator items = ((List) object).iterator();
+                while (items.hasNext()) {
+                    ((Item) items.next()).dispose();
                 }
             }
         }
