@@ -89,7 +89,13 @@
             icon="icons/full/eview16/memory_view.gif"
             id="org.eclipse.debug.ui.MemoryView"
             name="%MemoryViewName">
-      </view>      
+      </view>
+      <view
+            category="org.eclipse.debug.ui"
+            class="org.eclipse.debug.internal.ui.treeviewer.AsyncDebugView"
+            icon="icons/full/eview16/debug_view.gif"
+            id="org.eclipse.debug.ui.async.debug"
+            name="Async Debug"/>      
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
