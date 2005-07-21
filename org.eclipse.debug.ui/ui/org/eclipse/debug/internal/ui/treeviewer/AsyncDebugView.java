@@ -12,8 +12,6 @@ package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
 public class AsyncDebugView extends ViewPart {
@@ -22,6 +20,7 @@ public class AsyncDebugView extends ViewPart {
 
     public void createPartControl(Composite parent) {
         fViewer = new AsyncTreeViewer(parent);
+        fViewer.setInput(DebugPlugin.getDefault().getLaunchManager());
     }
 
     public void setFocus() {
@@ -32,11 +31,5 @@ public class AsyncDebugView extends ViewPart {
         fViewer.dispose();
         super.dispose();
     }
-
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-        fViewer.setInput(DebugPlugin.getDefault().getLaunchManager());
-    }
-
     
 }

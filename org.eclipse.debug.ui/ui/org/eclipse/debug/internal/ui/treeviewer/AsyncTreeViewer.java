@@ -147,9 +147,15 @@ public class AsyncTreeViewer extends Viewer {
      */
     public void update(Object element) {
         IPresentationAdapter adapter = getPresentationAdapter(element);
-        ILabelUpdate labelUpdate = null; // TODO:
-        schedule(labelUpdate);   
-        adapter.retrieveLabel(element, null, labelUpdate);
+        if (adapter != null) {
+            Item[] items = getItems(element);
+            for (int i = 0; i < items.length; i++) {
+                TreeItem item = (TreeItem)items[i];
+                ILabelUpdate labelUpdate = new LabelUpdate(item, this);
+                schedule(labelUpdate);   
+                adapter.retrieveLabel(element, null, labelUpdate);                
+            }
+        }
     }
 
     /**
@@ -175,9 +181,11 @@ public class AsyncTreeViewer extends Viewer {
 
     protected void updateChildren(Object parent, TreeItem item) {
         IPresentationAdapter adapter = getPresentationAdapter(parent);
-        IChildrenUpdate updateChildren = new ChildrenUpdate(item, this);
-        schedule(updateChildren);   
-        adapter.retrieveChildren(parent, null, updateChildren);
+        if (adapter != null) {
+            IChildrenUpdate updateChildren = new ChildrenUpdate(item, this);
+            schedule(updateChildren);   
+            adapter.retrieveChildren(parent, null, updateChildren);
+        }
     }
     
     protected IPresentationAdapter getPresentationAdapter(Object element) {
