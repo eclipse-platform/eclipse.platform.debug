@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.TreeEvent;
+import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -92,6 +94,19 @@ public class AsyncTreeViewer extends Viewer {
             public void widgetDisposed(DisposeEvent e) {
                 dispose();
             }
+        });
+        tree.addTreeListener(new TreeListener() {
+        
+            public void treeExpanded(TreeEvent e) {
+                Object source = e.getSource();
+                if (source instanceof TreeItem) {
+                    refresh(((TreeItem)source).getData());
+                }
+            }
+        
+            public void treeCollapsed(TreeEvent e) {
+            }
+        
         });
     }
     
@@ -202,6 +217,9 @@ public class AsyncTreeViewer extends Viewer {
      * @return
      */
     protected Item[] getItems(Object element) {
+        if (element == null) {
+            return null;
+        }
         return (Item[]) fElementsToItems.get(element);
     }
 
@@ -374,6 +392,7 @@ public class AsyncTreeViewer extends Viewer {
         int index = 0;
         while (newKids.hasNext()) {
             Object kid = newKids.next();
+            boolean hasKids = ((Boolean) hasChildren.get(index)).booleanValue();
             if (index < oldItems.length) {
                 TreeItem oldItem = oldItems[index];
                 Object oldData = oldItem.getData();
@@ -381,9 +400,25 @@ public class AsyncTreeViewer extends Viewer {
                     unmap(kid, oldItem);
                     map(kid, oldItem);
                 }
+                if (!hasKids && oldItem.getItemCount() > 0) {
+                    // dispose children 
+                    TreeItem[] items = oldItem.getItems();
+                    for (int i = 0; i < items.length; i++) {
+                        TreeItem oldChild = items[i];
+                        unmap(oldChild.getData(), oldChild);
+                        oldChild.dispose();
+                    }
+                } else if (hasKids && oldItem.getItemCount() == 0) {
+                    // dummy to update + 
+                    new TreeItem(oldItem, SWT.NONE);
+                }
             } else {
                 TreeItem newItem = new TreeItem(item, SWT.NONE, index);
                 map(kid, newItem);
+                if (hasKids) {
+                    // dummy to update +
+                    new TreeItem(newItem, SWT.NONE);
+                }
             }
             index++;
         }
@@ -409,6 +444,10 @@ public class AsyncTreeViewer extends Viewer {
      * @param oldItem
      */
     protected synchronized void unmap(Object kid, TreeItem oldItem) {
+        if (kid == null) {
+            // when unmapping a dummy item
+            return;
+        }
         Item[] items = (Item[]) fElementsToItems.get(kid);
         if (items != null) {
             for (int i = 0; i < items.length; i++) {
