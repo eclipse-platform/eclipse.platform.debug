@@ -23,6 +23,7 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLauchManagerAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLaunchAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.AsyncStackFrameAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncTargetAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncThreadAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.DeferredExpression;
@@ -96,6 +97,7 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
         	}
         }
         
+        // TODO: use singelton adapters
         if (adapterType.equals(IPresentationAdapter.class)) {
             if (adaptableObject instanceof ILaunchManager) {
                 return new AsyncLauchManagerAdapter();
@@ -108,6 +110,9 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
             }
             if (adaptableObject instanceof IThread) {
                 return new AsyncThreadAdapter();
+            }
+            if (adaptableObject instanceof IStackFrame) {
+                return new AsyncStackFrameAdapter();
             }
         }
         return null;
