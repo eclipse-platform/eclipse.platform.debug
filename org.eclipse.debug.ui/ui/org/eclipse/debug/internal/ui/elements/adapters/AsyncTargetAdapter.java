@@ -19,7 +19,7 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
-public class AsyncTargetAdapter extends AbstractAsynchPresentationAdapter {
+public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
 
     protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
         try {

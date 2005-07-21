@@ -17,7 +17,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
-public class AsynchLaunchAdapter extends AbstractAsynchPresentationAdapter {
+public class AsyncLaunchAdapter extends AbstractAsyncPresentationAdapter {
 
     public IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
         Object[] children = ((ILaunch) parent).getChildren();

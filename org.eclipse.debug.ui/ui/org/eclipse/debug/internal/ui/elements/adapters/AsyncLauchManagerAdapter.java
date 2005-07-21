@@ -16,9 +16,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
-public class AsyncLauchManagerAdapter extends AbstractAsynchPresentationAdapter {
+public class AsyncLauchManagerAdapter extends AbstractAsyncPresentationAdapter {
+
+    protected IStatus doRetrieveLabels(Object object, IPresentationContext context, ILabelUpdate result) {
+        result.done();
+        return Status.OK_STATUS;
+    }
 
     protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
         ILaunch[] launches = ((ILaunchManager) parent).getLaunches();

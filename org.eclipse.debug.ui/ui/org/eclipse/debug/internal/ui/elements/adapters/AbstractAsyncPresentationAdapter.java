@@ -22,7 +22,7 @@ import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.jface.resource.ImageDescriptor;
 
-public abstract class AbstractAsynchPresentationAdapter implements IPresentationAdapter {
+public abstract class AbstractAsyncPresentationAdapter implements IPresentationAdapter {
 
     public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenUpdate result) {
         Job job = new Job("Retrieving Children") { //$NON-NLS-1$

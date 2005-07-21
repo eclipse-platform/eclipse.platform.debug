@@ -26,7 +26,11 @@ public class AsyncDebugView extends ViewPart {
         
         DebugPlugin.getDefault().addDebugEventListener(new IDebugEventSetListener() {
             public void handleDebugEvents(DebugEvent[] events) {
-                fViewer.refresh();
+                fViewer.getControl().getDisplay().asyncExec(new Runnable() {
+                    public void run() {
+                        fViewer.refresh();
+                    }
+                });
             }
         });
         

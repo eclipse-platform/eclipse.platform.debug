@@ -42,15 +42,22 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
      * @param item potential child
      * @return
      */
-    protected boolean isChild(TreeItem item) {
-        TreeItem parent = item.getParentItem();
-        while (parent != null) {
-            if (parent.equals(fItem)) {
-                return true;
+    protected boolean isChild(final TreeItem item) {
+        final boolean[] result = new boolean[1];
+        getViewer().getControl().getDisplay().syncExec(new Runnable() {
+            public void run() {
+                TreeItem parent = item.getParentItem();
+                while (parent != null) {
+                    if (parent.equals(fItem)) {
+                        result[0] = true;
+                        return;
+                    }
+                    parent = parent.getParentItem();
+                }     
+                result[0] = false;
             }
-            parent = parent.getParentItem();
-        }     
-        return false;
+        });
+        return result[0];
     }
     
     public void setStatus(IStatus status) {
