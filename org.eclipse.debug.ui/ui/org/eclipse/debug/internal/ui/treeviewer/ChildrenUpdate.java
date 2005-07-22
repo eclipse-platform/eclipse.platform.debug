@@ -13,7 +13,7 @@ package org.eclipse.debug.internal.ui.treeviewer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 
 
 public class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
@@ -27,7 +27,7 @@ public class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
      * 
      * @param item
      */
-    public ChildrenUpdate(TreeItem item, AsyncTreeViewer viewer) {
+    public ChildrenUpdate(Widget item, AsyncTreeViewer viewer) {
         super(item, viewer);
     }
     

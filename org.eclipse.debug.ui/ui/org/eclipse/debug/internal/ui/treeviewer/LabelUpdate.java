@@ -16,24 +16,26 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 
 public class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
 
     private String fText;
     private ImageDescriptor fImageDescriptor;
 
-    public LabelUpdate(TreeItem item, AsyncTreeViewer viewer) {
+    public LabelUpdate(Widget item, AsyncTreeViewer viewer) {
         super(item, viewer);
     }
 
     protected void performUpdate() {
+        TreeItem item = (TreeItem) getItem();
         if (fText != null) {
-            getItem().setText(fText);
+            item.setText(fText);
         }
         if (fImageDescriptor != null) {
             Image image = new Image(Display.getDefault(), fImageDescriptor
                     .getImageData());
-            getItem().setImage(image);
+            item.setImage(image);
         }
     }
 

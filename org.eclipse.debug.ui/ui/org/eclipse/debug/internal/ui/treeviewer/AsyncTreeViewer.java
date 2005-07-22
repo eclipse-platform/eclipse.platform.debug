@@ -28,15 +28,14 @@ import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 
 /**
  * TODO: sorting/filtering should be implemented above content viewer
  * TODO: tree editor not implemented
  * 
- * TODO: input element not visibile
  * TODO: context support for adapters
  * TODO: variables viewer (dup elements)
  * TODO: selection support
@@ -45,9 +44,9 @@ import org.eclipse.swt.widgets.TreeItem;
 public class AsyncTreeViewer extends Viewer {
 
     /**
-     * A map of elements to associated item or items (item[])
+     * A map of elements to associated tree items or tree
      */
-    Map fElementsToItems = new HashMap();
+    Map fElementsToWidgets = new HashMap();
 
     List fPendingUpdates = new ArrayList();
     
@@ -124,7 +123,7 @@ public class AsyncTreeViewer extends Viewer {
             Image image = (Image) images.next();
             image.dispose();
         }
-        fElementsToItems.clear();
+        fElementsToWidgets.clear();
         fPendingUpdates.clear();
     }
 
@@ -154,9 +153,12 @@ public class AsyncTreeViewer extends Viewer {
      * @param element
      */
     public void update(Object element) {
+        if (element == fInput) {
+            return;
+        }
         IPresentationAdapter adapter = getPresentationAdapter(element);
         if (adapter != null) {
-            Item[] items = getItems(element);
+            Widget[] items = getWidgets(element);
             if (items != null) {
                 for (int i = 0; i < items.length; i++) {
                     TreeItem item = (TreeItem)items[i];
@@ -175,21 +177,23 @@ public class AsyncTreeViewer extends Viewer {
      * @param element
      */
     public void refresh(Object element) {
-        Item[] items = getItems(element);
+        Widget[] items = getWidgets(element);
         if (items == null) {
             return;
         }
         update(element);
         for (int i = 0; i < items.length; i++) {
-            TreeItem item = (TreeItem) items[i];
-            if (element == fInput || item.getExpanded()) {
+            Widget item = items[i];
+            if (element == fInput) {
+                updateChildren(element, item);
+            } else if (((TreeItem)item).getExpanded()) {
                 updateChildren(element, item);
             }
         }
 
     }
 
-    protected void updateChildren(Object parent, TreeItem item) {
+    protected void updateChildren(Object parent, Widget item) {
         IPresentationAdapter adapter = getPresentationAdapter(parent);
         if (adapter != null) {
             IChildrenUpdate updateChildren = new ChildrenUpdate(item, this);
@@ -229,16 +233,16 @@ public class AsyncTreeViewer extends Viewer {
     }
 
     /**
-     * Returns the items associated with the given element or <code>null</code>.
+     * Returns the widgets associated with the given element or <code>null</code>.
      * 
      * @param element
      * @return
      */
-    protected Item[] getItems(Object element) {
+    protected Widget[] getWidgets(Object element) {
         if (element == null) {
             return null;
         }
-        return (Item[]) fElementsToItems.get(element);
+        return (Widget[]) fElementsToWidgets.get(element);
     }
 
     /**
@@ -319,20 +323,19 @@ public class AsyncTreeViewer extends Viewer {
     }
 
     protected synchronized void unmapAllElements() {
-        Iterator iterator = fElementsToItems.keySet().iterator();
+        Iterator iterator = fElementsToWidgets.keySet().iterator();
         while (iterator.hasNext()) {
             Object element = iterator.next();
-            Object object = fElementsToItems.get(element);
-            if (object instanceof Item) {
-                ((Item) object).dispose();
-            } else {
-                Iterator items = ((List) object).iterator();
-                while (items.hasNext()) {
-                    ((Item) items.next()).dispose();
+            Widget[] widgets = getWidgets(element);
+            for (int i = 0; i < widgets.length; i++) {
+                Widget widget = widgets[i];
+                if (widget instanceof TreeItem) {
+                    TreeItem item = (TreeItem) widget;
+                    item.dispose();
                 }
             }
         }
-        fElementsToItems.clear();
+        fElementsToWidgets.clear();
     }
 
     protected synchronized void cancelPendingUpdates() {
@@ -360,8 +363,7 @@ public class AsyncTreeViewer extends Viewer {
      *            previously no input
      */
     protected void inputChanged(Object input, Object oldInput) {
-        TreeItem rootItem = new TreeItem(fTree, SWT.NONE);
-        map(input, rootItem);
+        map(input, fTree);
         refresh();
     }
 
@@ -369,19 +371,19 @@ public class AsyncTreeViewer extends Viewer {
      * Maps the given element to the given item.
      * 
      * @param element
-     * @param item
+     * @param item TreeItem or Tree
      */
-    protected void map(Object element, Item item) {
+    protected void map(Object element, Widget item) {
         item.setData(element);
-        Object object = fElementsToItems.get(element);
+        Object object = fElementsToWidgets.get(element);
         if (object == null) {
-            fElementsToItems.put(element, new Item[] { item });
+            fElementsToWidgets.put(element, new Widget[] { item });
         } else {
-            Item[] old = (Item[]) object;
-            Item[] items = new Item[old.length + 1];
+            Widget[] old = (Widget[]) object;
+            Widget[] items = new Widget[old.length + 1];
             System.arraycopy(old, 0, items, 0, old.length);
             items[old.length] = item;
-            fElementsToItems.put(element, items);
+            fElementsToWidgets.put(element, items);
         }
     }
 
@@ -402,8 +404,14 @@ public class AsyncTreeViewer extends Viewer {
         }
     }
 
-    void setChildren(TreeItem item, List children, List hasChildren) {
-        TreeItem[] oldItems = item.getItems();
+    void setChildren(Widget widget, List children, List hasChildren) {
+        TreeItem[] oldItems = null;
+        if (widget instanceof Tree) {
+            Tree tree = (Tree) widget;
+            oldItems = tree.getItems();
+        } else {
+            oldItems = ((TreeItem)widget).getItems();
+        }
         Iterator newKids = children.iterator();
         int index = 0;
         while (newKids.hasNext()) {
@@ -429,7 +437,7 @@ public class AsyncTreeViewer extends Viewer {
                     new TreeItem(oldItem, SWT.NONE);
                 }
             } else {
-                TreeItem newItem = new TreeItem(item, SWT.NONE, index);
+                TreeItem newItem = newTreeItem(widget, index);
                 map(kid, newItem);
                 if (hasKids) {
                     // dummy to update +
@@ -451,6 +459,13 @@ public class AsyncTreeViewer extends Viewer {
             refresh(newKids.next());
         }
     }
+    
+    protected TreeItem newTreeItem(Widget parent, int index) {
+        if (parent instanceof Tree) {
+            return new TreeItem((Tree)parent, SWT.NONE, index);
+        }
+        return new TreeItem((TreeItem)parent, SWT.NONE, index);
+    }
 
     /**
      * Unmaps the given item, and unmaps and disposes of all children
@@ -464,19 +479,19 @@ public class AsyncTreeViewer extends Viewer {
             // when unmapping a dummy item
             return;
         }
-        Item[] items = (Item[]) fElementsToItems.get(kid);
-        if (items != null) {
-            for (int i = 0; i < items.length; i++) {
-                Item item = items[i];
+        Widget[] widgets = (Widget[]) fElementsToWidgets.get(kid);
+        if (widgets != null) {
+            for (int i = 0; i < widgets.length; i++) {
+                Widget item = widgets[i];
                 if (item == oldItem) {
-                    if (items.length == 1) {
-                        fElementsToItems.remove(kid);
+                    if (widgets.length == 1) {
+                        fElementsToWidgets.remove(kid);
                         return;
                     }
-                    Item[] newItems = new Item[items.length - 1];
-                    System.arraycopy(items, 0, newItems, 0, i);
+                    Widget[] newItems = new Widget[widgets.length - 1];
+                    System.arraycopy(widgets, 0, newItems, 0, i);
                     if (i < newItems.length) {
-                        System.arraycopy(items, i + 1, newItems, i, newItems.length - i);
+                        System.arraycopy(widgets, i + 1, newItems, i, newItems.length - i);
                     }
                 }
             }

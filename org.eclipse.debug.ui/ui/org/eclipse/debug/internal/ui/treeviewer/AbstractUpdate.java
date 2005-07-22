@@ -11,11 +11,13 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 
 public abstract class AbstractUpdate implements IPresentationUpdate {
     
-    private TreeItem fItem;
+    private Widget fItem;
     private AsyncTreeViewer fViewer;
 
     /**
@@ -23,7 +25,7 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
      * 
      * @param item
      */
-    public AbstractUpdate(TreeItem item, AsyncTreeViewer viewer) {
+    public AbstractUpdate(Widget item, AsyncTreeViewer viewer) {
         fItem = item;
         fViewer = viewer;
     }
@@ -32,7 +34,7 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
         return fViewer;
     }
     
-    protected TreeItem getItem() {
+    protected Widget getItem() {
         return fItem;
     }
     
@@ -42,7 +44,11 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
      * @param item potential child
      * @return
      */
-    protected boolean isChild(final TreeItem item) {
+    protected boolean isChild(Widget widget) {
+        if (widget instanceof Tree) {
+            return false;
+        }
+        final TreeItem item = (TreeItem)widget;
         final boolean[] result = new boolean[1];
         getViewer().getControl().getDisplay().syncExec(new Runnable() {
             public void run() {
