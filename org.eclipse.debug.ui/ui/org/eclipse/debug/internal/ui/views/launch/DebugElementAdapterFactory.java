@@ -23,6 +23,7 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLauchManagerAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLaunchAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.AsyncProcessAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncStackFrameAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncTargetAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncThreadAdapter;
@@ -60,6 +61,7 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
     private static IPresentationAdapter fgAsyncManager = new AsyncLauchManagerAdapter();
     private static IPresentationAdapter fgAsyncLaunch = new AsyncLaunchAdapter();
     private static IPresentationAdapter fgAsyncTarget = new AsyncTargetAdapter();
+    private static IPresentationAdapter fgAsyncProcess = new AsyncProcessAdapter();
     private static IPresentationAdapter fgAsyncThread = new AsyncThreadAdapter();
     private static IPresentationAdapter fgAsyncFrame = new AsyncStackFrameAdapter();
 
@@ -112,6 +114,9 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
             }
             if (adaptableObject instanceof IDebugTarget) {
                 return fgAsyncTarget;
+            }
+            if (adaptableObject instanceof IProcess) {
+                return fgAsyncProcess;
             }
             if (adaptableObject instanceof IThread) {
                 return fgAsyncThread;
