@@ -25,6 +25,7 @@ public class AsyncDebugView extends ViewPart {
     public void createPartControl(Composite parent) {
         fViewer = new AsyncTreeViewer(parent);
         fViewer.setInput(DebugPlugin.getDefault().getLaunchManager());
+        fViewer.setContext(new PresentationContext(this, null));
         
         DebugPlugin.getDefault().addDebugEventListener(new IDebugEventSetListener() {
             public void handleDebugEvents(final DebugEvent[] events) {

@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: sorting/filtering should be implemented above content viewer
  * TODO: tree editor not implemented
  * 
- * TODO: context support for adapters
  * TODO: variables viewer (dup elements)
  * TODO: selection support
  * TODO: expand support
@@ -55,6 +54,8 @@ public class AsyncTreeViewer extends Viewer {
     Tree fTree;
 
     Object fInput;
+    
+    IPresentationContext fContext;
 
     /**
      * Creates an asynchronous tree viewer on a newly-created tree control under
@@ -164,7 +165,7 @@ public class AsyncTreeViewer extends Viewer {
                     TreeItem item = (TreeItem)items[i];
                     ILabelUpdate labelUpdate = new LabelUpdate(item, this);
                     schedule(labelUpdate);   
-                    adapter.retrieveLabel(element, null, labelUpdate);                
+                    adapter.retrieveLabel(element, fContext, labelUpdate);                
                 }
             }
         }
@@ -198,7 +199,7 @@ public class AsyncTreeViewer extends Viewer {
         if (adapter != null) {
             IChildrenUpdate updateChildren = new ChildrenUpdate(item, this);
             schedule(updateChildren);   
-            adapter.retrieveChildren(parent, null, updateChildren);
+            adapter.retrieveChildren(parent, fContext, updateChildren);
         }
     }
     
@@ -511,5 +512,9 @@ public class AsyncTreeViewer extends Viewer {
             fImageCache.put(descriptor, image);
         }
         return image;
+    }
+    
+    protected void setContext(IPresentationContext context) {
+        fContext = context;
     }
 }
