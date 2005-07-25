@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: variables viewer (dup elements)
  * TODO: selection support
  * TODO: expand support
+ * TODO: color and font support
  */
 public class AsyncTreeViewer extends Viewer {
 
