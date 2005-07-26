@@ -421,12 +421,10 @@ public class RemoteTreeViewer extends TreeViewer {
                                 } else {
                                     // add
                                     int numLeft = children.length - i;
-                                    if (numLeft > 1) {
+                                    if (numLeft >= 1) {
                                         Object[] others = new Object[numLeft];
                                         System.arraycopy(children, i, others, 0, numLeft);
-                                        add(parent, others);
-                                    } else {
-                                        add(parent, child);
+                                        internalAdd(widget, parent, others);
                                     }
                                     break;
                                 }
