@@ -14,6 +14,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
+ * Context in which a label or children have been requested.
  * 
  * @since 3.2
  */

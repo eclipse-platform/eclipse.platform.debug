@@ -14,16 +14,46 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
+/**
+ * Request to retrieve the label of a presentation adapter.
+ * 
+ * @since 3.2
+ */
 public interface ILabelUpdate extends IPresentationUpdate {
 
+	/**
+	 * Sets the text of the label. Cannot be <code>null</code>.
+	 * 
+	 * @param text
+	 */
     public void setLabel(String text);
     
+    /**
+     * Sets the font of the label.
+     * 
+     * @param fontData
+     */
     public void setFontData(FontData fontData);
     
+    /**
+     * Sets the image of the label.
+     * 
+     * @param image
+     */
     public void setImageDescriptor(ImageDescriptor image);
     
+    /**
+     * Sets the foreground color of the label.
+     * 
+     * @param foreground
+     */
     public void setForeground(RGB foreground);
     
+    /**
+     * Sets the background color of the label.
+     * 
+     * @param background
+     */
     public void setBackground(RGB background);
 
 }
