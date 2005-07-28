@@ -40,6 +40,13 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: selection support
  * TODO: expand support
  * TODO: color and font support
+ * 
+ * TODO: keep cahce of item to parent item for cancelling jobs
+ * TODO: default implementation of getting the image must run in UI
+ *  thread, but other implementations could run in non-UI thread
+ * TODO: use tree path instead of object array?
+ * TODO: default presentation adapter should use deferred workbench
+ *  adapters for backwards compatibility
  */
 public class AsyncTreeViewer extends Viewer {
 
@@ -47,6 +54,13 @@ public class AsyncTreeViewer extends Viewer {
      * A map of elements to associated tree items or tree
      */
     Map fElementsToWidgets = new HashMap();
+    
+    /**
+     * A map of widget to parent widgets used to avoid requirement
+     * for parent access in UI thread. Currently used by update
+     * objects to detect/cancel updates on updates of children.
+     */
+    Map fItemToParentItem = new HashMap();
 
     List fPendingUpdates = new ArrayList();
     
@@ -240,7 +254,7 @@ public class AsyncTreeViewer extends Viewer {
      * @param element
      * @return
      */
-    protected Widget[] getWidgets(Object element) {
+    protected synchronized Widget[] getWidgets(Object element) {
         if (element == null) {
             return null;
         }
@@ -338,6 +352,7 @@ public class AsyncTreeViewer extends Viewer {
             }
         }
         fElementsToWidgets.clear();
+        fItemToParentItem.clear();
     }
 
     protected synchronized void cancelPendingUpdates() {
@@ -387,6 +402,13 @@ public class AsyncTreeViewer extends Viewer {
             items[old.length] = item;
             fElementsToWidgets.put(element, items);
         }
+        if (item instanceof TreeItem) {
+            TreeItem treeItem = (TreeItem) item;
+            TreeItem parentItem = treeItem.getParentItem();
+            if (parentItem != null) {
+                fItemToParentItem.put(treeItem, parentItem);
+            }
+        }
     }
 
     public void setSelection(ISelection selection, boolean reveal) {
@@ -423,7 +445,7 @@ public class AsyncTreeViewer extends Viewer {
                 TreeItem oldItem = oldItems[index];
                 Object oldData = oldItem.getData();
                 if (!kid.equals(oldData)) {
-                    unmap(kid, oldItem);
+                    unmap(oldData, oldItem);
                     map(kid, oldItem);
                 }
                 if (!hasKids && oldItem.getItemCount() > 0) {
@@ -486,14 +508,16 @@ public class AsyncTreeViewer extends Viewer {
             for (int i = 0; i < widgets.length; i++) {
                 Widget item = widgets[i];
                 if (item == oldItem) {
+                    fItemToParentItem.remove(item);
                     if (widgets.length == 1) {
                         fElementsToWidgets.remove(kid);
-                        return;
-                    }
-                    Widget[] newItems = new Widget[widgets.length - 1];
-                    System.arraycopy(widgets, 0, newItems, 0, i);
-                    if (i < newItems.length) {
-                        System.arraycopy(widgets, i + 1, newItems, i, newItems.length - i);
+                    } else {
+                        Widget[] newItems = new Widget[widgets.length - 1];
+                        System.arraycopy(widgets, 0, newItems, 0, i);
+                        if (i < newItems.length) {
+                            System.arraycopy(widgets, i + 1, newItems, i, newItems.length - i);
+                        }
+                        fElementsToWidgets.put(kid, newItems);
                     }
                 }
             }
@@ -517,5 +541,15 @@ public class AsyncTreeViewer extends Viewer {
     
     protected void setContext(IPresentationContext context) {
         fContext = context;
+    }
+    
+    /**
+     * Returns the parent item for an item or <code>null</code> if none.
+     * 
+     * @param item item for which parent is requested
+     * @return parent item or <code>null</code>
+     */
+    protected synchronized TreeItem getParentItem(TreeItem item) {
+        return (TreeItem) fItemToParentItem.get(item);
     }
 }

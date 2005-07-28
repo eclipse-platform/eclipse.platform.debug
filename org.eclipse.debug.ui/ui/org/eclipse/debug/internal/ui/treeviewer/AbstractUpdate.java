@@ -49,21 +49,14 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
             return false;
         }
         final TreeItem item = (TreeItem)widget;
-        final boolean[] result = new boolean[1];
-        getViewer().getControl().getDisplay().syncExec(new Runnable() {
-            public void run() {
-                TreeItem parent = item.getParentItem();
-                while (parent != null) {
-                    if (parent.equals(fItem)) {
-                        result[0] = true;
-                        return;
-                    }
-                    parent = parent.getParentItem();
-                }     
-                result[0] = false;
+        TreeItem parent = fViewer.getParentItem(item);
+        while (parent != null) {
+            if (parent.equals(fItem)) {
+                return true;
             }
-        });
-        return result[0];
+            parent = fViewer.getParentItem(parent);
+        }     
+        return false;
     }
     
     public void setStatus(IStatus status) {
