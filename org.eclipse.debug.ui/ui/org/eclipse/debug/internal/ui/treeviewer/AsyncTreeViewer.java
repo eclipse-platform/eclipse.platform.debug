@@ -41,7 +41,6 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: expand support
  * TODO: color and font support
  * 
- * TODO: keep cahce of item to parent item for cancelling jobs
  * TODO: default implementation of getting the image must run in UI
  *  thread, but other implementations could run in non-UI thread
  * TODO: use tree path instead of object array?
