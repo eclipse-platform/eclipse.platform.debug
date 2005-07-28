@@ -118,11 +118,15 @@ public class AsyncTreeViewer extends Viewer {
         tree.addTreeListener(new TreeListener() {
         
             public void treeExpanded(TreeEvent e) {
-                Object source = e.item;
-                if (source instanceof TreeItem) {
-                    TreeItem treeItem = ((TreeItem)source);
-                    treeItem.setExpanded(true);
-                    refresh(treeItem.getData());
+                Object element = e.item.getData();
+                Widget[] items = getWidgets(element);
+                if (items == null) {
+                    return;
+                }
+                update(element);
+                for (int i = 0; i < items.length; i++) {
+                    Widget item = items[i];
+                    updateChildren(element, item);
                 }
             }
         

@@ -62,11 +62,7 @@ public class AsyncDebugView extends ViewPart {
             }
             
             private void refresh() {
-                fViewer.getControl().getDisplay().asyncExec(new Runnable() {
-                    public void run() {
-                        fViewer.refresh();
-                    }
-                });
+                fViewer.refresh();
             }
         
         });

@@ -20,6 +20,7 @@ import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 public abstract class AbstractAsyncPresentationAdapter implements IPresentationAdapter {
@@ -51,7 +52,7 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
         result.setLabel(label);
         result.done();
 
-        ImageDescriptor imageDescriptor = DebugElementHelper.getImageDescriptor(object);
+        ImageDescriptor imageDescriptor = DebugUITools.getDefaultImageDescriptor(object);
         result.setImageDescriptor(imageDescriptor);
         result.done();
         return Status.OK_STATUS;        
