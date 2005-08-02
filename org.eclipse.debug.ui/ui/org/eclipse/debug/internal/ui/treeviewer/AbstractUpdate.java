@@ -19,6 +19,7 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
     
     private Widget fItem;
     private AsyncTreeViewer fViewer;
+    private boolean fCanceled;
 
     /**
      * Constructs an udpate rooted at the given item.
@@ -75,13 +76,11 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
     }
 
     public boolean isCanceled() {
-        // TODO Auto-generated method stub
-        return false;
+        return fCanceled;
     }
 
     public void setCanceled(boolean value) {
-        // TODO Auto-generated method stub
-
+        fCanceled = true;
     }
 
     public void setTaskName(String name) {
@@ -107,7 +106,10 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
             getViewer().updateComplete(this);
             getViewer().getControl().getDisplay().asyncExec(new Runnable() {
                 public void run() {
-                    performUpdate();
+                    // necessary to check if fItem is disposed. The item may have been
+                    // removed from the tree when another children update occured.
+                    if (!isCanceled() && !fItem.isDisposed())
+                        performUpdate();
                 }
             });
         }

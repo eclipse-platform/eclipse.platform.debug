@@ -27,6 +27,7 @@ import org.eclipse.debug.internal.ui.elements.adapters.AsyncProcessAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncStackFrameAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncTargetAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncThreadAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.AsyncVariableAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.DeferredExpression;
 import org.eclipse.debug.internal.ui.elements.adapters.DeferredExpressionManager;
 import org.eclipse.debug.internal.ui.elements.adapters.DeferredLaunch;
@@ -64,6 +65,7 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
     private static IPresentationAdapter fgAsyncProcess = new AsyncProcessAdapter();
     private static IPresentationAdapter fgAsyncThread = new AsyncThreadAdapter();
     private static IPresentationAdapter fgAsyncFrame = new AsyncStackFrameAdapter();
+    private static IPresentationAdapter fgAsyncVariable = new AsyncVariableAdapter();
 
     /* (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
@@ -123,6 +125,9 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
             }
             if (adaptableObject instanceof IStackFrame) {
                 return fgAsyncFrame;
+            }
+            if (adaptableObject instanceof IVariable) {
+                return fgAsyncVariable;
             }
         }
         return null;

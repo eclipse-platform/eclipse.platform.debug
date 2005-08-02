@@ -346,12 +346,14 @@ public class AsyncTreeViewer extends Viewer {
         while (iterator.hasNext()) {
             Object element = iterator.next();
             Widget[] widgets = getWidgets(element);
+            if (widgets != null) {
             for (int i = 0; i < widgets.length; i++) {
                 Widget widget = widgets[i];
                 if (widget instanceof TreeItem) {
                     TreeItem item = (TreeItem) widget;
                     item.dispose();
                 }
+            }
             }
         }
         fElementsToWidgets.clear();

@@ -23,11 +23,11 @@ import org.eclipse.debug.ui.IDebugUIConstants;
 
 public class AsyncStackFrameAdapter extends AbstractAsyncPresentationAdapter {
 
-    protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
+    protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {        
         String id = context.getPart().getSite().getId();
         IStackFrame frame = (IStackFrame) parent;
         try {
-            if (id.equals(IDebugUIConstants.ID_VARIABLE_VIEW)) {
+            if (id.equals("org.eclipse.debug.ui.async.variables")) {
                 IVariable[] variables = frame.getVariables();
                 for (int i = 0; i < variables.length; i++) {
                     IVariable variable = variables[i];

@@ -33,8 +33,7 @@ public class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
             item.setText(fText);
         }
         if (fImageDescriptor != null) {
-            Image image = new Image(Display.getDefault(), fImageDescriptor
-                    .getImageData());
+            Image image = new Image(Display.getDefault(), fImageDescriptor.getImageData());
             item.setImage(image);
         }
     }
