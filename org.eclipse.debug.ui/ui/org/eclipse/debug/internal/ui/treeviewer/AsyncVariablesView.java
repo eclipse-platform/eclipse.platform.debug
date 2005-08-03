@@ -43,6 +43,11 @@ public class AsyncVariablesView extends ViewPart implements ISelectionListener {
 
     }
 
+    public void dispose() {
+        getSite().getPage().removeSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
+        super.dispose();
+    }
+    
     public void setFocus() {
         // TODO Auto-generated method stub
 
