@@ -12,6 +12,7 @@ package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.jface.util.Assert;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.swt.widgets.TreeItem;
 
 /**
  * A tree path denotes a model element in a tree viewer. Tree path
@@ -22,6 +23,7 @@ import org.eclipse.jface.viewers.IElementComparer;
 public final class TreePath {
     private Object[] fSegments;
     private int fHash;
+    private TreeItem fItem;
     
     public TreePath(Object[] segments) {
         Assert.isNotNull(segments);
@@ -85,6 +87,14 @@ public final class TreePath {
                 return false;
         }
         return true;
+    }
+    
+    void setTreeItem(TreeItem item) {
+        fItem = item;
+    }
+    
+    TreeItem getTreeItem() {
+        return fItem;
     }
 }
 

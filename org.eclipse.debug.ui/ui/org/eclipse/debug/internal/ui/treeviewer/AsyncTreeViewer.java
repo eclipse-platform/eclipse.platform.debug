@@ -19,6 +19,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -60,6 +61,12 @@ public class AsyncTreeViewer extends Viewer {
      * objects to detect/cancel updates on updates of children.
      */
     Map fItemToParentItem = new HashMap();
+    
+    /**
+     * Map of widgets to their data elements used to avoid
+     * requirement to access data in UI thread.
+     */
+    Map fWidgetsToElements = new HashMap();
 
     List fPendingUpdates = new ArrayList();
     
@@ -70,6 +77,10 @@ public class AsyncTreeViewer extends Viewer {
     Object fInput;
     
     IPresentationContext fContext;
+    
+    TreeSelection fPendingSelection;
+    TreeSelection fCurrentSelection;
+    TreeSelection fPendingExpansion;
 
     /**
      * Creates an asynchronous tree viewer on a newly-created tree control under
@@ -265,23 +276,16 @@ public class AsyncTreeViewer extends Viewer {
     }
 
     /**
-     * Selects the last element in the given element path, expanding elements in
-     * the path as required.
+     * Expands all elements in the given tree selection.
      * 
-     * @param elementPath
+     * @param selection
      */
-    public void select(Object[] elementPath) {
-        // TODO:
-    }
-
-    /**
-     * Expands all elements in the given path. The element path must begin with
-     * the root element in this tree. Expands elements in the path as required.
-     * 
-     * @param elementPath
-     */
-    public void expand(Object[] elementPath) {
-        // TODO:
+    public synchronized void expand(ISelection selection) {
+        // TODO: what about requesting a new expansion before previous is complete?
+        if (selection instanceof TreeSelection) {
+            fPendingExpansion = (TreeSelection) selection;
+            attemptExpansion();
+        }
     }
 
     /**
@@ -312,9 +316,16 @@ public class AsyncTreeViewer extends Viewer {
         return fInput;
     }
 
-    public ISelection getSelection() {
-        // TODO Auto-generated method stub
-        return null;
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
+     */
+    public synchronized ISelection getSelection() {
+        TreeItem[] selection = fTree.getSelection();
+        TreePath[] paths = new TreePath[selection.length];
+        for (int i = 0; i < selection.length; i++) {
+            paths[i] = getTreePath(selection[i]);
+        }
+        return new TreeSelection(paths);
     }
 
     /*
@@ -358,6 +369,7 @@ public class AsyncTreeViewer extends Viewer {
         }
         fElementsToWidgets.clear();
         fItemToParentItem.clear();
+        fWidgetsToElements.clear();
     }
 
     protected synchronized void cancelPendingUpdates() {
@@ -398,6 +410,7 @@ public class AsyncTreeViewer extends Viewer {
     protected void map(Object element, Widget item) {
         item.setData(element);
         Object object = fElementsToWidgets.get(element);
+        fWidgetsToElements.put(item, element);
         if (object == null) {
             fElementsToWidgets.put(element, new Widget[] { item });
         } else {
@@ -416,11 +429,117 @@ public class AsyncTreeViewer extends Viewer {
         }
     }
 
-    public void setSelection(ISelection selection, boolean reveal) {
-        // TODO Auto-generated method stub
-
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.Viewer#setSelection(org.eclipse.jface.viewers.ISelection, boolean)
+     */
+    public synchronized void setSelection(ISelection selection, boolean reveal) {
+        if (selection instanceof TreeSelection) {
+            // check if same
+            if (fCurrentSelection != null) {
+                if (fCurrentSelection.equals(selection)) {
+                    return;
+                }
+                fCurrentSelection = null;
+            }
+            fPendingSelection = (TreeSelection)selection;
+            // TODO: reveal
+            attemptSelection();
+        }
     }
     
+    synchronized void attemptSelection() {
+        if (fPendingSelection != null) {
+            List toSelect = new ArrayList();
+            TreePath[] paths = fPendingSelection.getPaths();
+            int selections = 0;
+            for (int i = 0; i < paths.length; i++) {
+                TreePath path = paths[i];
+                TreePath[] treePaths = getTreePaths(path.getLastSegment());
+                if (treePaths != null) {
+                    for (int j = 0; j < treePaths.length; j++) {
+                        TreePath existingPath = treePaths[j];
+                        if (existingPath.equals(path)) {
+                            toSelect.add(existingPath.getTreeItem());
+                            selections++;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (selections == paths.length) {
+                // done
+                fPendingSelection = null;
+            }
+            if (!toSelect.isEmpty()) {
+                final TreeItem[] items = (TreeItem[]) toSelect.toArray(new TreeItem[toSelect.size()]);
+                Runnable select = new Runnable() {
+                    public void run() {
+                        fTree.setSelection(items);
+                        fCurrentSelection = (TreeSelection) getSelection();
+                        fireSelectionChanged(new SelectionChangedEvent(AsyncTreeViewer.this, fCurrentSelection));
+                    }
+                };
+                fTree.getDisplay().asyncExec(select);
+            }
+        }
+    }
+    
+    synchronized void attemptExpansion() {
+        if (fPendingExpansion != null) {
+            List toExpand = new ArrayList();
+            TreePath[] paths = fPendingExpansion.getPaths();
+            for (int i = 0; i < paths.length; i++) {
+                TreePath path = paths[i];
+
+            }
+        }
+    }
+    
+    /**
+     * Returns all paths to the given element or <code>null</code> if none.
+     * 
+     * @param element
+     * @return paths to the given element or <code>null</code>
+     */
+    synchronized TreePath[] getTreePaths(Object element) {
+        Widget[] widgets = getWidgets(element);
+        if (widgets == null) {
+            return null;
+        }
+        TreePath[] paths = new TreePath[widgets.length];
+        for (int i = 0; i < widgets.length; i++) {
+            List path = new ArrayList();
+            path.add(element);
+            Widget widget = widgets[i];
+            TreeItem parent = null;
+            if (widget instanceof TreeItem) {
+                TreeItem treeItem = (TreeItem) widget;
+                parent = getParentItem(treeItem);
+            }
+            while (parent != null) {
+                Object data = fWidgetsToElements.get(parent);
+                path.add(0, data);
+                parent = getParentItem(parent);
+            }
+            path.add(0, fInput);
+            paths[i] = new TreePath(path.toArray());
+            if (widget instanceof TreeItem) {
+                paths[i].setTreeItem((TreeItem)widget);
+            }
+        }
+        return paths;
+    }
+    
+    protected TreePath getTreePath(TreeItem item) {
+        TreeItem parent = item;
+        List path = new ArrayList();
+        while (parent != null) {
+            path.add(0, parent);
+            parent = parent.getParentItem();
+        }
+        path.add(0, fTree.getData());
+        return new TreePath(path.toArray());
+    }
 
     /**
      * Removes the update from the pending updates list.
@@ -433,7 +552,7 @@ public class AsyncTreeViewer extends Viewer {
         }
     }
 
-    void setChildren(Widget widget, List children, List hasChildren) {
+    synchronized void setChildren(Widget widget, List children, List hasChildren) {
         TreeItem[] oldItems = null;
         if (widget instanceof Tree) {
             Tree tree = (Tree) widget;
@@ -487,6 +606,7 @@ public class AsyncTreeViewer extends Viewer {
         while (newKids.hasNext()) {
             refresh(newKids.next());
         }
+        attemptSelection();
     }
     
     protected TreeItem newTreeItem(Widget parent, int index) {
@@ -509,6 +629,7 @@ public class AsyncTreeViewer extends Viewer {
             return;
         }
         Widget[] widgets = (Widget[]) fElementsToWidgets.get(kid);
+        fWidgetsToElements.remove(oldItem);
         if (widgets != null) {
             for (int i = 0; i < widgets.length; i++) {
                 Widget item = widgets[i];

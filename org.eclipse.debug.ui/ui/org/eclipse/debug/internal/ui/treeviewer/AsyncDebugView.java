@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.treeviewer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.debug.core.DebugEvent;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchesListener;
+import org.eclipse.debug.core.model.IThread;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
@@ -37,6 +42,23 @@ public class AsyncDebugView extends ViewPart {
                                 case DebugEvent.RESUME:
                                     fViewer.update(event.getSource());
                                     break;
+                                case DebugEvent.SUSPEND:
+                                    Object source = event.getSource();
+                                    if (source instanceof IThread) {
+                                        IThread thread = (IThread) source;
+                                        List path = new ArrayList();
+                                        path.add(DebugPlugin.getDefault().getLaunchManager());
+                                        path.add(thread.getLaunch());
+                                        path.add(thread.getDebugTarget());
+                                        path.add(thread);
+                                        try {
+                                            path.add(thread.getTopStackFrame());
+                                            TreePath treePath = new TreePath(path.toArray());
+                                            fViewer.setSelection(new TreeSelection(new TreePath[]{treePath}));
+                                        } catch (DebugException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 default:
                                     fViewer.refresh(event.getSource());
                                     break;
