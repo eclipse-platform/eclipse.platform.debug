@@ -80,7 +80,7 @@ public class AsyncTreeViewer extends Viewer {
     
     TreeSelection fPendingSelection;
     TreeSelection fCurrentSelection;
-    TreeSelection fPendingExpansion;
+    TreePath[] fPendingExpansion;
 
     /**
      * Creates an asynchronous tree viewer on a newly-created tree control under
@@ -283,11 +283,60 @@ public class AsyncTreeViewer extends Viewer {
     public synchronized void expand(ISelection selection) {
         // TODO: what about requesting a new expansion before previous is complete?
         if (selection instanceof TreeSelection) {
-            fPendingExpansion = (TreeSelection) selection;
+            fPendingExpansion = ((TreeSelection) selection).getPaths();
             attemptExpansion();
         }
     }
 
+    synchronized void attemptExpansion() {
+        if (fPendingExpansion != null) {
+            for (int i = 0; i < fPendingExpansion.length; i++) {
+                TreePath path = fPendingExpansion[i];
+                if (path != null && attemptExpansion(path)) {
+                    fPendingExpansion[i] = null;
+                }
+            }
+        }
+    }
+    
+    synchronized boolean attemptExpansion(TreePath path) {
+        int segmentCount = path.getSegmentCount();
+        boolean pathFound = false;
+        for (int j = segmentCount - 1; j >= 0 && !pathFound; j--) {
+            Object element = path.getSegment(j);
+            Widget[] treeItems = (Widget[]) fElementsToWidgets.get(element);
+            if (treeItems != null) {
+                for (int k = 0; k < treeItems.length; k++) {
+                    if (treeItems[k] instanceof TreeItem) {
+                        TreeItem treeItem = (TreeItem) treeItems[k];
+                        TreePath treePath = getTreePath(treeItem);
+                        if (path.includes(treePath)) {
+                            if (!treeItem.getExpanded()) {
+                                treeItem.setExpanded(true);
+                                update(element);
+                                updateChildren(element, treeItem);
+
+                                if (j == segmentCount-1) {
+                                    return true;
+                                }
+                                return false;
+                            }
+                        }
+                    } else if (treeItems[k] instanceof Tree) {
+                        Tree tree = (Tree) treeItems[k];
+                        TreeItem[] items = tree.getItems();
+                        for (int i = 0; i < items.length; i++) {
+                            TreeItem item = items[i];
+                            item.setExpanded(true);
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     /**
      * Removes the last element in the given path. Does not remove other
      * occurrences of the given element from this tree.
@@ -484,17 +533,6 @@ public class AsyncTreeViewer extends Viewer {
         }
     }
     
-    synchronized void attemptExpansion() {
-        if (fPendingExpansion != null) {
-            List toExpand = new ArrayList();
-            TreePath[] paths = fPendingExpansion.getPaths();
-            for (int i = 0; i < paths.length; i++) {
-                TreePath path = paths[i];
-
-            }
-        }
-    }
-    
     /**
      * Returns all paths to the given element or <code>null</code> if none.
      * 
@@ -534,7 +572,7 @@ public class AsyncTreeViewer extends Viewer {
         TreeItem parent = item;
         List path = new ArrayList();
         while (parent != null) {
-            path.add(0, parent);
+            path.add(0, parent.getData());
             parent = parent.getParentItem();
         }
         path.add(0, fTree.getData());
@@ -606,9 +644,10 @@ public class AsyncTreeViewer extends Viewer {
         while (newKids.hasNext()) {
             refresh(newKids.next());
         }
+        attemptExpansion();
         attemptSelection();
     }
-    
+
     protected TreeItem newTreeItem(Widget parent, int index) {
         if (parent instanceof Tree) {
             return new TreeItem((Tree)parent, SWT.NONE, index);

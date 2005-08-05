@@ -19,6 +19,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchesListener;
+import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
@@ -52,9 +53,13 @@ public class AsyncDebugView extends ViewPart {
                                         path.add(thread.getDebugTarget());
                                         path.add(thread);
                                         try {
-                                            path.add(thread.getTopStackFrame());
-                                            TreePath treePath = new TreePath(path.toArray());
-                                            fViewer.setSelection(new TreeSelection(new TreePath[]{treePath}));
+                                            IStackFrame topStackFrame = thread.getTopStackFrame();
+                                            if (topStackFrame != null) {
+                                                path.add(topStackFrame);
+                                                TreePath treePath = new TreePath(path.toArray());
+                                                fViewer.expand(new TreeSelection(new TreePath[]{treePath}));
+                                                fViewer.setSelection(new TreeSelection(new TreePath[]{treePath}));
+                                            }
                                         } catch (DebugException e) {
                                             e.printStackTrace();
                                         }

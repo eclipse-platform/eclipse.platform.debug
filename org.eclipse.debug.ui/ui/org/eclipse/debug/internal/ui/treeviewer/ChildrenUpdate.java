@@ -50,7 +50,7 @@ public class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
     }
     
     protected boolean contains(AbstractUpdate update) {
-        return isChild(update.getItem()) || update.getItem() == getItem();
+        return (update instanceof ChildrenUpdate) && (isChild(update.getItem()) || update.getItem() == getItem());
     }
 
     protected void performUpdate() {

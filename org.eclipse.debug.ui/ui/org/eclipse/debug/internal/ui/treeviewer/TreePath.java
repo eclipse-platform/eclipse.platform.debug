@@ -96,5 +96,19 @@ public final class TreePath {
     TreeItem getTreeItem() {
         return fItem;
     }
+
+    public boolean includes(TreePath treePath) {
+        int segmentCount = treePath.getSegmentCount();
+        if (segmentCount >= fSegments.length) {
+            return false;
+        }
+        for (int i = 0; i < segmentCount; i++) {
+            Object segment = treePath.getSegment(i);
+            if (!segment.equals(fSegments[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
