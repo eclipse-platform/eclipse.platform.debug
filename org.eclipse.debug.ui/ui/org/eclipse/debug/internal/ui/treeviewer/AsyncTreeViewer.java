@@ -485,7 +485,7 @@ public class AsyncTreeViewer extends Viewer {
         if (selection instanceof TreeSelection) {
             // check if same
             if (fCurrentSelection != null) {
-                if (fCurrentSelection.equals(selection)) {
+                if (fCurrentSelection.equals(getSelection())) {
                     return;
                 }
                 fCurrentSelection = null;
