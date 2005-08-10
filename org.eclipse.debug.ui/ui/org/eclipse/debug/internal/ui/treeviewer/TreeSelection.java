@@ -38,7 +38,7 @@ public class TreeSelection implements IStructuredSelection {
      * @see org.eclipse.jface.viewers.IStructuredSelection#getFirstElement()
      */
     public Object getFirstElement() {
-        if (fPaths != null) {
+        if (fPaths != null && fPaths.length > 0) {
             return fPaths[0].getLastSegment();
         }
         return null;
