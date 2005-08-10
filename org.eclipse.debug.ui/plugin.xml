@@ -92,12 +92,6 @@
       </view>
       <view
             category="org.eclipse.debug.ui"
-            class="org.eclipse.debug.internal.ui.treeviewer.AsyncDebugView"
-            icon="icons/full/eview16/debug_view.gif"
-            id="org.eclipse.debug.ui.async.debug"
-            name="Async Debug"/>      
-      <view
-            category="org.eclipse.debug.ui"
             class="org.eclipse.debug.internal.ui.treeviewer.AsyncVariablesView"
             icon="icons/full/eview16/variable_view.gif"
             id="org.eclipse.debug.ui.async.variables"

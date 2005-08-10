@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.TreeItem;
  * A tree path denotes a model element in a tree viewer. Tree path
  * objects do have value semantics.
  * 
- * @since 3.1
+ * @since 3.2
  */
 public final class TreePath {
     private Object[] fSegments;

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.debug.ui.AbstractDebugView;
 import org.eclipse.jface.viewers.IBasicPropertyConstants;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -200,13 +201,15 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	 */
 	protected void insert(Object element) {
 		if (isAvailable()) {
-			Object parent= ((ITreeContentProvider)getTreeViewer().getContentProvider()).getParent(element);
-			// a parent can be null for a debug target or process that has not yet been associated
-			// with a launch
-			if (parent != null) {
-				getView().showViewer();
-				getTreeViewer().add(parent, element);
-			}
+			Viewer viewer = getViewer();
+			if (viewer instanceof TreeViewer) {
+				TreeViewer tv = (TreeViewer) viewer;
+				Object parent = ((ITreeContentProvider)tv.getContentProvider()).getParent(element);
+				if (parent != null) {
+					getView().showViewer();
+					tv.add(parent, element);
+				}
+			} 
 		}
 	}
 
@@ -216,7 +219,11 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	protected void remove(Object element) {
 		if (isAvailable()) {
 			getView().showViewer();
-			getTreeViewer().remove(element);
+			Viewer viewer = getViewer();
+			if (viewer instanceof TreeViewer) {
+				TreeViewer tv = (TreeViewer) viewer;
+				tv.remove(element);
+			} 
 		}
 	}
 
@@ -226,7 +233,14 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	protected void labelChanged(Object element) {
 		if (isAvailable()) {
 			getView().showViewer();
-			getTreeViewer().update(element, new String[] {IBasicPropertyConstants.P_TEXT});
+			Viewer viewer = getViewer();
+			if (viewer instanceof TreeViewer) {
+				TreeViewer tv = (TreeViewer) viewer;
+				tv.update(element, new String[] {IBasicPropertyConstants.P_TEXT});
+			} else if (viewer instanceof AsyncTreeViewer) {
+				AsyncTreeViewer atv = (AsyncTreeViewer) viewer;
+				atv.update(element);
+			}
 		}
 	}
 
@@ -236,7 +250,14 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	protected void refresh(Object element) {
 		if (isAvailable()) {
 			 getView().showViewer();
-			 getTreeViewer().refresh(element);
+			 Viewer viewer = getViewer();
+			 if (viewer instanceof TreeViewer) {
+				 TreeViewer treeViewer = (TreeViewer) viewer;
+				 treeViewer.refresh(element);
+			 } else if (viewer instanceof AsyncTreeViewer) {
+				 AsyncTreeViewer asyncTreeView = (AsyncTreeViewer) viewer;
+				 asyncTreeView.refresh(element);
+			 }
 		}
 	}
 	
@@ -246,7 +267,7 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	public void refresh() {
 		if (isAvailable()) {
 			 getView().showViewer();
-			 getTreeViewer().refresh();
+			 getViewer().refresh();
 		}
 	}	
 
@@ -299,7 +320,7 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	protected Viewer getViewer() {
 		return getView().getViewer();
 	}
-	
+
 	/**
 	 * Returns this event handler's viewer as a tree
 	 * viewer or <code>null</code> if none.

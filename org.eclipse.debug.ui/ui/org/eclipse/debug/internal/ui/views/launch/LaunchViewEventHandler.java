@@ -28,10 +28,9 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandler;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 
 /**
  * Handles debug events, updating the launch view and viewer.
@@ -84,16 +83,6 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
     }
 	
 	/**
-	 * Returns the parent for the given element.
-	 * 
-	 * @param element
-	 * @return parent
-	 */
-	private Object getParent(Object element) {
-		return ((ITreeContentProvider)getTreeViewer().getContentProvider()).getParent(element);
-	}
-    
-	/**
 	 * @see AbstractDebugEventHandler#doHandleDebugEvents(DebugEvent[])
 	 */
 	protected void doHandleDebugEvents(DebugEvent[] events, Object data) {
@@ -107,10 +96,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 					if (source instanceof IThread) {
 						insert(source);
 					} else {
-						Object parent = getParent(source);
-						if (parent != null) {
-							refresh(parent);
-						}
+						getViewer().refresh();
 						if (source instanceof IDebugTarget | source instanceof IProcess) {
 							getLaunchView().autoExpand(source, true);
 						}
@@ -121,10 +107,11 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 					if (source instanceof IThread) {
 						fThreadTimer.getTimedOutThreads().remove(source);
 						remove(source);
-					} else {
-					    Object parent = getParent(source);
-						if (parent != null) {
-						    refresh(parent);
+					} else if (source instanceof IDebugElement) {
+						IDebugElement element = (IDebugElement)source;
+						IDebugTarget debugTarget = element.getDebugTarget();
+						if (debugTarget != null) {
+							refresh(debugTarget);
 						}
 					}
 					break;
@@ -139,10 +126,8 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 					break;
 				case DebugEvent.CHANGE :
                     Object element = null;
-                    IStructuredSelection selection = getLaunchViewer().getDeferredSelection();
-                    if (selection == null) {
-                        selection = (IStructuredSelection) getLaunchViewer().getSelection();
-                    } 
+                    AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+                    IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                     
                     element = selection.getFirstElement();
                     IStackFrame lastFrame = null;
@@ -204,8 +189,8 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 	 * visible (for example, step start or evaluation start).
 	 */
 	protected void updateRunningThread(IThread thread) {
-		labelChanged(thread);
-		getLaunchViewer().updateStackFrameImages(thread);
+		labelChanged(thread);		
+//		getLaunchViewer().updateStackFrameImages(thread);
 		clearSourceSelection(thread);
 	}
 
@@ -251,15 +236,11 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 		// the frame to display source
 		if (frame != null && frame.equals(fLastStackFrame)) {
 			if (wasTimedOut) {
-				getLaunchViewer().updateStackFrameImages(thread);
+//				getLaunchViewer().updateStackFrameImages(thread);
 			}
-			getLaunchViewer().update(new Object[] {thread, frame}, null);
-			if (!evaluationEvent) {
-			    getLaunchViewer().deferExpansion(thread);
-				getLaunchViewer().deferSelection(new StructuredSelection(frame));
-			} else if (wasTimedOut) {
-				getLaunchView().showEditorForCurrentSelection();
-			}
+			AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+			viewer.update(thread);
+			getLaunchView().showEditorForCurrentSelection();
 			return;
 		}
 		
@@ -307,15 +288,6 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 		}
 	}	
 
-	/**
-	 * Returns this event handler's launch viewer
-	 * 
-	 * @return launch viewer
-	 */
-	protected LaunchViewer getLaunchViewer() {
-		return (LaunchViewer)getViewer();
-	}
-	
 	/**
 	 * Returns this event handler's launch view
 	 * 
