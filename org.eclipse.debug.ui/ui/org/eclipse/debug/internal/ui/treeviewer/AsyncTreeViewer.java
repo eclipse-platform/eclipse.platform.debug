@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
@@ -658,16 +657,21 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 	}
 
-	protected void setSelectionToWidget(TreeSelection selection, boolean reveal) {
+	protected void setSelectionToWidget(TreeSelection selection, final boolean reveal) {
 		// check if same
 		if (fCurrentSelection != null) {
-			if (fCurrentSelection.equals(getSelection())) {
+			if (fCurrentSelection.equals(selection) && selection.equals(getSelection())) {
 				return;
 			}
 			fCurrentSelection = null;
 		}
-		fPendingSelection = (TreeSelection) selection;
-		attemptSelection(reveal);
+		fPendingSelection = selection;
+		fTree.getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				attemptSelection(reveal);
+			}
+		});
+		
 	}
 
 	synchronized void attemptSelection(final boolean reveal) {
@@ -698,19 +702,13 @@ public class AsyncTreeViewer extends StructuredViewer {
 			}
 			if (!toSelect.isEmpty()) {
 				final TreeItem[] items = (TreeItem[]) toSelect.toArray(new TreeItem[toSelect.size()]);
-				Runnable select = new Runnable() {
-					public void run() {
-						fTree.setSelection(items);
-						if (reveal) {
-							fTree.showItem(items[0]);
-						}
-						fCurrentSelection = (TreeSelection) getSelection();
-						fireSelectionChanged(new SelectionChangedEvent(AsyncTreeViewer.this, fCurrentSelection));
-					}
-				};
-				if (items.length > 0) {
-					fTree.getDisplay().asyncExec(select);
+
+				fTree.setSelection(items);
+				if (reveal) {
+					fTree.showItem(items[0]);
 				}
+				fCurrentSelection = (TreeSelection) getSelection();
+				fireSelectionChanged(new SelectionChangedEvent(AsyncTreeViewer.this, fCurrentSelection));
 			}
 		}
 	}
