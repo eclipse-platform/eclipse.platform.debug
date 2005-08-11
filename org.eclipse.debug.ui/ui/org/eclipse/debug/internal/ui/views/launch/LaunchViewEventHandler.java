@@ -232,29 +232,27 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 		    frame = (IStackFrame) data;
 		}
 	    
+		LaunchView launchView = getLaunchView();
 		// if the top frame is the same, only update labels and images, and re-select
 		// the frame to display source
-		if (frame != null && frame.equals(fLastStackFrame)) {
-			if (wasTimedOut) {
-//				getLaunchViewer().updateStackFrameImages(thread);
+		if (frame != null) {
+			if (frame.equals(fLastStackFrame)) {
+				refresh(thread);
+			} else {
+				fLastStackFrame = frame;
+				// Auto-expand the thread. Only select the thread if this wasn't
+				// the end
+				// of an evaluation
+				refresh(thread);
+				launchView.autoExpand(frame, !evaluationEvent);
 			}
-			AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
-			viewer.update(thread);
-			getLaunchView().showEditorForCurrentSelection();
-			return;
-		}
-		
-		if (frame == null) {
-			// suspend event, but no frames in the thead
-			fLastStackFrame = null;			
-			refresh(thread);
-			getLaunchView().autoExpand(thread, !evaluationEvent);
+			
+			launchView.openEditorForStackFrame(frame);
 		} else {
-		    fLastStackFrame = frame;
-			// Auto-expand the thread. Only select the thread if this wasn't the end
-			// of an evaluation
-		    refresh(thread);
-			getLaunchView().autoExpand(frame, !evaluationEvent);
+			// suspend event, but no frames in the thead
+			fLastStackFrame = null;
+			refresh(thread);
+			launchView.autoExpand(thread, !evaluationEvent);
 		}
 	}
 	
