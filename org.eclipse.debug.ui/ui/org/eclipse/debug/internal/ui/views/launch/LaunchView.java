@@ -262,6 +262,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
         viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
         viewer.setContext(new PresentationContext(this, null));
         
+        viewer.addSelectionChangedListener(this);
         viewer.addPostSelectionChangedListener(this);
         viewer.getControl().addKeyListener(new KeyAdapter() {
         	public void keyPressed(KeyEvent event) {
@@ -511,9 +512,12 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	public void selectionChanged(SelectionChangedEvent event) {
 		clearStatusLine();
 		updateObjects();
-		showEditorForCurrentSelection();
+		Object element = ((IStructuredSelection) getViewer().getSelection()).getFirstElement();
+		if (element != null && !element.equals(fStackFrame)) {
+			showEditorForCurrentSelection();
+		}
 		if (isActive()) {
-		    fContextListener.updateForSelection(((IStructuredSelection) getViewer().getSelection()).getFirstElement());
+		    fContextListener.updateForSelection(element);
 		}
 	}
 
