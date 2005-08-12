@@ -236,17 +236,11 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 		// if the top frame is the same, only update labels and images, and re-select
 		// the frame to display source
 		if (frame != null) {
-			if (frame.equals(fLastStackFrame)) {
-				refresh(thread);
-			} else {
-				fLastStackFrame = frame;
-				// Auto-expand the thread. Only select the thread if this wasn't
-				// the end
-				// of an evaluation
-				refresh(thread);
-				launchView.autoExpand(frame, !evaluationEvent);
-			}
-			
+			fLastStackFrame = frame;
+			// Auto-expand the thread. Only select the thread if this wasn't
+			// the end of an evaluation
+			refresh(thread);
+			launchView.autoExpand(frame, !evaluationEvent);
 			launchView.openEditorForStackFrame(frame);
 		} else {
 			// suspend event, but no frames in the thead
