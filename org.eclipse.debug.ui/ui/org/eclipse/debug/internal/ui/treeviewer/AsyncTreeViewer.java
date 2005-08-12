@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TreeEvent;
 import org.eclipse.swt.events.TreeListener;
@@ -36,10 +37,10 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * TODO: sorting/filtering should be implemented above content viewer TODO: tree
- * editor not implemented
+ * TODO: tree editor not implemented
  * 
- * TODO: variables viewer (dup elements) TODO: color and font support
+ * TODO: variables viewer (dup elements) 
+ * TODO: color and font support
  * 
  * TODO: default implementation of getting the image must run in UI thread, but
  * other implementations could run in non-UI thread
@@ -449,7 +450,17 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 	}
 
-	synchronized void setChildren(Widget widget, List children, List hasChildren) {
+	synchronized void setChildren(Widget widget, List newChildren, List hasChildren) {
+		//apply filters
+		Object[] children = filter(newChildren.toArray());
+		
+		//sort filtered children
+		ViewerSorter viewerSorter = getSorter();
+		if (viewerSorter != null) {
+			viewerSorter.sort(this, children);
+		}
+		
+		//update tree
 		TreeItem[] oldItems = null;
 		if (widget instanceof Tree) {
 			Tree tree = (Tree) widget;
@@ -457,10 +468,10 @@ public class AsyncTreeViewer extends StructuredViewer {
 		} else {
 			oldItems = ((TreeItem) widget).getItems();
 		}
-		Iterator newKids = children.iterator();
+		
 		int index = 0;
-		while (newKids.hasNext()) {
-			Object kid = newKids.next();
+		for (; index < children.length; index++) {
+			Object kid = children[index];
 			boolean hasKids = ((Boolean) hasChildren.get(index)).booleanValue();
 			if (index < oldItems.length) {
 				TreeItem oldItem = oldItems[index];
@@ -489,7 +500,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 					new TreeItem(newItem, SWT.NONE);
 				}
 			}
-			index++;
 		}
 		// remove left over old items
 		while (index < oldItems.length) {
@@ -499,10 +509,10 @@ public class AsyncTreeViewer extends StructuredViewer {
 			index++;
 		}
 		// refresh the current kids
-		newKids = children.iterator();
-		while (newKids.hasNext()) {
-			refresh(newKids.next());
+		for (int i = 0; i < children.length; i++) {
+			refresh(children[i]);
 		}
+		
 		attemptExpansion();
 		attemptSelection(true);
 	}
