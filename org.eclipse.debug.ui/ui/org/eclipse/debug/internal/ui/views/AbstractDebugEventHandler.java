@@ -223,7 +223,10 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 			if (viewer instanceof TreeViewer) {
 				TreeViewer tv = (TreeViewer) viewer;
 				tv.remove(element);
-			} 
+			} else if (viewer instanceof AsyncTreeViewer) {
+				AsyncTreeViewer atv = (AsyncTreeViewer) viewer;
+				atv.refresh();
+			}
 		}
 	}
 

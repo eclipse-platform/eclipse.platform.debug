@@ -112,7 +112,10 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 						IDebugTarget debugTarget = element.getDebugTarget();
 						if (debugTarget != null) {
 							refresh(debugTarget);
+							update(debugTarget.getLaunch());
 						}
+					} else {
+						refresh(source);
 					}
 					break;
 				case DebugEvent.RESUME :
@@ -156,6 +159,12 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 		}
 	}
 	
+	private void update(Object element) {
+		AsyncTreeViewer viewer = (AsyncTreeViewer) getLaunchView().getViewer();
+		viewer.update(element);
+	}
+
+
 	/**
 	 * Handles the given resume event with the given source.
 	 */
