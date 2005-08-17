@@ -46,7 +46,10 @@ import org.eclipse.swt.widgets.Widget;
  * other implementations could run in non-UI thread
  * 
  * TODO: default presentation adapter should use deferred workbench adapters for
- * backwards compatibility
+ * backwards compatibility - PROBLEM: we have to map an IElementCollector to
+ * an IChildrenUpdate to make this work, but IElementCollector does not provide
+ * information about whether a child can have children or not. First implementation
+ * of this resulted in variables in the debug view (as children of stack frames)
  */
 public class AsyncTreeViewer extends StructuredViewer {
 
