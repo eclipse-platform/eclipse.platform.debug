@@ -32,7 +32,9 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ContentViewer;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -66,9 +68,13 @@ public class ExpressionView extends VariablesView {
 			if (element instanceof IErrorReportingExpression) {
 				expression= (IErrorReportingExpression) element;
 			} else if (element instanceof String) {
-				Object parent= ((ITreeContentProvider)getVariablesViewer().getContentProvider()).getParent(element);
-				if (parent instanceof IErrorReportingExpression) {
-					expression= (IErrorReportingExpression) parent;
+				ContentViewer viewer2 = (ContentViewer) getViewer();
+				IContentProvider contentProvider = viewer2.getContentProvider();
+				if (contentProvider instanceof ITreeContentProvider) {
+					Object parent= ((ITreeContentProvider)contentProvider).getParent(element);
+					if (parent instanceof IErrorReportingExpression) {
+						expression= (IErrorReportingExpression) parent;
+					}
 				}
 			}
 			if (expression != null && expression.hasErrors()) {
@@ -228,7 +234,7 @@ public class ExpressionView extends VariablesView {
 	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#getToggleActionLabel()
 	 */
 	protected String getToggleActionLabel() {
-		return VariablesViewMessages.ExpressionView_4; //$NON-NLS-1$
+		return VariablesViewMessages.ExpressionView_4; 
 	}
 
 	/* (non-Javadoc)

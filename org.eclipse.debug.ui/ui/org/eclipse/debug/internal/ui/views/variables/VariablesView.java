@@ -40,19 +40,19 @@ import org.eclipse.debug.internal.ui.LazyModelPresentation;
 import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
 import org.eclipse.debug.internal.ui.actions.AssignValueAction;
 import org.eclipse.debug.internal.ui.actions.ChangeVariableValueAction;
-import org.eclipse.debug.internal.ui.actions.CollapseAllAction;
 import org.eclipse.debug.internal.ui.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.actions.ShowTypesAction;
 import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
+import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
+import org.eclipse.debug.internal.ui.treeviewer.TreePath;
+import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
 import org.eclipse.debug.internal.ui.views.DebugViewDecoratingLabelProvider;
 import org.eclipse.debug.internal.ui.views.DebugViewInterimLabelProvider;
 import org.eclipse.debug.internal.ui.views.DebugViewLabelDecorator;
 import org.eclipse.debug.internal.ui.views.IDebugExceptionHandler;
-import org.eclipse.debug.internal.ui.views.IRemoteTreeViewerUpdateListener;
-import org.eclipse.debug.internal.ui.views.RemoteTreeViewer;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
@@ -91,7 +91,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -337,7 +336,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		}
 	}
 	/** The pattern used to show the position label in the status line. */
-	private final String fPositionLabelPattern= VariablesViewMessages.VariablesView_56; //$NON-NLS-1$
+	private final String fPositionLabelPattern= VariablesViewMessages.VariablesView_56; 
 	/** The position label value of the current line. */
 	private final PositionLabelValue fLineLabel= new PositionLabelValue();
 	/** The position label value of the current column. */
@@ -347,7 +346,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	/** Whether logical structuers are showing */
     private boolean fShowLogical;
 
-    private IRemoteTreeViewerUpdateListener fUpdateListener;
 
 	/**
 	 * Remove myself as a selection listener
@@ -363,7 +361,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		Viewer viewer = getViewer();
 		if (viewer != null) {
 			getDetailDocument().removeDocumentListener(getDetailDocumentListener());
-            ((VariablesViewer)viewer).removeUpdateListener(fUpdateListener);
 		}
         IAction action= getAction("FindVariable"); //$NON-NLS-1$
         if (action != null && action instanceof FindVariableAction) {
@@ -407,26 +404,22 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
     
     protected void restoreState() {
-        VariablesViewer viewer = getVariablesViewer();
-        IStackFrame frame = (IStackFrame) viewer.getInput();
-        if (frame != null) {
-            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
-            if (state == null) {
-                // attempt to restore selection/expansion based on last frame
-                state = fLastState;
-            } 
-            if (state != null) {
-                state.restoreState(viewer);
-            }
-        }
+    	//FIXME:
+    	System.err.println("restore state only works on TreeViewers ugh...");
+//        VariablesViewer viewer = getVariablesViewer();
+//        IStackFrame frame = (IStackFrame) viewer.getInput();
+//        if (frame != null) {
+//            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
+//            if (state == null) {
+//                // attempt to restore selection/expansion based on last frame
+//                state = fLastState;
+//            } 
+//            if (state != null) {
+//                state.restoreState(viewer);
+//            }
+//        }
     }
 	
-	/**
-	 * Returns the variables viewer for this view
-	 */
-	protected VariablesViewer getVariablesViewer() {
-		return (VariablesViewer)getViewer();
-	}
 	
 	/**
 	 * Clears expanded state for stack frames which are
@@ -503,7 +496,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 			try {
 				svc = mp.newDetailsViewerConfiguration();
 			} catch (CoreException e) {
-				DebugUIPlugin.errorDialog(getSite().getShell(), VariablesViewMessages.VariablesView_Error_1, VariablesViewMessages.VariablesView_Unable_to_configure_variable_details_area__2, e); //$NON-NLS-1$ //$NON-NLS-2$
+				DebugUIPlugin.errorDialog(getSite().getShell(), VariablesViewMessages.VariablesView_Error_1, VariablesViewMessages.VariablesView_Unable_to_configure_variable_details_area__2, e); 
 			}
 		}
 		ISourceViewer detailViewer = getDetailViewer();
@@ -539,7 +532,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @see org.eclipse.debug.ui.AbstractDebugView#createViewer(Composite)
 	 */
 	public Viewer createViewer(Composite parent) {
-		TreeViewer variablesViewer = createTreeViewer(parent);
+		AsyncVariablesViewer variablesViewer = (AsyncVariablesViewer) createTreeViewer(parent);
+		variablesViewer.setContext(new PresentationContext(this, null));
+		
 		createDetailsViewer();
 		getSashForm().setMaximizedControl(variablesViewer.getControl());
 
@@ -551,12 +546,12 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		}
 		setDetailPaneOrientation(orientation);
 		
-        fUpdateListener = new IRemoteTreeViewerUpdateListener() {
-            public void treeUpdated() {
-                restoreState();
-            }
-        };
-        ((VariablesViewer)variablesViewer).addUpdateListener(fUpdateListener);
+//        fUpdateListener = new IRemoteTreeViewerUpdateListener() {
+//            public void treeUpdated() {
+//                restoreState();
+//            }
+//        };
+//        ((VariablesViewer)variablesViewer).addUpdateListener(fUpdateListener);
 		return variablesViewer;
 	}
 	
@@ -607,19 +602,16 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	/**
 	 * Create and return the main tree viewer that displays variable.
 	 */
-	protected TreeViewer createTreeViewer(Composite parent) {
+	protected Viewer createTreeViewer(Composite parent) {
 		fModelPresentation = new VariablesViewModelPresentation();
 		DebugUIPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 		JFaceResources.getFontRegistry().addListener(this);
 		// create the sash form that will contain the tree viewer & text viewer
 		setSashForm(new SashForm(parent, SWT.NONE));
-		
+
 		// add tree viewer
-		final TreeViewer variablesViewer = new VariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, this);
-		RemoteVariablesContentProvider provider = createContentProvider(variablesViewer);
-		variablesViewer.setContentProvider(provider);
-		variablesViewer.setLabelProvider(createLabelProvider(variablesViewer));
-		variablesViewer.setUseHashlookup(true);
+		final AsyncVariablesViewer variablesViewer = new AsyncVariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+		variablesViewer.setUseHashlookup(false);
 		variablesViewer.getControl().addFocusListener(new FocusAdapter() {
 			/* (non-Javadoc)
 			 * @see org.eclipse.swt.events.FocusListener#focusGained(FocusEvent)
@@ -629,7 +621,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 				setAction(SELECT_ALL_ACTION, getAction(VARIABLES_SELECT_ALL_ACTION));
 				setAction(COPY_ACTION, getAction(VARIABLES_COPY_ACTION));
 				getViewSite().getActionBars().updateActionBars();
-				setFocusViewer(getVariablesViewer());
+				setFocusViewer(getViewer());
 			}
 		});
 		variablesViewer.addPostSelectionChangedListener(getTreeSelectionChangedListener());
@@ -639,7 +631,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		// listen to selection in debug view
 		getSite().getPage().addSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
 		VariablesViewEventHandler handler = createEventHandler();
-		handler.setContentManager(provider.getContentManager());
 		setEventHandler(handler);
 
 		return variablesViewer;
@@ -690,14 +681,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		detailsViewer.getTextWidget().addKeyListener(getCursorListener());
 	}
 	
-	/**
-	 * Creates this view's content provider.
-	 * 
-	 * @return a content provider
-	 */
-	protected RemoteVariablesContentProvider createContentProvider(Viewer viewer) {
-		return new RemoteVariablesContentProvider((RemoteTreeViewer) viewer, getSite(), this);
-	}
 	
 	/**
 	 * Creates this view's event handler.
@@ -757,7 +740,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * Make sure the currently selected item in the tree is visible.
 	 */
 	protected void revealTreeSelection() {
-		VariablesViewer viewer = getVariablesViewer();
+		StructuredViewer viewer = (StructuredViewer) getViewer();
 		if (viewer != null) {
 			ISelection selection = viewer.getSelection();
 			if (selection instanceof IStructuredSelection) {
@@ -803,7 +786,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * <code>targetID</code> in the extension XML.
 	 */
 	protected void createDetailContextMenu(Control menuControl) {
-		MenuManager menuMgr= new MenuManager(); //$NON-NLS-1$
+		MenuManager menuMgr= new MenuManager(); 
 		menuMgr.setRemoveAllWhenShown(true);
 		menuMgr.addMenuListener(new IMenuListener() {
 			public void menuAboutToShow(IMenuManager mgr) {
@@ -828,8 +811,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		action = new ToggleLogicalStructureAction(this);
 		setAction("ToggleContentProviders", action); //$NON-NLS-1$
 		
-		action = new CollapseAllAction(getVariablesViewer());
-		setAction("CollapseAll", action); //$NON-NLS-1$
+		//FIXME:
+//		action = new CollapseAllAction(getVariablesViewer());
+//		setAction("CollapseAll", action); //$NON-NLS-1$
 
 		action = new ChangeVariableValueAction(this);
 		action.setEnabled(false);
@@ -837,7 +821,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		
 		TextViewerAction textAction= new TextViewerAction(getDetailViewer(), ISourceViewer.CONTENTASSIST_PROPOSALS);
 		textAction.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-		textAction.configureAction(VariablesViewMessages.VariablesView_Co_ntent_Assist_3, "",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		textAction.configureAction(VariablesViewMessages.VariablesView_Co_ntent_Assist_3, "",""); //$NON-NLS-1$ //$NON-NLS-2$ 
 		textAction.setImageDescriptor(DebugPluginImages.getImageDescriptor(IDebugUIConstants.IMG_ELCL_CONTENT_ASSIST));
 		textAction.setHoverImageDescriptor(DebugPluginImages.getImageDescriptor(IDebugUIConstants.IMG_LCL_CONTENT_ASSIST));
 		textAction.setDisabledImageDescriptor(DebugPluginImages.getImageDescriptor(IDebugUIConstants.IMG_DLCL_CONTENT_ASSIST));
@@ -845,22 +829,22 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		getSite().getKeyBindingService().registerAction(textAction);
 		
 		textAction= new TextViewerAction(getDetailViewer(), ITextOperationTarget.SELECT_ALL);
-		textAction.configureAction(VariablesViewMessages.VariablesView_Select__All_5, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		textAction.configureAction(VariablesViewMessages.VariablesView_Select__All_5, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ 
 		textAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.SELECT_ALL);
 		setAction(DETAIL_SELECT_ALL_ACTION, textAction);
 		
 		textAction= new TextViewerAction(getDetailViewer(), ITextOperationTarget.COPY);
-		textAction.configureAction(VariablesViewMessages.VariablesView__Copy_8, "", "");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		textAction.configureAction(VariablesViewMessages.VariablesView__Copy_8, "", "");  //$NON-NLS-1$ //$NON-NLS-2$
 		textAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.COPY);
 		setAction(DETAIL_COPY_ACTION, textAction);
 		
 		textAction= new TextViewerAction(getDetailViewer(), ITextOperationTarget.CUT);
-		textAction.configureAction(VariablesViewMessages.VariablesView_Cu_t_11, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		textAction.configureAction(VariablesViewMessages.VariablesView_Cu_t_11, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ 
 		textAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.CUT);
 		setAction(ActionFactory.CUT.getId(), textAction);
 		
 		textAction= new TextViewerAction(getDetailViewer(), ITextOperationTarget.PASTE);
-		textAction.configureAction(VariablesViewMessages.VariablesView__Paste_14, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		textAction.configureAction(VariablesViewMessages.VariablesView__Paste_14, "", ""); //$NON-NLS-1$ //$NON-NLS-2$ 
 		textAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.PASTE);
 		setAction(ActionFactory.PASTE.getId(), textAction);
 		
@@ -916,7 +900,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
 	
 	protected String getToggleActionLabel() {
-		return VariablesViewMessages.VariablesView_41; //$NON-NLS-1$
+		return VariablesViewMessages.VariablesView_41; 
 	}
 	
 	/**
@@ -929,7 +913,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		tbm.add(new Separator(IDebugUIConstants.RENDER_GROUP));
 		tbm.add(getAction("ShowTypeNames")); //$NON-NLS-1$
 		tbm.add(getAction("ToggleContentProviders")); //$NON-NLS-1$
-		tbm.add(getAction("CollapseAll")); //$NON-NLS-1$
+//		tbm.add(getAction("CollapseAll")); //$NON-NLS-1$
 	}
 
    /**
@@ -982,7 +966,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
         if (fTreeSelectionChangedListener == null) {
             fTreeSelectionChangedListener = new ISelectionChangedListener() {
                 public void selectionChanged(final SelectionChangedEvent event) {
-                    if (event.getSelectionProvider().equals(getVariablesViewer())) {
+                    if (event.getSelectionProvider().equals(getViewer())) {
                         clearStatusLine();
                         getVariablesViewSelectionProvider().fireSelectionChanged(event);				
                         // if the detail pane is not visible, don't waste time retrieving details
@@ -1087,7 +1071,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		} catch (DebugException de) {
             DebugUIPlugin.getStandardDisplay().asyncExec(new Runnable() {
                 public void run() {
-                    getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18); //$NON-NLS-1$
+                    getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18); 
                 }
             });
 		}				
@@ -1134,7 +1118,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 							getModelPresentation().computeDetail(val, VariablesView.this);
 						} catch (DebugException e) {
 							DebugUIPlugin.log(e);
-							getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18); //$NON-NLS-1$	
+							getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18); 	
 						}
 					} else {
 						fValueSelection = null;
@@ -1354,17 +1338,11 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		if (action != null && action.isEnabled()) {
 			action.run();
 		} else {
-			ISelection selection= event.getSelection();
-			if (!(selection instanceof IStructuredSelection)) {
-				return;
-			}
-			IStructuredSelection ss= (IStructuredSelection)selection;
-			Object o= ss.getFirstElement();
-			
-			if (o != null) {
-				TreeViewer tViewer= (TreeViewer)getViewer();
-				boolean expanded= tViewer.getExpandedState(o);
-				tViewer.setExpandedState(o, !expanded);
+			AsyncVariablesViewer viewer = (AsyncVariablesViewer) getViewer();
+			TreeSelection selection2 = (TreeSelection) viewer.getSelection();
+			TreePath[] paths = selection2.getPaths();
+			if (paths != null && paths.length == 1) {
+				viewer.toggleExpansion(paths[0]);
 			}
 		}
 	}	
@@ -1481,7 +1459,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @return the memento of the expanded and selected items in the viewer
 	 */
 	protected AbstractViewerState getViewerState() {
-		return new ViewerState(getVariablesViewer());
+		//FIXME
+		return null;
+//		return new ViewerState(getVariablesViewer());
 	}
 	
 	/**

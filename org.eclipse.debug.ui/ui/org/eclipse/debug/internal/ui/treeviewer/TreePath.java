@@ -98,6 +98,14 @@ public final class TreePath {
     }
 
     public boolean includes(TreePath treePath) {
+    		if (treePath == null) {
+    			return false;
+    		}
+    		
+//    		if (treePath.equals(this)) {
+//    			return true;
+//    		}
+    		
         int segmentCount = treePath.getSegmentCount();
         if (segmentCount >= fSegments.length) {
             return false;

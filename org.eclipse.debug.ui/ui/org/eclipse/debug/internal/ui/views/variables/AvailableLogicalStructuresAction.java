@@ -39,8 +39,8 @@ public class AvailableLogicalStructuresAction extends Action implements IMenuCre
 
 	public AvailableLogicalStructuresAction(VariablesView view) {
 		setView(view);
-		setToolTipText(VariablesViewMessages.AvailableLogicalStructuresAction_0); //$NON-NLS-1$
-		setText(VariablesViewMessages.AvailableLogicalStructuresAction_1); //$NON-NLS-1$
+		setToolTipText(VariablesViewMessages.AvailableLogicalStructuresAction_0); 
+		setText(VariablesViewMessages.AvailableLogicalStructuresAction_1); 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IDebugHelpContextIds.VARIABLES_SELECT_LOGICAL_STRUCTURE);
 		setEnabled(false);
 		setMenuCreator(this);
@@ -123,7 +123,7 @@ public class AvailableLogicalStructuresAction extends Action implements IMenuCre
 		setValue(null);
 		setTypes(null);
 		if (getView().isShowLogicalStructure()) {
-			ISelection s = getView().getVariablesViewer().getSelection();
+			ISelection s = getView().getViewer().getSelection();
 			if (s instanceof IStructuredSelection) {
 				IStructuredSelection selection = (IStructuredSelection) s;
 				if (selection.size() == 1) {

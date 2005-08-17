@@ -12,8 +12,8 @@ package org.eclipse.debug.internal.ui.actions;
 
  
 import org.eclipse.debug.ui.IDebugView;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Tree;
  
 public class SelectAllVariablesAction extends SelectAllAction {
 
@@ -22,7 +22,8 @@ public class SelectAllVariablesAction extends SelectAllAction {
 			return;
 		}
 		Viewer viewer= ((IDebugView)getView()).getViewer();
-		getAction().setEnabled(((TreeViewer)viewer).getTree().getItemCount() != 0);
+		Tree tree = (Tree) viewer.getControl();
+		getAction().setEnabled(tree.getItemCount() != 0);
 	}
 	
 	protected String getActionId() {

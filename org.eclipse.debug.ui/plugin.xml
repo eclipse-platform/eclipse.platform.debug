@@ -90,12 +90,6 @@
             id="org.eclipse.debug.ui.MemoryView"
             name="%MemoryViewName">
       </view>
-      <view
-            category="org.eclipse.debug.ui"
-            class="org.eclipse.debug.internal.ui.treeviewer.AsyncVariablesView"
-            icon="icons/full/eview16/variable_view.gif"
-            id="org.eclipse.debug.ui.async.variables"
-            name="Async Variables"/>      
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

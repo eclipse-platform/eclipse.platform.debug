@@ -27,7 +27,7 @@ public class AsyncStackFrameAdapter extends AbstractAsyncPresentationAdapter {
         String id = context.getPart().getSite().getId();
         IStackFrame frame = (IStackFrame) parent;
         try {
-            if (id.equals("org.eclipse.debug.ui.async.variables")) {
+            if (id.equals(IDebugUIConstants.ID_VARIABLE_VIEW)) {
                 IVariable[] variables = frame.getVariables();
                 for (int i = 0; i < variables.length; i++) {
                     IVariable variable = variables[i];

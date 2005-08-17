@@ -83,7 +83,7 @@ public class VariablesViewEventHandler extends AbstractDebugEventHandler {
 			getVariablesView().clearExpandedVariables(event.getSource());
 		}
 		if (!event.isEvaluation()) {
-			Object input = getVariablesView().getVariablesViewer().getInput();
+			Object input = getVariablesView().getViewer().getInput();
 			if (input instanceof IStackFrame) {
 				IStackFrame frame = (IStackFrame)input;
 				if (event.getSource().equals(frame.getThread())) {

@@ -75,7 +75,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 
 	Map fImageCache = new HashMap();
 
-	Tree fTree;
+	protected Tree fTree;
 
 	Object fInput;
 
@@ -243,6 +243,52 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 		return (Widget[]) fElementsToWidgets.get(element);
 	}
+	
+	protected TreeItem getTreeItem(TreePath path) {
+		return path.getTreeItem();
+	}
+
+	public synchronized void collapse(ISelection selection) {
+		if (selection instanceof TreeSelection) {
+			TreeSelection treeSelection = (TreeSelection) selection;
+			TreePath[] paths = treeSelection.getPaths();
+			for (int i = 0; i < paths.length; i++) {
+				TreeItem treeItem = paths[i].getTreeItem();
+				treeItem.setExpanded(false);
+			}
+		}
+	}
+	
+//	protected void cancelExpansion(TreeSelection treeSelection) {
+//		if (fPendingExpansion == null)
+//			return;
+//		fPendingExpansion = removePaths(treeSelection.getPaths(), fPendingExpansion);
+//	}
+//
+//	protected void cancelSelection(TreeSelection treeSelection) {
+//		if (fPendingSelection == null) 
+//			return;
+//		TreePath[] paths = removePaths(treeSelection.getPaths(), fPendingSelection.getPaths());
+//		if (paths == null) {
+//			fPendingSelection = null;
+//		} else {
+//			fPendingSelection = new TreeSelection(paths);
+//		}
+//	}
+//
+//	private TreePath[] removePaths(TreePath[] toRemove, TreePath[] toRemoveFrom) {
+//		ArrayList result = new ArrayList();
+//		for (int i = 0; i < toRemoveFrom.length; i++) {
+//			int index = Arrays.binarySearch(toRemove, toRemoveFrom[i]);
+//			if (index < 0) { // path is not in toRemove.
+//				result.add(toRemoveFrom);
+//			}
+//		}
+//		if (result.isEmpty()) {
+//			return null;
+//		}
+//		return (TreePath[])result.toArray(new TreePath[0]);
+//	}
 
 	/**
 	 * Expands all elements in the given tree selection.
@@ -280,7 +326,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 						TreePath treePath = getTreePath(treeItem);
 						if (path.includes(treePath)) {
 							if (!treeItem.getExpanded()) {
-								treeItem.setExpanded(true);
+								expand(treeItem);
 								update(element);
 								updateChildren(element, treeItem);
 
@@ -290,15 +336,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 								return false;
 							}
 						}
-					} else if (treeItems[k] instanceof Tree) {
-						Tree tree = (Tree) treeItems[k];
-						TreeItem[] items = tree.getItems();
-						for (int i = 0; i < items.length; i++) {
-							TreeItem item = items[i];
-							item.setExpanded(true);
-						}
-						return false;
-					}
+					} 
 				}
 			}
 		}
@@ -519,6 +557,14 @@ public class AsyncTreeViewer extends StructuredViewer {
 		attemptExpansion();
 		attemptSelection(true);
 	}
+	
+    private void expand(TreeItem child) {
+		child.setExpanded(true);
+		TreeItem parent = child.getParentItem();
+		if (parent != null) {
+			expand(parent);
+		}
+	}
 
 	protected TreeItem newTreeItem(Widget parent, int index) {
 		if (parent instanceof Tree) {
@@ -697,6 +743,9 @@ public class AsyncTreeViewer extends StructuredViewer {
 			int selections = 0;
 			for (int i = 0; i < paths.length; i++) {
 				TreePath path = paths[i];
+				if (path == null) {
+					continue; 
+				}
 				TreePath[] treePaths = getTreePaths(path.getLastSegment());
 				if (treePaths != null) {
 					for (int j = 0; j < treePaths.length; j++) {
@@ -737,4 +786,5 @@ public class AsyncTreeViewer extends StructuredViewer {
 			return null;
 		}
 	}
+
 }

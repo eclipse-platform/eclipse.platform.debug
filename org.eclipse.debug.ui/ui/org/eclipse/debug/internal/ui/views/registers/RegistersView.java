@@ -20,6 +20,7 @@ import org.eclipse.debug.internal.ui.views.variables.VariablesViewEventHandler;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
@@ -64,14 +65,15 @@ public class RegistersView extends VariablesView {
 	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#getToggleActionLabel()
 	 */
 	protected String getToggleActionLabel() {
-		return RegistersViewMessages.RegistersView_0; //$NON-NLS-1$
+		return RegistersViewMessages.RegistersView_0; 
 	}
 
 	/**
 	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#getViewerState()
 	 */
 	protected AbstractViewerState getViewerState() {
-		return new RegistersViewerState(getVariablesViewer());
+		TreeViewer viewer = (TreeViewer) getViewer();
+		return new RegistersViewerState(viewer);
 	}
 
 	/* (non-Javadoc)
