@@ -102,18 +102,28 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 						}
 					}
 					break;
-				case DebugEvent.TERMINATE :
+				case DebugEvent.TERMINATE:
 					clearSourceSelection(source);
-					if (source instanceof IThread) {
-						fThreadTimer.getTimedOutThreads().remove(source);
-						remove(source);
-					} else if (source instanceof IDebugElement) {
-						IDebugElement element = (IDebugElement)source;
-						IDebugTarget debugTarget = element.getDebugTarget();
-						if (debugTarget != null) {
-							refresh(debugTarget);
-							update(debugTarget.getLaunch());
+					if (source instanceof IDebugElement) {
+						IDebugElement element = (IDebugElement) source;
+						if (source instanceof IThread) {
+							fThreadTimer.getTimedOutThreads().remove(source);
+							remove(source);
+						} else {
+							IDebugTarget debugTarget = element.getDebugTarget();
+							if (debugTarget != null) {
+								refresh(debugTarget);
+							}
 						}
+						
+						ILaunch launch = element.getLaunch();
+						if (launch.isTerminated()) {
+							update(launch);
+						}
+					} else if (source instanceof IProcess) {
+						IProcess process = (IProcess) source;
+						refresh(process);
+						update(process.getLaunch());
 					} else {
 						refresh(source);
 					}
