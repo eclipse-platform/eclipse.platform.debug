@@ -12,6 +12,7 @@ package org.eclipse.debug.internal.ui.actions;
 
 import org.eclipse.debug.internal.ui.DebugPluginImages;
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
+import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 
@@ -20,9 +21,9 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
  */
 public class CollapseAllAction extends Action {
 	
-	private AbstractTreeViewer fViewer;
+	private AsyncTreeViewer fViewer;
 	
-	public CollapseAllAction(AbstractTreeViewer viewer) {
+	public CollapseAllAction(AsyncTreeViewer viewer) {
 		super(ActionMessages.CollapseAllAction_0, DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_ELCL_COLLAPSE_ALL)); //$NON-NLS-1$
 		setToolTipText(ActionMessages.CollapseAllAction_0); //$NON-NLS-1$
 		setDisabledImageDescriptor(DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_DLCL_COLLAPSE_ALL));

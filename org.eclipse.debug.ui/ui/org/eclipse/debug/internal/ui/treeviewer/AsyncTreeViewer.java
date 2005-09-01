@@ -50,6 +50,13 @@ import org.eclipse.swt.widgets.Widget;
  * an IChildrenUpdate to make this work, but IElementCollector does not provide
  * information about whether a child can have children or not. First implementation
  * of this resulted in variables in the debug view (as children of stack frames)
+ * 
+ * TODO: Timing: Seen some cases where the selection is complete and the pending 
+ * selection nulled out before the final refresh(Thread) completes. This causes 
+ * the selection to be lost. May need a preservingSelection(...) type method.
+ * 
+ * TODO: Our current ViewerState communicates with target and UI in the same 
+ * thread.
  */
 public class AsyncTreeViewer extends StructuredViewer {
 
@@ -148,6 +155,10 @@ public class AsyncTreeViewer extends StructuredViewer {
 		});
 	}
 
+	protected Tree getTree() {
+		return fTree;
+	}
+	
 	protected void dispose() {
 		Iterator images = fImageCache.values().iterator();
 		while (images.hasNext()) {
@@ -785,6 +796,26 @@ public class AsyncTreeViewer extends StructuredViewer {
 		public Object[] getElements(Object inputElement) {
 			return null;
 		}
+	}
+
+	public void collapseAll() {
+		TreeItem[] items = fTree.getItems();
+		for (int i = 0; i < items.length; i++) {
+			TreeItem item = items[i];
+			if (item.getExpanded())
+				collapse(item);
+		}
+	}
+
+	protected void collapse(TreeItem item) {
+		TreeItem[] items = item.getItems();
+		for (int i = 0; i < items.length; i++) {
+			TreeItem child = items[i];
+			if (child.getExpanded()) {
+				collapse(child);
+			}
+		}
+		item.setExpanded(false);
 	}
 
 }
