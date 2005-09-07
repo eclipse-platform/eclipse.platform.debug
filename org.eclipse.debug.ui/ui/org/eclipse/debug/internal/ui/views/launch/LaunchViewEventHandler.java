@@ -96,7 +96,9 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 			switch (event.getKind()) {
 				case DebugEvent.CREATE :
 					if (source instanceof IThread) {
-						insert(source);
+						IThread thread = (IThread) source;
+						IDebugTarget target = thread.getDebugTarget();
+						refresh(target);
 					} else {
 						getViewer().refresh();
 						if (source instanceof IDebugTarget | source instanceof IProcess) {

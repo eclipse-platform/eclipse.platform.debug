@@ -50,10 +50,6 @@ import org.eclipse.swt.widgets.Widget;
  * information about whether a child can have children or not. First implementation
  * of this resulted in variables in the debug view (as children of stack frames)
  * 
- * TODO: Timing: Seen some cases where the selection is complete and the pending 
- * selection nulled out before the final refresh(Thread) completes. This causes 
- * the selection to be lost. May need a preservingSelection(...) type method.
- * 
  */
 public class AsyncTreeViewer extends StructuredViewer {
 
@@ -267,37 +263,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 	}
 	
-//	protected void cancelExpansion(TreeSelection treeSelection) {
-//		if (fPendingExpansion == null)
-//			return;
-//		fPendingExpansion = removePaths(treeSelection.getPaths(), fPendingExpansion);
-//	}
-//
-//	protected void cancelSelection(TreeSelection treeSelection) {
-//		if (fPendingSelection == null) 
-//			return;
-//		TreePath[] paths = removePaths(treeSelection.getPaths(), fPendingSelection.getPaths());
-//		if (paths == null) {
-//			fPendingSelection = null;
-//		} else {
-//			fPendingSelection = new TreeSelection(paths);
-//		}
-//	}
-//
-//	private TreePath[] removePaths(TreePath[] toRemove, TreePath[] toRemoveFrom) {
-//		ArrayList result = new ArrayList();
-//		for (int i = 0; i < toRemoveFrom.length; i++) {
-//			int index = Arrays.binarySearch(toRemove, toRemoveFrom[i]);
-//			if (index < 0) { // path is not in toRemove.
-//				result.add(toRemoveFrom);
-//			}
-//		}
-//		if (result.isEmpty()) {
-//			return null;
-//		}
-//		return (TreePath[])result.toArray(new TreePath[0]);
-//	}
-
 	/**
 	 * Expands all elements in the given tree selection.
 	 * 
