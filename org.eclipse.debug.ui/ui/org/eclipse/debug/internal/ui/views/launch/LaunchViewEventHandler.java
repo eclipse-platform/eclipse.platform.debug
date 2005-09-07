@@ -29,6 +29,8 @@ import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.TreePath;
+import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandler;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -120,6 +122,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 						if (launch.isTerminated()) {
 							update(launch);
 						}
+						resetSelection(source, data);
 					} else if (source instanceof IProcess) {
 						IProcess process = (IProcess) source;
 						refresh(process);
@@ -192,20 +195,30 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 			return;
 		}
 		refresh(source);
-		if (source instanceof IThread) {
-		    if (data instanceof IStackFrame) {
-				selectAndReveal(data);
-				return;
-			}
-            selectAndReveal(source);
-		}
+		resetSelection(source, data);
 	}
 	
+	private void resetSelection(Object source, Object data) {
+		if (source instanceof IThread) {
+			AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+			TreePath[] treePaths = null;
+			if (data instanceof IStackFrame) {
+				treePaths = viewer.getTreePaths(data);
+			} else {
+				treePaths = viewer.getTreePaths(source);
+			}
+
+			if (treePaths != null && treePaths.length > 0) {
+				viewer.setSelection(new TreeSelection(new TreePath[] { treePaths[0] }));
+			}
+		}
+	}
+
+
 	/**
-	 * Updates the stack frame icons for a running thread.
-	 * This is useful for the case where a thread is resumed
-	 * temporarily  but the view should keep the stack frame 
-	 * visible (for example, step start or evaluation start).
+	 * Updates the stack frame icons for a running thread. This is useful for
+	 * the case where a thread is resumed temporarily but the view should keep
+	 * the stack frame visible (for example, step start or evaluation start).
 	 */
 	protected void updateRunningThread(IThread thread) {
 		labelChanged(thread);		
