@@ -102,9 +102,9 @@ public final class TreePath {
     			return false;
     		}
     		
-//    		if (treePath.equals(this)) {
-//    			return true;
-//    		}
+    		if (treePath.equals(this)) {
+    			return true;
+    		}
     		
         int segmentCount = treePath.getSegmentCount();
         if (segmentCount >= fSegments.length) {

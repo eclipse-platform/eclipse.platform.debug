@@ -68,13 +68,7 @@ public class RegistersView extends VariablesView {
 		return RegistersViewMessages.RegistersView_0; 
 	}
 
-	/**
-	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#getViewerState()
-	 */
-	protected AbstractViewerState getViewerState() {
-		TreeViewer viewer = (TreeViewer) getViewer();
-		return new RegistersViewerState(viewer);
-	}
+
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#createEventHandler()

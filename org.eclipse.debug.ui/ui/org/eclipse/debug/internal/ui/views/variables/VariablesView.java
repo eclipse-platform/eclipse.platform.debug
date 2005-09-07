@@ -372,6 +372,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
 
 	protected void setViewerInput(IStructuredSelection ssel) {
+		AsyncVariablesViewer variablesViewer = getVariablesViewer();
+		
 		IStackFrame frame= null;
 		if (ssel.size() == 1) {
 			Object input= ssel.getFirstElement();
@@ -403,23 +405,23 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		}
 		showViewer();
 		getViewer().setInput(frame);
+		
+		restoreState();
 	}
     
     protected void restoreState() {
-    	//FIXME:
-    	System.err.println("restore state only works on TreeViewers ugh...");
-//        VariablesViewer viewer = getVariablesViewer();
-//        IStackFrame frame = (IStackFrame) viewer.getInput();
-//        if (frame != null) {
-//            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
-//            if (state == null) {
-//                // attempt to restore selection/expansion based on last frame
-//                state = fLastState;
-//            } 
-//            if (state != null) {
-//                state.restoreState(viewer);
-//            }
-//        }
+        AsyncVariablesViewer viewer = (AsyncVariablesViewer) getViewer();
+        IStackFrame frame = (IStackFrame) viewer.getInput();
+        if (frame != null) {
+            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
+            if (state == null) {
+                // attempt to restore selection/expansion based on last frame
+                state = fLastState;
+            } 
+            if (state != null) {
+                state.restoreState(viewer);
+            }
+        }
     }
 	
 	
@@ -548,12 +550,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		}
 		setDetailPaneOrientation(orientation);
 		
-//        fUpdateListener = new IRemoteTreeViewerUpdateListener() {
-//            public void treeUpdated() {
-//                restoreState();
-//            }
-//        };
-//        ((VariablesViewer)variablesViewer).addUpdateListener(fUpdateListener);
 		return variablesViewer;
 	}
 	
@@ -612,7 +608,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		setSashForm(new SashForm(parent, SWT.NONE));
 
 		// add tree viewer
-		final AsyncVariablesViewer variablesViewer = new AsyncVariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+		final AsyncVariablesViewer variablesViewer = new AsyncVariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, this);
 		variablesViewer.setUseHashlookup(false);
 		variablesViewer.getControl().addFocusListener(new FocusAdapter() {
 			/* (non-Javadoc)
@@ -1460,9 +1456,11 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @return the memento of the expanded and selected items in the viewer
 	 */
 	protected AbstractViewerState getViewerState() {
-		//FIXME
-		return null;
-//		return new ViewerState(getVariablesViewer());
+		return new ViewerState(getVariablesViewer());
+	}
+	
+	private AsyncVariablesViewer getVariablesViewer() {
+		return (AsyncVariablesViewer) getViewer();
 	}
 	
 	/**

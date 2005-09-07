@@ -155,7 +155,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 		});
 	}
 
-	protected Tree getTree() {
+	public Tree getTree() {
 		return fTree;
 	}
 	
@@ -496,7 +496,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param update
 	 */
-	void updateComplete(AbstractUpdate update) {
+	protected void updateComplete(AbstractUpdate update) {
 		synchronized (fPendingUpdates) {
 			fPendingUpdates.remove(update);
 		}
