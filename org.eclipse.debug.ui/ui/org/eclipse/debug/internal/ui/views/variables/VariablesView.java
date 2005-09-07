@@ -372,8 +372,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
 
 	protected void setViewerInput(IStructuredSelection ssel) {
-		AsyncVariablesViewer variablesViewer = getVariablesViewer();
-		
 		IStackFrame frame= null;
 		if (ssel.size() == 1) {
 			Object input= ssel.getFirstElement();
