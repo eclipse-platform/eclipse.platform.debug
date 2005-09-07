@@ -38,8 +38,7 @@ import org.eclipse.swt.widgets.Widget;
 
 /**
  * TODO: tree editor not implemented
- * 
- * TODO: variables viewer (dup elements) 
+ *  
  * TODO: color and font support
  * 
  * TODO: default implementation of getting the image must run in UI thread, but
@@ -55,8 +54,6 @@ import org.eclipse.swt.widgets.Widget;
  * selection nulled out before the final refresh(Thread) completes. This causes 
  * the selection to be lost. May need a preservingSelection(...) type method.
  * 
- * TODO: Our current ViewerState communicates with target and UI in the same 
- * thread.
  */
 public class AsyncTreeViewer extends StructuredViewer {
 
