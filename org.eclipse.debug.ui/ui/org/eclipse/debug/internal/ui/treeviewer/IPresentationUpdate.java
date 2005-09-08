@@ -14,11 +14,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
 /**
- * Base interface for update requests on an <code>IPresentationAdapter</code>. Results
- * of an update request are reported back to an update object. An update request
- * may be cancelled by the client requesting the update, or the adapter performing the
- * update. Adapters may report failure by setting an appropriate status. When a request
- * is complete, an adapter must call <code>done()</code> on this update object.
+ * Common interface for requests made on an <code>IPresentationAdapter</code>. Results
+ * of a request are reported back to this object (usually a specialization of this
+ * interface). An update request may be cancelled by the client requesting the update, or
+ * by the presentation adapter fulfilling the update request. Presentation adapters may
+ * report failure by setting an appropriate status on this object. When a request
+ * is complete, an adapter must call <code>done()</code> on this update object, no matter
+ * if the update succeeded or failed.
  * <p>
  * Operations accepting a presentation update are expected to poll the
  * update (using <code>isCanceled</code>) periodically and abort at their
