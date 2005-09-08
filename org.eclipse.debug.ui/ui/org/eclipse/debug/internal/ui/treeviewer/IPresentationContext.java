@@ -15,7 +15,9 @@ import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * Context in which a label or children have been requested.
- * 
+ * <p>
+ * Clients are not intended to implement this interface.
+ * </p>
  * @since 3.2
  */
 public interface IPresentationContext {
