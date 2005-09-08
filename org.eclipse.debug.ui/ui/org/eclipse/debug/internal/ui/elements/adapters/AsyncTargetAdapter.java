@@ -40,7 +40,7 @@ public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
 		return Status.OK_STATUS;
 	}
 
-	protected IStatus doRetrieveLabels(Object object, IPresentationContext context, ILabelUpdate result) {
+	protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
 		if (object instanceof IDebugTarget) {
 			IDebugTarget target = (IDebugTarget) object;
 			StringBuffer label = new StringBuffer();
@@ -58,7 +58,7 @@ public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
 			return Status.OK_STATUS;
 		}
 		
-		return super.doRetrieveLabels(object, context, result);
+		return super.doRetrieveLabel(object, context, result);
 	}
 
 }

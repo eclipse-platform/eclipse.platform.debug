@@ -21,7 +21,7 @@ import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
 public class AsyncLauchManagerAdapter extends AbstractAsyncPresentationAdapter {
 
-    protected IStatus doRetrieveLabels(Object object, IPresentationContext context, ILabelUpdate result) {
+    protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
         result.done();
         return Status.OK_STATUS;
     }

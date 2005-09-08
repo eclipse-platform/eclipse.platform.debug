@@ -35,7 +35,7 @@ public class AsyncLaunchAdapter extends AbstractAsyncPresentationAdapter {
 		return Status.OK_STATUS;
 	}
 
-	protected IStatus doRetrieveLabels(Object object, IPresentationContext context, ILabelUpdate result) {
+	protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
 		if (object instanceof ILaunch) {
 			ILaunch launch = (ILaunch) object;
 			StringBuffer label = new StringBuffer(getLaunchText(launch));
@@ -47,7 +47,7 @@ public class AsyncLaunchAdapter extends AbstractAsyncPresentationAdapter {
 			return Status.OK_STATUS;
 		}
 
-		return super.doRetrieveLabels(object, context, result);
+		return super.doRetrieveLabel(object, context, result);
 	}
 
 	protected String getLaunchText(ILaunch launch) {

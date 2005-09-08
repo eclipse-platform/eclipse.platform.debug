@@ -28,7 +28,7 @@ public class AsyncProcessAdapter extends AbstractAsyncPresentationAdapter {
 		return Status.OK_STATUS;
 	}
 
-	protected IStatus doRetrieveLabels(Object object, IPresentationContext context, ILabelUpdate result) {
+	protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
 		if (object instanceof IProcess) {
 			try {
 				IProcess process = (IProcess) object;
@@ -44,7 +44,7 @@ public class AsyncProcessAdapter extends AbstractAsyncPresentationAdapter {
 			}
 		} else {
 			// shouldn't happen
-			super.doRetrieveLabels(object, context, result);
+			super.doRetrieveLabel(object, context, result);
 		}
 		return Status.OK_STATUS;
 	}

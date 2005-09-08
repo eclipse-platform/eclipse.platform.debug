@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 
 /**
  * TODO: tree editor not implemented
@@ -49,6 +50,10 @@ import org.eclipse.swt.widgets.Widget;
  * an IChildrenUpdate to make this work, but IElementCollector does not provide
  * information about whether a child can have children or not. First implementation
  * of this resulted in variables in the debug view (as children of stack frames)
+ *
+ * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
+ * 
+ * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer junk.
  * 
  */
 public class AsyncTreeViewer extends StructuredViewer {
@@ -209,6 +214,11 @@ public class AsyncTreeViewer extends StructuredViewer {
 		if (element instanceof IAdaptable) {
 			IAdaptable adaptable = (IAdaptable) element;
 			adapter = (IPresentationAdapter) adaptable.getAdapter(IPresentationAdapter.class);
+			
+			if (adapter == null) {
+				IDeferredWorkbenchAdapter deferredWorkbenchAdapter = (IDeferredWorkbenchAdapter) adaptable.getAdapter(IDeferredWorkbenchAdapter.class);
+				adapter = new DeferredWorkbenchPresentationAdapter(deferredWorkbenchAdapter);
+			}
 		}
 		return adapter;
 	}
