@@ -15,8 +15,11 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 /**
- * Request to retrieve the label of a presentation adapter.
- * 
+ * Label update request. A presentation adapter reports label attributes back to
+ * this object as they become available.
+ * <p>
+ * This interface is not intended to be implemented by clients.
+ * </p>
  * @since 3.2
  */
 public interface ILabelUpdate extends IPresentationUpdate {

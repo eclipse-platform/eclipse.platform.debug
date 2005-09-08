@@ -26,6 +26,9 @@ import org.eclipse.core.runtime.IStatus;
  * update (using <code>isCanceled</code>) periodically and abort at their
  * earliest convenience.
  * </p>
+ * <p>
+ * This interface is not intended to be implemented by clients.
+ * </p>
  * @since 3.2
  */
 public interface IPresentationUpdate extends IProgressMonitor {
