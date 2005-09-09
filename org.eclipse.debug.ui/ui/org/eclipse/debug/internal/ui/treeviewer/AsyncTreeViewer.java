@@ -38,6 +38,11 @@ import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 
 /**
+ * A tree viewer that retrieves children and labels asynchronously via presentation
+ * adapters and supports duplicate elements in the tree with different parents.
+ * Retrieving children and labels asynchrnously allows for arbitrary latency without
+ * blocking the UI thread. 
+ * <p>
  * TODO: tree editor not implemented
  *  
  * TODO: color and font support
@@ -54,35 +59,53 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
  * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
  * 
  * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer junk.
- * 
+ * </p>
+ * <p>
+ * Clients may instantiate this class. Not intended to be subclassed.
+ * </p>
+ * @since 3.2
  */
 public class AsyncTreeViewer extends StructuredViewer {
 
 	/**
 	 * A map of elements to associated tree items or tree
 	 */
-	Map fElementsToWidgets = new HashMap();
+	private Map fElementsToWidgets = new HashMap();
 
 	/**
 	 * A map of widget to parent widgets used to avoid requirement for parent
 	 * access in UI thread. Currently used by update objects to detect/cancel
 	 * updates on updates of children.
 	 */
-	Map fItemToParentItem = new HashMap();
+	private Map fItemToParentItem = new HashMap();
 
 	/**
 	 * Map of widgets to their data elements used to avoid requirement to access
 	 * data in UI thread.
 	 */
-	Map fWidgetsToElements = new HashMap();
+	private Map fWidgetsToElements = new HashMap();
 
-	List fPendingUpdates = new ArrayList();
+	/**
+	 * List of updates currently being performed.
+	 */
+	private List fPendingUpdates = new ArrayList();
 
-	Map fImageCache = new HashMap();
+	/**
+	 * Cache of images used for elements in this tree viewer. Label updates
+	 * use the method <code>getImage(...)</code> to cache images for
+	 * image descriptors. The images are disposed when this viewer is disposed.
+	 */
+	private Map fImageCache = new HashMap();
 
+	/**
+	 * The tree
+	 */
 	protected Tree fTree;
 
-	Object fInput;
+	/**
+	 * The root element/input to the viewer
+	 */
+	private Object fInput;
 
 	IPresentationContext fContext;
 
