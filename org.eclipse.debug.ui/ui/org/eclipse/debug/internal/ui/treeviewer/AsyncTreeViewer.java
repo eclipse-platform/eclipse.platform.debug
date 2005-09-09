@@ -29,7 +29,11 @@ import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.TreeEvent;
 import org.eclipse.swt.events.TreeListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
@@ -44,8 +48,6 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
  * blocking the UI thread. 
  * <p>
  * TODO: tree editor not implemented
- *  
- * TODO: color and font support
  * 
  * TODO: default implementation of getting the image must run in UI thread, but
  * other implementations could run in non-UI thread
@@ -58,7 +60,7 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
  *
  * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
  * 
- * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer junk.
+ * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer code.
  * 
  * TODO: what to do about content provider and label provider as we use adpaters instead
  *  which are explicitly async
@@ -100,6 +102,20 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 */
 	private Map fImageCache = new HashMap();
 
+	/**
+	 * Cache of the fonts used for elements in this tree viewer. Label updates
+	 * use the method <code>getFont(...)</code> to cache fonts for
+	 * FontData objects. The fonts are disposed with the viewer.
+	 */
+	private Map fFontCache = new HashMap();
+
+	/**
+	 * Cache of the colors used for elements in this tree viewer. Label updates
+	 * use the method <code>getColor(...)</code> to cache colors for
+	 * RGB values. The colors are disposed with the viewer.
+	 */
+	private Map fColorCache = new HashMap();
+	
 	/**
 	 * The tree
 	 */
@@ -206,6 +222,19 @@ public class AsyncTreeViewer extends StructuredViewer {
 			Image image = (Image) images.next();
 			image.dispose();
 		}
+		
+		Iterator fonts = fFontCache.values().iterator();
+		while (fonts.hasNext()) {
+			Font font = (Font) fonts.next();
+			font.dispose();
+		}
+		
+		Iterator colors = fColorCache.values().iterator();
+		while (colors.hasNext()) {
+			Color color = (Color) colors.next();
+			color.dispose();
+		}
+		
 		fElementsToWidgets.clear();
 		fPendingUpdates.clear();
 	}
@@ -717,6 +746,24 @@ public class AsyncTreeViewer extends StructuredViewer {
 		return image;
 	}
 
+	public Font getFont(FontData fontData) {
+		Font font = (Font) fFontCache.get(fontData);
+		if (font == null) {
+			font = new Font(getControl().getDisplay(), fontData);
+			fFontCache.put(fontData, font);
+		}
+		return font;
+	}
+	
+	public Color getColor(RGB rgb) {
+		Color color = (Color) fColorCache.get(rgb);
+		if (color == null) {
+			color = new Color(getControl().getDisplay(), rgb);
+			fColorCache.put(rgb, color);
+		}
+		return color;
+	}
+	
 	/**
 	 * Sets the context for this viewer. 
 	 * 
@@ -967,5 +1014,4 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 		item.setExpanded(false);
 	}
-
 }
