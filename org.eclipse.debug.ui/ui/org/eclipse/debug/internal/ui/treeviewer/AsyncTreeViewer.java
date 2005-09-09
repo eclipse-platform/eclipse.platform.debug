@@ -27,12 +27,15 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.TreeEvent;
 import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -186,19 +189,29 @@ public class AsyncTreeViewer extends StructuredViewer {
 		setContentProvider(new NullContentProvider());
 		tree.addTreeListener(new TreeListener() {
 			public void treeExpanded(TreeEvent e) {
-				Object element = e.item.getData();
-				Widget[] items = getWidgets(element);
-				if (items == null) {
-					return;
-				}
-				update(element);
-				for (int i = 0; i < items.length; i++) {
-					Widget item = items[i];
-					updateChildren(element, item);
-				}
+				((TreeItem)e.item).setExpanded(true);
+				internalRefresh(e.item.getData(), e.item);
 			}
 
 			public void treeCollapsed(TreeEvent e) {
+			}
+		});
+		tree.addMouseListener(new MouseListener() {
+		
+			public void mouseUp(MouseEvent e) {
+			}
+		
+			public void mouseDown(MouseEvent e) {
+			}
+		
+			public void mouseDoubleClick(MouseEvent e) {
+				TreeItem item = ((Tree)e.widget).getItem(new Point(e.x, e.y));
+				if (item.getExpanded()) {
+					item.setExpanded(false);
+				} else {
+					item.setExpanded(true);
+					internalRefresh(item.getData(), item);
+				}
 			}
 		});
 	}
@@ -248,16 +261,27 @@ public class AsyncTreeViewer extends StructuredViewer {
 		if (element == fInput) {
 			return; // the root is not displayed
 		}
-		IPresentationAdapter adapter = getPresentationAdapter(element);
-		if (adapter != null) {
-			Widget[] items = getWidgets(element);
-			if (items != null) {
-				for (int i = 0; i < items.length; i++) {
-					TreeItem item = (TreeItem) items[i];
-					ILabelUpdate labelUpdate = new LabelUpdate(item, this);
-					schedule(labelUpdate);
-					adapter.retrieveLabel(element, fContext, labelUpdate);
-				}
+		Widget[] items = getWidgets(element);
+		if (items != null) {
+			for (int i = 0; i < items.length; i++) {
+				update(element, items[i]);
+			}
+		}
+	}
+	
+	/**
+	 * Updates the label for a specific element and item.
+	 * 
+	 * @param element element to update
+	 * @param item its associated item
+	 */
+	protected void update(Object element, Widget item) {
+		if (item instanceof TreeItem) {
+			IPresentationAdapter adapter = getPresentationAdapter(element);
+			if (adapter != null) {
+				ILabelUpdate labelUpdate = new LabelUpdate(item, this);
+				schedule(labelUpdate);
+				adapter.retrieveLabel(element, fContext, labelUpdate);
 			}
 		}
 	}
@@ -279,11 +303,13 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param widget widget associated with the element in this viewer's tree  
 	 */
 	protected void updateChildren(Object parent, Widget widget) {
-		IPresentationAdapter adapter = getPresentationAdapter(parent);
-		if (adapter != null) {
-			IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
-			schedule(updateChildren);
-			adapter.retrieveChildren(parent, fContext, updateChildren);
+		if (parent == fInput || ((TreeItem)widget).getExpanded()) {
+			IPresentationAdapter adapter = getPresentationAdapter(parent);
+			if (adapter != null) {
+				IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
+				schedule(updateChildren);
+				adapter.retrieveChildren(parent, fContext, updateChildren);
+			}
 		}
 	}
 
@@ -342,36 +368,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 			return null;
 		}
 		return (Widget[]) fElementsToWidgets.get(element);
-	}
-	
-	/**
-	 * Returns the tree item for the leaf element in the given tree path
-	 * or <code>null</code>
-	 * 
-	 * @param path tree path
-	 * @return the tree item for the leaf element in the given tree path
-	 * or <code>null</code>
-	 * 
-	 * TODO: this is dangerous, as not all tree paths have items - not inteded for public use
-	 */
-	protected TreeItem getTreeItem(TreePath path) {
-		return path.getTreeItem();
-	}
-
-	/**
-	 * TODO: this does not work as not all tree paths have items...
-	 * 
-	 * @param selection
-	 */
-	public synchronized void collapse(ISelection selection) {
-		if (selection instanceof TreeSelection) {
-			TreeSelection treeSelection = (TreeSelection) selection;
-			TreePath[] paths = treeSelection.getPaths();
-			for (int i = 0; i < paths.length; i++) {
-				TreeItem treeItem = paths[i].getTreeItem();
-				treeItem.setExpanded(false);
-			}
-		}
 	}
 	
 	/**
@@ -811,7 +807,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @see org.eclipse.jface.viewers.StructuredViewer#doUpdateItem(org.eclipse.swt.widgets.Widget, java.lang.Object, boolean)
 	 */
 	protected void doUpdateItem(Widget item, Object element, boolean fullMap) {
-		update(element);
+		update(element, item);
 	}
 
 	/* (non-Javadoc)
@@ -846,16 +842,21 @@ public class AsyncTreeViewer extends StructuredViewer {
 		if (items == null) {
 			return;
 		}
-		update(element);
 		for (int i = 0; i < items.length; i++) {
-			Widget item = items[i];
-			if (element == fInput) {
-				updateChildren(element, item);
-			} else if (((TreeItem) item).getExpanded()) {
-				updateChildren(element, item);
-			}
+			internalRefresh(element, items[i]);
 		}
 	}
+	
+	/**
+	 * Refreshes a specific occurrence of an element.
+	 * 
+	 * @param element element to update
+	 * @param item item to update
+	 */
+	protected void internalRefresh(Object element, Widget item) {
+		update(element, item);
+		updateChildren(element, item);
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.StructuredViewer#reveal(java.lang.Object)

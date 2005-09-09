@@ -47,8 +47,6 @@ import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
-import org.eclipse.debug.internal.ui.treeviewer.TreePath;
-import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
 import org.eclipse.debug.internal.ui.views.IDebugExceptionHandler;
@@ -1296,13 +1294,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		IAction action = getAction(DOUBLE_CLICK_ACTION);
 		if (action != null && action.isEnabled()) {
 			action.run();
-		} else {
-			VariablesViewer viewer = (VariablesViewer) getViewer();
-			TreeSelection selection2 = (TreeSelection) viewer.getSelection();
-			TreePath[] paths = selection2.getPaths();
-			if (paths != null && paths.length == 1) {
-				viewer.toggleExpansion(paths[0]);
-			}
 		}
 	}	
 	/**
