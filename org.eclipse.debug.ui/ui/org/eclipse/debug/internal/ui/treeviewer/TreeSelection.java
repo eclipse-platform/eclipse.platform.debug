@@ -17,7 +17,14 @@ import java.util.List;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
 /**
- * A selection in a async tree viewer.
+ * A selection in a async tree viewer. Selections in an async tree viewer
+ * are identified by associated tree paths. As there can be duplicate elements
+ * in a tree viewer, paths are required to uniquely identify which leaf
+ * elements are selected.
+ * <p>
+ * Clients may instantiate this class. Not intended to be subclassed.
+ * </p>
+ * @since 3.2
  */
 public class TreeSelection implements IStructuredSelection {
     
