@@ -14,7 +14,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
@@ -69,9 +68,7 @@ class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
             item.setText(fText);
         }
         if (fImageDescriptor != null) {
-        	// TODO: when is this image disposed? who manages it? we should cache like images
-        	// similarly we need to manage the fonts and colors
-            Image image = new Image(Display.getDefault(), fImageDescriptor.getImageData());
+        	Image image = getViewer().getImage(fImageDescriptor);
             item.setImage(image);
         }
         // TODO: font/foreground/background
