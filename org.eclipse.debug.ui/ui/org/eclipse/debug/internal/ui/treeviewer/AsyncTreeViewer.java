@@ -307,7 +307,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 					if (treeItems[k] instanceof TreeItem) {
 						TreeItem treeItem = (TreeItem) treeItems[k];
 						TreePath treePath = getTreePath(treeItem);
-						if (path.includes(treePath)) {
+						if (path.startsWith(treePath)) {
 							if (!treeItem.getExpanded()) {
 								expand(treeItem);
 								update(element);

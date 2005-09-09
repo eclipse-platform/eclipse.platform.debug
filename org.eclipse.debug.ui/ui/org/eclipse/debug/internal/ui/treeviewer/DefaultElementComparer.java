@@ -12,6 +12,12 @@ package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.jface.viewers.IElementComparer;
 
+/**
+ * Default comparator used to compare individual elements in a tree path.
+ *
+ * @since 3.2
+ * @see org.eclipse.debug.internal.ui.treeviewer.TreePath
+ */
 public class DefaultElementComparer implements IElementComparer {
     
     public static final DefaultElementComparer INSTANCE= new DefaultElementComparer();
