@@ -22,9 +22,15 @@ public class DefaultElementComparer implements IElementComparer {
     
     public static final DefaultElementComparer INSTANCE= new DefaultElementComparer();
     
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IElementComparer#equals(java.lang.Object, java.lang.Object)
+     */
     public boolean equals(Object a, Object b) {
         return a.equals(b);
     }
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.viewers.IElementComparer#hashCode(java.lang.Object)
+     */
     public int hashCode(Object element) {
         return element.hashCode();
     }
