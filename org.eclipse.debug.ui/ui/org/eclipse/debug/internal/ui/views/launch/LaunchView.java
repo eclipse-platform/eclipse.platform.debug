@@ -470,6 +470,10 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	    Viewer viewer = getViewer();
 		if (viewer != null) {
 			viewer.removeSelectionChangedListener(this);
+			if (viewer instanceof AsyncTreeViewer) {
+				AsyncTreeViewer asyncTreeViewer = (AsyncTreeViewer) viewer;
+				asyncTreeViewer.dispose();
+			}
 		}
 		if (fContextListener != null) {
 			fContextListener.dispose();

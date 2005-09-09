@@ -18,6 +18,9 @@ import org.eclipse.ui.IWorkbenchPart;
  * <p>
  * Clients are not intended to implement this interface.
  * </p>
+ * 
+ * TODO: I think this should be replaced with just an <code>IWorkbenchPart</code>
+ * 
  * @since 3.2
  */
 public interface IPresentationContext {

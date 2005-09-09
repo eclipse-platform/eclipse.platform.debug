@@ -73,17 +73,30 @@ public abstract class AbstractViewerState {
 		}
 	}
 
-	protected void collectExpandedItems(TreeItem item, List expanded) throws DebugException {
+	/**
+	 * Collects paths to expanded children of the given element and returns
+	 * whether any paths were expanded.
+	 *  
+	 * @param item item to collect expanded paths for
+	 * @param expanded list to add to
+	 * @return whether any paths were found expanded
+	 * @throws DebugException
+	 */
+	protected boolean collectExpandedItems(TreeItem item, List expanded) throws DebugException {
         if (item.getExpanded()) {
-            IPath path = encodeElement(item);
-            if (path != null) {
-                expanded.add(path);
-                TreeItem[] items = item.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    collectExpandedItems(items[i], expanded);
-                }
+            boolean childExpanded = false;
+            TreeItem[] items = item.getItems();
+            for (int i = 0; i < items.length; i++) {
+                childExpanded = collectExpandedItems(items[i], expanded) || childExpanded;
             }
+            if (!childExpanded) {
+            	IPath path = encodeElement(item);
+            	expanded.add(path);
+            }
+        } else {
+        	return false;
         }
+        return true;
     }
 
 	/**

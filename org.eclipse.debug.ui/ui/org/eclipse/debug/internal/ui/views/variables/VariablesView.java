@@ -332,6 +332,10 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		Viewer viewer = getViewer();
 		if (viewer != null) {
 			getDetailDocument().removeDocumentListener(getDetailDocumentListener());
+			if (viewer instanceof AsyncTreeViewer) {
+				AsyncTreeViewer asyncTreeViewer = (AsyncTreeViewer) viewer;
+				asyncTreeViewer.dispose();
+			}
 		}
         IAction action= getAction("FindVariable"); //$NON-NLS-1$
         if (action != null && action instanceof FindVariableAction) {

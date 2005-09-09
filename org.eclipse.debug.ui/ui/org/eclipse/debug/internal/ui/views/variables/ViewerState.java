@@ -17,7 +17,6 @@ import java.util.List;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
