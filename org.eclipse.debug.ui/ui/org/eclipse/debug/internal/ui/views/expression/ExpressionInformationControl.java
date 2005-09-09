@@ -31,7 +31,7 @@ import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.DebugUIViewsMessages;
-import org.eclipse.debug.internal.ui.views.variables.AsyncVariablesViewer;
+import org.eclipse.debug.internal.ui.views.variables.VariablesViewer;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
 import org.eclipse.debug.ui.IDebugModelPresentation;
@@ -198,7 +198,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 //            site = page.getActivePart().getSite();
 //        }
                
-		viewer = new AsyncVariablesViewer(sashForm, SWT.NO_TRIM, null);
+		viewer = new VariablesViewer(sashForm, SWT.NO_TRIM, null);
 		viewer.setContext(new PresentationContext(page.getActivePart(), null));
 //        viewer.setContentProvider(new ExpressionPopupContentProvider(viewer, site, view));
 		modelPresentation = new VariablesViewModelPresentation();

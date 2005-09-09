@@ -377,7 +377,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	}
     
     protected void restoreState() {
-        AsyncVariablesViewer viewer = (AsyncVariablesViewer) getViewer();
+        VariablesViewer viewer = (VariablesViewer) getViewer();
         IStackFrame frame = (IStackFrame) viewer.getInput();
         if (frame != null) {
             AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
@@ -503,7 +503,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @see org.eclipse.debug.ui.AbstractDebugView#createViewer(Composite)
 	 */
 	public Viewer createViewer(Composite parent) {
-		AsyncVariablesViewer variablesViewer = (AsyncVariablesViewer) createTreeViewer(parent);
+		VariablesViewer variablesViewer = (VariablesViewer) createTreeViewer(parent);
 		variablesViewer.setContext(new PresentationContext(this, null));
 		
 		createDetailsViewer();
@@ -575,7 +575,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		setSashForm(new SashForm(parent, SWT.NONE));
 
 		// add tree viewer
-		final AsyncVariablesViewer variablesViewer = new AsyncVariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, this);
+		final VariablesViewer variablesViewer = new VariablesViewer(getSashForm(), SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL, this);
 		variablesViewer.setUseHashlookup(false);
 		variablesViewer.getControl().addFocusListener(new FocusAdapter() {
 			/* (non-Javadoc)
@@ -1293,7 +1293,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		if (action != null && action.isEnabled()) {
 			action.run();
 		} else {
-			AsyncVariablesViewer viewer = (AsyncVariablesViewer) getViewer();
+			VariablesViewer viewer = (VariablesViewer) getViewer();
 			TreeSelection selection2 = (TreeSelection) viewer.getSelection();
 			TreePath[] paths = selection2.getPaths();
 			if (paths != null && paths.length == 1) {
@@ -1417,8 +1417,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		return new ViewerState(getVariablesViewer());
 	}
 	
-	private AsyncVariablesViewer getVariablesViewer() {
-		return (AsyncVariablesViewer) getViewer();
+	private VariablesViewer getVariablesViewer() {
+		return (VariablesViewer) getViewer();
 	}
 	
 	/**

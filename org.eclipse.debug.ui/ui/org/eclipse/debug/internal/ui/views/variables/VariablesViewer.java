@@ -11,11 +11,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.progress.UIJob;
 
-public class AsyncVariablesViewer extends AsyncTreeViewer{
+public class VariablesViewer extends AsyncTreeViewer{
 
 	private VariablesView fView;
 
-	public AsyncVariablesViewer(Composite parent, int style, VariablesView view) {
+	public VariablesViewer(Composite parent, int style, VariablesView view) {
 		super(parent, style);
 		fView = view;
 	}
