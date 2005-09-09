@@ -51,9 +51,6 @@ import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
-import org.eclipse.debug.internal.ui.views.DebugViewDecoratingLabelProvider;
-import org.eclipse.debug.internal.ui.views.DebugViewInterimLabelProvider;
-import org.eclipse.debug.internal.ui.views.DebugViewLabelDecorator;
 import org.eclipse.debug.internal.ui.views.IDebugExceptionHandler;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
@@ -84,8 +81,6 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.ListenerList;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -103,7 +98,6 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -133,31 +127,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 																	IDebugExceptionHandler,
 																	INullSelectionListener {
 
-	/**
-	 * A decorating label provider which adds coloring to variables to
-	 * reflect their changed state
-	 */
-	protected class VariablesViewDecoratingLabelProvider extends DebugViewDecoratingLabelProvider {
-		
-		public VariablesViewDecoratingLabelProvider(StructuredViewer viewer, ILabelProvider provider, DebugViewLabelDecorator decorator) {
-			super(viewer, provider, decorator);
-		}
-
-		public Color getForeground(Object element) {
-			if (element instanceof IVariable) {
-				IVariable variable = (IVariable) element;
-				try {
-					if (variable.hasValueChanged()) {
-						return DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CHANGED_VARIABLE_COLOR);
-					}
-				} catch (DebugException e) {
-					DebugUIPlugin.log(e);
-				}
-			}
-			return super.getForeground(element);
-		}
-	
-	}
 	
 	/**
 	 * Internal interface for a cursor listener. I.e. aggregation 
@@ -632,15 +601,6 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		return variablesViewer;
 	}
 	
-	/**
-	 * Creates and returns a label provider for this view.
-	 * 
-	 * @return a label provider for this view.
-	 */
-	protected IBaseLabelProvider createLabelProvider(StructuredViewer viewer) {
-		return new VariablesViewDecoratingLabelProvider(viewer, new DebugViewInterimLabelProvider(getModelPresentation()), new DebugViewLabelDecorator(getModelPresentation()));
-	}
-
 	/**
 	 * Create the widgetry for the details viewer.
 	 */

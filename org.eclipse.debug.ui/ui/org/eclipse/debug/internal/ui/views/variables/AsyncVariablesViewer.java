@@ -43,14 +43,16 @@ public class AsyncVariablesViewer extends AsyncTreeViewer{
 	
 	protected void updateComplete(IPresentationUpdate update) {
 		super.updateComplete(update);
-		UIJob restoreJob = new UIJob("restore viewer state") { //$NON-NLS-1$
-			public IStatus runInUIThread(IProgressMonitor monitor) {
-				fView.restoreState();
-				return Status.OK_STATUS;
-			}
-		};
-		restoreJob.setSystem(true);
-		restoreJob.schedule(100);
+		if (fView != null) {
+			UIJob restoreJob = new UIJob("restore viewer state") { //$NON-NLS-1$
+				public IStatus runInUIThread(IProgressMonitor monitor) {
+					fView.restoreState();
+					return Status.OK_STATUS;
+				}
+			};
+			restoreJob.setSystem(true);
+			restoreJob.schedule(100);
+		}
 	}
 	
 }

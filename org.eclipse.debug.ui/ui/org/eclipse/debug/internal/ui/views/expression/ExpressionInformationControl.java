@@ -13,6 +13,7 @@ package org.eclipse.debug.internal.ui.views.expression;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IExpression;
@@ -21,10 +22,18 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
 import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
+import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
+import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
+import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
+import org.eclipse.debug.internal.ui.treeviewer.TreePath;
+import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.DebugUIViewsMessages;
+import org.eclipse.debug.internal.ui.views.variables.AsyncVariablesViewer;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
-import org.eclipse.debug.internal.ui.views.variables.VariablesViewer;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
@@ -49,7 +58,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 
 /**
@@ -66,7 +74,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 	
 	private IWorkbenchPage page;
 	private IExpression exp;
-	private VariablesViewer viewer;
+	private AsyncTreeViewer viewer;
 	private IDebugModelPresentation modelPresentation;
 	private StyledText valueDisplay;
 	private SashForm sashForm;
@@ -82,7 +90,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 	 * @param commandId identifier of the command used to dismiss the popup 
 	 */
 	public ExpressionInformationControl(IWorkbenchPage page, IExpression exp, String commandId) {
-		super(page.getWorkbenchWindow().getShell(), DebugUIViewsMessages.ExpressionInformationControl_5, commandId); //$NON-NLS-1$
+		super(page.getWorkbenchWindow().getShell(), DebugUIViewsMessages.ExpressionInformationControl_5, commandId); 
 		this.page = page;
 		this.exp = exp;
 	}
@@ -92,7 +100,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 	 */
 	public void setInformation(String information) {
 		VariablesView view = getViewToEmulate();
-		viewer.getContentProvider();
+
 		if (view != null) {
 			StructuredViewer structuredViewer = (StructuredViewer) view.getViewer();
 			if (structuredViewer != null) {
@@ -101,7 +109,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 					viewer.addFilter(filters[i]);
 				}
 			}
-			((RemoteExpressionsContentProvider)viewer.getContentProvider()).setShowLogicalStructure(view.isShowLogicalStructure());
+//			((RemoteExpressionsContentProvider)viewer.getContentProvider()).setShowLogicalStructure(view.isShowLogicalStructure());
 			Map map = view.getPresentationAttributes(exp.getModelIdentifier());
 			Iterator iterator = map.keySet().iterator();
 			while (iterator.hasNext()) {
@@ -109,8 +117,12 @@ public class ExpressionInformationControl extends PopupInformationControl {
 				modelPresentation.setAttribute(key, map.get(key));
 			}
 		}
-		viewer.setInput(new Object[]{exp});
-		viewer.expandToLevel(2);
+		
+		TreeRoot treeRoot = new TreeRoot();
+		viewer.setInput(treeRoot);
+		TreePath expansion = new TreePath(new Object[] {treeRoot, exp});
+		TreeSelection selection = new TreeSelection(new TreePath[] {expansion});
+		viewer.expand(selection);
 	}
 
 	private VariablesView getViewToEmulate() {
@@ -178,18 +190,19 @@ public class ExpressionInformationControl extends PopupInformationControl {
 		sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         page = DebugUIPlugin.getActiveWorkbenchWindow().getActivePage();
-        VariablesView view = getViewToEmulate();
-        IWorkbenchPartSite site = null;
-        if (view != null) {
-            site = view.getSite();
-        } else {
-            site = page.getActivePart().getSite();
-        }
+//        VariablesView view = getViewToEmulate();
+//        IWorkbenchPartSite site = null;
+//        if (view != null) {
+//            site = view.getSite();
+//        } else {
+//            site = page.getActivePart().getSite();
+//        }
                
-		viewer = new VariablesViewer(sashForm, SWT.NO_TRIM, null);
-        viewer.setContentProvider(new ExpressionPopupContentProvider(viewer, site, view));
+		viewer = new AsyncVariablesViewer(sashForm, SWT.NO_TRIM, null);
+		viewer.setContext(new PresentationContext(page.getActivePart(), null));
+//        viewer.setContentProvider(new ExpressionPopupContentProvider(viewer, site, view));
 		modelPresentation = new VariablesViewModelPresentation();
-		viewer.setLabelProvider(modelPresentation);
+//		viewer.setLabelProvider(modelPresentation);
 		
 		valueDisplay = new StyledText(sashForm, SWT.NO_TRIM | SWT.WRAP | SWT.V_SCROLL);
 		valueDisplay.setEditable(false);
@@ -331,5 +344,23 @@ public class ExpressionInformationControl extends PopupInformationControl {
         // removed from the view
         if (exp != null)
         	exp.dispose();
+    }
+    
+    private class TreeRoot implements IPresentationAdapter, IAdaptable {
+
+		public void retrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
+			result.addChild(exp, true);
+			result.done();
+		}
+
+		public void retrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
+		}
+
+		public Object getAdapter(Class adapter) {
+			if (adapter == IPresentationAdapter.class) {
+				return this;
+			}
+			return null;
+		}
     }
 }
