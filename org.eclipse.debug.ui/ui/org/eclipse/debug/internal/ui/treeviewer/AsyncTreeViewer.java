@@ -468,7 +468,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param update
 	 */
-	protected void updateComplete(AbstractUpdate update) {
+	protected void updateComplete(IPresentationUpdate update) {
 		synchronized (fPendingUpdates) {
 			fPendingUpdates.remove(update);
 		}

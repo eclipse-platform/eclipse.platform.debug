@@ -18,51 +18,105 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
-public class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
+/**
+ * Request to update the label of an element in a tree. 
+ * <p>
+ * Not intended to be subclassed or instantiated by clients. For use
+ * speficially with <code>AsyncTreeViewer</code>.
+ * </p>
+ * @since 3.2
+ */
+class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
 
+	/**
+	 * Retrieved label text. Only <code>null</code> if cancelled or failed.
+	 */
     private String fText;
+    
+    /**
+     * Retrieved image descriptor or <code>null</code>
+     */
     private ImageDescriptor fImageDescriptor;
+    
+    /**
+     * Retrieved font data or <code>null</code>
+     */
+    private FontData fFontData; 
+    
+    /**
+     * Retieved colors or <code>null</code>
+     */
+    private RGB fForeground;
+    private RGB fBackground;
 
-    public LabelUpdate(Widget item, AsyncTreeViewer viewer) {
-        super(item, viewer);
+    /**
+     * Cosntructs a request to upate the label of the given widget in the
+     * give viewer.
+     * 
+     * @param widget widget to update
+     * @param viewer viewer containing the widget
+     */
+    public LabelUpdate(Widget widget, AsyncTreeViewer viewer) {
+        super(widget, viewer);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#performUpdate()
+     */
     protected void performUpdate() {
-        TreeItem item = (TreeItem) getItem();
+        TreeItem item = (TreeItem) getWidget();
         if (fText != null) {
             item.setText(fText);
         }
         if (fImageDescriptor != null) {
+        	// TODO: when is this image disposed? who manages it? we should cache like images
+        	// similarly we need to manage the fonts and colors
             Image image = new Image(Display.getDefault(), fImageDescriptor.getImageData());
             item.setImage(image);
         }
+        // TODO: font/foreground/background
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#contains(org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate)
+     */
     protected boolean contains(AbstractUpdate update) {
-        return update instanceof LabelUpdate && update.getItem() == getItem();
+        return update instanceof LabelUpdate && update.getWidget() == getWidget();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setLabel(java.lang.String)
+     */
     public void setLabel(String text) {
         fText = text;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setFontData(org.eclipse.swt.graphics.FontData)
+     */
     public void setFontData(FontData fontData) {
-        // TODO Auto-generated method stub
-
+        fFontData = fontData;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setImageDescriptor(org.eclipse.jface.resource.ImageDescriptor)
+     */
     public void setImageDescriptor(ImageDescriptor image) {
         fImageDescriptor = image;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setForeground(org.eclipse.swt.graphics.RGB)
+     */
     public void setForeground(RGB foreground) {
-        // TODO Auto-generated method stub
-
+        fForeground = foreground;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setBackground(org.eclipse.swt.graphics.RGB)
+     */
     public void setBackground(RGB background) {
-        // TODO Auto-generated method stub
-
+        fBackground = background;
     }
 
 }

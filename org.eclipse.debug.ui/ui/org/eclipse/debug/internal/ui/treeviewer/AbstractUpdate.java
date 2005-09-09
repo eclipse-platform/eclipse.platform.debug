@@ -11,15 +11,33 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
-public abstract class AbstractUpdate implements IPresentationUpdate {
+/**
+ * Base implementation of an update reqest.
+ * <p>
+ * Not intended to be subclassed or instantiated by clients. For use
+ * speficially with <code>AsyncTreeViewer</code>.
+ * </p>
+ * @since 3.2
+ */
+abstract class AbstractUpdate implements IPresentationUpdate {
     
-    private Widget fItem;
+	/**
+	 * Widget the upadte is rooted at
+	 */
+    private Widget fWidget;
+    
+    /**
+     * Viewer the update is being performed for
+     */
     private AsyncTreeViewer fViewer;
-    private boolean fCanceled;
+    
+    /**
+     * Whether this request has been canelled
+     */
+    private boolean fCanceled = false;
 
     /**
      * Constructs an udpate rooted at the given item.
@@ -27,75 +45,107 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
      * @param item
      */
     public AbstractUpdate(Widget item, AsyncTreeViewer viewer) {
-        fItem = item;
+        fWidget = item;
         fViewer = viewer;
     }
     
+    /**
+     * Returns the viewer this update is being peformed for
+     * 
+     * @return the viewer this update is being peformed for
+     */
     protected AsyncTreeViewer getViewer() {
         return fViewer;
     }
     
-    protected Widget getItem() {
-        return fItem;
+    /**
+     * Returns the widget this update is rooted at
+     * 
+     * @return the widget this update is rooted at
+     */
+    protected Widget getWidget() {
+        return fWidget;
     }
     
     /**
-     * Returns whether the given item is a child of this update's item.
+     * Returns whether this update contains the given widget.
+     * That is, whether this update is for the same widget or a child of
+     * the given widget.
      * 
-     * @param item potential child
-     * @return
+     * @param widget widget to test containment on
+     * @return whether this update contains the given widget
      */
-    protected boolean isChild(Widget widget) {
-        if (widget instanceof Tree) {
-            return false;
+    protected boolean contains(Widget widget) {
+    	if (widget == getWidget()) {
+    		return true;
+    	}
+        if (widget instanceof TreeItem) {
+	        final TreeItem item = (TreeItem)widget;
+	        TreeItem parent = getViewer().getParentItem(item);
+	        while (parent != null) {
+	            if (parent.equals(getWidget())) {
+	                return true;
+	            }
+	            parent = getViewer().getParentItem(parent);
+	        }
         }
-        final TreeItem item = (TreeItem)widget;
-        TreeItem parent = fViewer.getParentItem(item);
-        while (parent != null) {
-            if (parent.equals(fItem)) {
-                return true;
-            }
-            parent = fViewer.getParentItem(parent);
-        }     
         return false;
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationUpdate#setStatus(org.eclipse.core.runtime.IStatus)
+     */
     public void setStatus(IStatus status) {
         // TODO Auto-generated method stub
-
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#beginTask(java.lang.String, int)
+     */
     public void beginTask(String name, int totalWork) {
         // TODO Auto-generated method stub
-
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#internalWorked(double)
+     */
     public void internalWorked(double work) {
         // TODO Auto-generated method stub
-
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#isCanceled()
+     */
     public boolean isCanceled() {
         return fCanceled;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#setCanceled(boolean)
+     */
     public void setCanceled(boolean value) {
         fCanceled = true;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#setTaskName(java.lang.String)
+     */
     public void setTaskName(String name) {
         // TODO Auto-generated method stub
-
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#subTask(java.lang.String)
+     */
     public void subTask(String name) {
         // TODO Auto-generated method stub
-
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.core.runtime.IProgressMonitor#worked(int)
+     */
     public void worked(int work) {
         // TODO Auto-generated method stub
-
     }
     
     /* (non-Javadoc)
@@ -106,9 +156,9 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
             getViewer().updateComplete(this);
             getViewer().getControl().getDisplay().asyncExec(new Runnable() {
                 public void run() {
-                    // necessary to check if fItem is disposed. The item may have been
+                    // necessary to check if widget is disposed. The item may have been
                     // removed from the tree when another children update occured.
-                    if (!isCanceled() && !fItem.isDisposed())
+                    if (!isCanceled() && !getWidget().isDisposed())
                         performUpdate();
                 }
             });
@@ -116,16 +166,17 @@ public abstract class AbstractUpdate implements IPresentationUpdate {
     }
 
     /**
-     * Performs the specific update.
+     * Notification this update has been completed and should now be applied
+     * to this update's viewer. This method is called in the UI thread.
      */
     protected abstract void performUpdate();
     
     /**
      * Returns whether this update effectively contains the given update.
-     * That is, this update will also perform the given update.
+     * That is, whether this update will also perform the given update.
      * 
-     * @param update
-     * @return
+     * @param update update to compare to
+     * @return whether this update will also perform the given update
      */
     protected abstract boolean contains(AbstractUpdate update);
 }

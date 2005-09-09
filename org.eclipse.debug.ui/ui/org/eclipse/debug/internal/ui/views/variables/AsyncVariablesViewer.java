@@ -1,17 +1,14 @@
 package org.eclipse.debug.internal.ui.views.variables;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.IPresentationUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.progress.UIJob;
 
 public class AsyncVariablesViewer extends AsyncTreeViewer{
@@ -44,7 +41,7 @@ public class AsyncVariablesViewer extends AsyncTreeViewer{
 	}
 
 	
-	protected void updateComplete(AbstractUpdate update) {
+	protected void updateComplete(IPresentationUpdate update) {
 		super.updateComplete(update);
 		UIJob restoreJob = new UIJob("restore viewer state") { //$NON-NLS-1$
 			public IStatus runInUIThread(IProgressMonitor monitor) {

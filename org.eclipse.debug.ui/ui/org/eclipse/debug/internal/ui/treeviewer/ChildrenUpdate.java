@@ -15,20 +15,35 @@ import java.util.List;
 
 import org.eclipse.swt.widgets.Widget;
 
-
-public class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
+/**
+ * Request to update the children of an element in a tree. 
+ * <p>
+ * Not intended to be subclassed or instantiated by clients. For use
+ * speficially with <code>AsyncTreeViewer</code>.
+ * </p>
+ * @since 3.2
+ */
+class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
     
+	/**
+	 * Collection of children retrieved
+	 */
     private List fChildren = new ArrayList();
+    
+    /**
+     * Each entry is a boolean corresponding to whether asscoaited
+     * child if <code>fChildren</code> has children.
+     */
     private List fHasChildren = new ArrayList();
 
     /**
-     * Constucts an update to retrieve and update the children of the given
-     * item.
+     * Constucts an request to retrieve and update the children of the given
+     * widget.
      * 
-     * @param item
+     * @param widget widget to retrieve children for
      */
-    public ChildrenUpdate(Widget item, AsyncTreeViewer viewer) {
-        super(item, viewer);
+    public ChildrenUpdate(Widget widget, AsyncTreeViewer viewer) {
+        super(widget, viewer);
     }
     
     /* (non-Javadoc)
@@ -49,12 +64,18 @@ public class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#contains(org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate)
+     */
     protected boolean contains(AbstractUpdate update) {
-        return (update instanceof ChildrenUpdate) && (isChild(update.getItem()) || update.getItem() == getItem());
+        return (update instanceof ChildrenUpdate) && contains(update.getWidget());
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#performUpdate()
+     */
     protected void performUpdate() {
-        getViewer().setChildren(getItem(), fChildren, fHasChildren);
+        getViewer().setChildren(getWidget(), fChildren, fHasChildren);
     }
 
 }
