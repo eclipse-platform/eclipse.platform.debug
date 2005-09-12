@@ -33,6 +33,9 @@ import org.eclipse.ui.IWorkbenchPart;
 
 public abstract class AbstractAsyncPresentationAdapter implements IPresentationAdapter {
 	
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate)
+     */
     public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenUpdate result) {
 		Job job = new Job("Retrieving Children") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
@@ -45,7 +48,12 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 
     protected abstract IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result);
         
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     */
     public void retrieveLabel(final Object object, final IPresentationContext context, final ILabelUpdate result) {
+    	// Default implementation does not run in the UI thread. Clients should override with
+    	// UI job if required
         Job job = new Job("Retrieving labels") { //$NON-NLS-1$
             protected IStatus run(IProgressMonitor monitor) {
                 return doRetrieveLabel(object, context, result);

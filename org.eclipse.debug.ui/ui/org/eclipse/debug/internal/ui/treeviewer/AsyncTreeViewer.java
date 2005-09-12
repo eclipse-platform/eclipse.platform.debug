@@ -57,19 +57,17 @@ import org.eclipse.swt.widgets.Widget;
  * </p> 
  * <p>
  * TODO: tree editor not implemented
+ * TODO: table tree - what implications does it have on IPresentationAdapter?
  * 
- * TODO: default implementation of getting the image must run in UI thread, but
- * other implementations could run in non-UI thread
- * 
- * TODO: default presentation adapter should use deferred workbench adapters for
- * backwards compatibility - PROBLEM: we have to map an IElementCollector to
- * an IChildrenUpdate to make this work, but IElementCollector does not provide
- * information about whether a child can have children or not. First implementation
- * of this resulted in variables in the debug view (as children of stack frames)
+ * TODO: Debug view should subclass and override presentation adapter retrieval.
+ * The debug view should honor deferred workbench element adapters, as they were
+ * allowed in 3.1.
  *
  * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
  * 
- * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer code.
+ * TODO: delete all of our non-public deferred workbench adapters and our old
+ *  RemoteTreeViewer code. Deprecate the public/abstract deferred workbench adapter
+ *  in favor of the presentation adapter.
  * </p>
  * <p>
  * Clients may instantiate and subclass this class.
@@ -985,8 +983,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 
 	/**
 	 * A content provider that does nothing.
-	 * 
-	 * TODO: needs to be revisited
 	 */
 	private class NullContentProvider implements IStructuredContentProvider {
 		public void dispose() {
