@@ -506,7 +506,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 */
 	public Viewer createViewer(Composite parent) {
 		VariablesViewer variablesViewer = (VariablesViewer) createTreeViewer(parent);
-		variablesViewer.setContext(new PresentationContext(this, null));
+		variablesViewer.setContext(new PresentationContext(this));
 		
 		createDetailsViewer();
 		getSashForm().setMaximizedControl(variablesViewer.getControl());

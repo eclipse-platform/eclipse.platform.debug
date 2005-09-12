@@ -47,7 +47,14 @@ import org.eclipse.swt.widgets.Widget;
  * A tree viewer that retrieves children and labels asynchronously via presentation
  * adapters and supports duplicate elements in the tree with different parents.
  * Retrieving children and labels asynchrnously allows for arbitrary latency without
- * blocking the UI thread. 
+ * blocking the UI thread.
+ * <p>
+ * This viewer uses presentation adapters to retreive labels and content rather than
+ * a label provider and content provider. As such, the label provider for this viewer
+ * is <code>null</code> by default. The content provider returned by this viewer is
+ * non-<code>null</code> to conform to the viewer specification, but performs no 
+ * useful function.
+ * </p> 
  * <p>
  * TODO: tree editor not implemented
  * 
@@ -63,13 +70,13 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
  * 
  * TODO: delete all of our deferred workbench adapters and our old RemoteTreeViewer code.
- * 
- * TODO: what to do about content provider and label provider as we use adpaters instead
- *  which are explicitly async
  * </p>
  * <p>
- * Clients may instantiate this class. Not intended to be subclassed.
+ * Clients may instantiate and subclass this class.
  * </p>
+ * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter
+ * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate
+ * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate
  * @since 3.2
  */
 public class AsyncTreeViewer extends StructuredViewer {
@@ -282,9 +289,20 @@ public class AsyncTreeViewer extends StructuredViewer {
 			if (adapter != null) {
 				ILabelUpdate labelUpdate = new LabelUpdate(item, this);
 				schedule(labelUpdate);
-				adapter.retrieveLabel(element, fContext, labelUpdate);
+				adapter.retrieveLabel(element, getPresentationContext(), labelUpdate);
 			}
 		}
+	}
+	
+	/**
+	 * Returns the presentation context to be used in update requests.
+	 * Clients may override this method if required to provide special
+	 * implementations of contexts.
+	 * 
+	 * @return presentation contenxt
+	 */
+	protected IPresentationContext getPresentationContext() {
+		return fContext;
 	}
 
 	/**
@@ -309,7 +327,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 			if (adapter != null) {
 				IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
 				schedule(updateChildren);
-				adapter.retrieveChildren(parent, fContext, updateChildren);
+				adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
 			}
 		}
 	}
@@ -760,8 +778,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * Sets the context for this viewer. 
 	 * 
 	 * @param context
-	 * 
-	 * TODO: needed? replace with IWorkbenchPart?
 	 */
 	public void setContext(IPresentationContext context) {
 		fContext = context;

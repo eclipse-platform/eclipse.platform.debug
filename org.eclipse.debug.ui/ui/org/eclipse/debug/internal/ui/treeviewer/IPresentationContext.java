@@ -10,17 +10,14 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.treeviewer;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * Context in which a label or children have been requested.
  * <p>
- * Clients are not intended to implement this interface.
+ * Clients are may implement and extend this interface to provide
+ * special contexts.
  * </p>
- * 
- * TODO: I think this should be replaced with just an <code>IWorkbenchPart</code>
- * 
  * @since 3.2
  */
 public interface IPresentationContext {
@@ -34,12 +31,4 @@ public interface IPresentationContext {
      */
     public IWorkbenchPart getPart();
     
-    /**
-     * Returns the preference settings associated with the preference 
-     * request, or <code>null</code> if none.
-     * 
-     * @return the preference settings associated with the preference 
-     * request, or <code>null</code>
-     */
-    public IPreferenceStore getPreferenceStore();
 }

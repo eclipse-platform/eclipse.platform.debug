@@ -199,7 +199,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 //        }
                
 		viewer = new VariablesViewer(sashForm, SWT.NO_TRIM, null);
-		viewer.setContext(new PresentationContext(page.getActivePart(), null));
+		viewer.setContext(new PresentationContext(page.getActivePart()));
 //        viewer.setContentProvider(new ExpressionPopupContentProvider(viewer, site, view));
 		modelPresentation = new VariablesViewModelPresentation();
 //		viewer.setLabelProvider(modelPresentation);

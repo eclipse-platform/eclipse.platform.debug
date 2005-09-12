@@ -10,30 +10,26 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.treeviewer;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * Presentation context.
  * <p>
- * Clients may instantiate this class. This class is not intended for subclassing.
+ * Clients may instantiate and subclass this class.
  * </p>
  * @since 3.2
  */
 public class PresentationContext implements IPresentationContext {
     
     private IWorkbenchPart fPart;
-    private IPreferenceStore fStore;
     
     /**
-     * Constructs a presentation context for the given part and preference store.
+     * Constructs a presentation context for the given part.
      * 
      * @param part workbench part
-     * @param store preference store or <code>null</code>
      */
-    public PresentationContext(IWorkbenchPart part, IPreferenceStore store) {
+    public PresentationContext(IWorkbenchPart part) {
         fPart = part;
-        fStore = store;
     }
 
     /* (non-Javadoc)
@@ -41,13 +37,6 @@ public class PresentationContext implements IPresentationContext {
      */
     public IWorkbenchPart getPart() {
         return fPart;
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationContext#getPreferenceStore()
-     */
-    public IPreferenceStore getPreferenceStore() {
-        return fStore;
     }
 
 }

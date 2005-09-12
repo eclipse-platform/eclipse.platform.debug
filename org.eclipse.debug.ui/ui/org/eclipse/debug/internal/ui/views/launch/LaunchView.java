@@ -260,7 +260,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	protected Viewer createViewer(Composite parent) {
 		AsyncTreeViewer viewer = new AsyncTreeViewer(parent);
         viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
-        viewer.setContext(new PresentationContext(this, null));
+        viewer.setContext(new PresentationContext(this));
         
         viewer.addSelectionChangedListener(this);
         viewer.addPostSelectionChangedListener(this);
