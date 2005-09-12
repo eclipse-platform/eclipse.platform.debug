@@ -16,9 +16,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.internal.ui.DebugUIMessages;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
 public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
@@ -38,27 +36,6 @@ public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
 			result.done();
 		}
 		return Status.OK_STATUS;
-	}
-
-	protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
-		if (object instanceof IDebugTarget) {
-			IDebugTarget target = (IDebugTarget) object;
-			StringBuffer label = new StringBuffer();
-			try {
-				if (target.isTerminated()) {
-					label.append(DebugUIMessages.DefaultLabelProvider_1); //$NON-NLS-1$
-				} else if (target.isDisconnected()) {
-					label.append(DebugUIMessages.DefaultLabelProvider__disconnected__1);
-				}
-				label.append(target.getName());
-			} catch (DebugException e) {
-			}
-			result.setLabel(label.toString());
-			result.done();
-			return Status.OK_STATUS;
-		}
-		
-		return super.doRetrieveLabel(object, context, result);
 	}
 
 }
