@@ -205,11 +205,13 @@ public class AsyncTreeViewer extends StructuredViewer {
 		
 			public void mouseDoubleClick(MouseEvent e) {
 				TreeItem item = ((Tree)e.widget).getItem(new Point(e.x, e.y));
-				if (item.getExpanded()) {
-					item.setExpanded(false);
-				} else {
-					item.setExpanded(true);
-					internalRefresh(item.getData(), item);
+				if (item != null) {
+					if (item.getExpanded()) {
+						item.setExpanded(false);
+					} else {
+						item.setExpanded(true);
+						internalRefresh(item.getData(), item);
+					}
 				}
 			}
 		});
