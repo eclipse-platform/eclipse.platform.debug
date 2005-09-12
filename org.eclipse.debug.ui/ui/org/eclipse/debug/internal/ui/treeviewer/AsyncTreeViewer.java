@@ -42,7 +42,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 
 /**
  * A tree viewer that retrieves children and labels asynchronously via presentation
@@ -318,19 +317,14 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param element element to retrieve adapter for
 	 * @return presentation adapter or <code>null</code>
-	 * 
-	 * TODO: needs to be revisited
 	 */
 	protected IPresentationAdapter getPresentationAdapter(Object element) {
 		IPresentationAdapter adapter = null;
-		if (element instanceof IAdaptable) {
+		if (element instanceof IPresentationAdapter) {
+			adapter = (IPresentationAdapter) element;
+		} else if (element instanceof IAdaptable) {
 			IAdaptable adaptable = (IAdaptable) element;
 			adapter = (IPresentationAdapter) adaptable.getAdapter(IPresentationAdapter.class);
-			
-			if (adapter == null) {
-				IDeferredWorkbenchAdapter deferredWorkbenchAdapter = (IDeferredWorkbenchAdapter) adaptable.getAdapter(IDeferredWorkbenchAdapter.class);
-				adapter = new DeferredWorkbenchPresentationAdapter(deferredWorkbenchAdapter);
-			}
 		}
 		return adapter;
 	}
