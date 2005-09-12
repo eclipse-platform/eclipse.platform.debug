@@ -956,7 +956,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 				// done
 				fPendingSelection = null;
 			} else {
-				fPendingSelection = new TreeSelection((TreePath[]) remaining.toArray());
+				fPendingSelection = new TreeSelection((TreePath[]) remaining.toArray(new TreePath[remaining.size()]));
 			}
 			if (!toSelect.isEmpty()) {
 				final TreeItem[] items = (TreeItem[]) toSelect.toArray(new TreeItem[toSelect.size()]);
