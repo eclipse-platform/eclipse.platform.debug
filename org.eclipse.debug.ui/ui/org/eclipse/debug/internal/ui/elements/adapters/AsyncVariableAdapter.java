@@ -12,7 +12,10 @@
 package org.eclipse.debug.internal.ui.elements.adapters;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -25,15 +28,81 @@ import org.eclipse.debug.core.model.IIndexedValue;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
+import org.eclipse.debug.internal.ui.LazyModelPresentation;
+import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
+import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
+import org.eclipse.debug.ui.IDebugModelPresentation;
+import org.eclipse.debug.ui.IDebugView;
+import org.eclipse.ui.IWorkbenchPart;
 
 public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
 
     private static final IVariable[] EMPTY_VARS = new IVariable[0];
 
-    protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
+    
+    
+    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelUpdate result) {
+    	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
+    	// Honor view specific settings in a debug view by copying model presentation settings
+    	// into the debug element helper's presentation before we get the label. This allows
+    	// for qualified name and type name settings to remain in tact.
+    	if (object instanceof IDebugElement && context.getPart() instanceof IDebugView) {
+    		IWorkbenchPart part = context.getPart();
+    		if (part instanceof IDebugView) {
+    			IDebugModelPresentation pres = ((IDebugView)part).getPresentation(((IDebugElement)object).getModelIdentifier());
+    			Map settings = null;
+	    		synchronized (presentation) {
+	    			if (pres instanceof DelegatingModelPresentation) {
+	    				settings = ((DelegatingModelPresentation)pres).getAttributes();
+	    			} else if (pres instanceof LazyModelPresentation) {
+	    				settings = ((LazyModelPresentation)pres).getAttributes();
+	    			}
+	    			if (settings != null) {
+			    		Iterator iterator = settings.entrySet().iterator();
+			    		while (iterator.hasNext()) {
+			    			Map.Entry entry = (Entry) iterator.next();
+			    			presentation.setAttribute((String) entry.getKey(), entry.getValue());
+			    		}
+			    		internalDoRetrieveLabel(object, result);
+			            result.done();
+			            return Status.OK_STATUS;  
+	    			}
+	    		}
+	    	}
+		}
+
+    	internalDoRetrieveLabel(object, result);
+        result.done();
+        return Status.OK_STATUS;        
+    }
+
+    
+	private void internalDoRetrieveLabel(Object object, ILabelUpdate result) {
+    	result.setLabel(DebugElementHelper.getLabel(object));
+        result.setImageDescriptor(DebugElementHelper.getImageDescriptor(object));
+        result.setFontData(DebugElementHelper.getFont(object));
+        result.setBackground(DebugElementHelper.getBackground(object));
+        if (object instanceof IVariable) {
+        	IVariable variable = (IVariable) object;
+        	try {
+				if (variable.hasValueChanged()) {
+					result.setForeground(DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CHANGED_VARIABLE_COLOR).getRGB());
+				} else {
+					result.setForeground(DebugElementHelper.getForeground(object));			
+				}
+			} catch (DebugException e) {
+				result.setForeground(DebugElementHelper.getForeground(object));
+			}
+        }
+	}
+
+
+	protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
         IVariable variable = (IVariable) parent;
         IValue value;
         try {
