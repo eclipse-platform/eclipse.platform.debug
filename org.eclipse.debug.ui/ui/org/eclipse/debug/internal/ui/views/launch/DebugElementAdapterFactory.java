@@ -21,6 +21,8 @@ import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.debug.internal.ui.elements.adapters.AsyncExpressionAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.AsyncExpressionManagerAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLauchManagerAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncLaunchAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsyncProcessAdapter;
@@ -68,6 +70,8 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
     private static IPresentationAdapter fgAsyncFrame = new AsyncStackFrameAdapter();
     private static IPresentationAdapter fgAsyncVariable = new AsyncVariableAdapter();
     private static IPresentationAdapter fgAsyncRegisterGroup = new AsyncRegisterGroupAdapter();
+    private static IPresentationAdapter fgAsyncExpressionManager = new AsyncExpressionManagerAdapter();
+    private static IPresentationAdapter fgAsyncExpression = new AsyncExpressionAdapter();
 
     /* (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
@@ -133,6 +137,12 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
             }
             if (adaptableObject instanceof IRegisterGroup) {
             		return fgAsyncRegisterGroup;
+            }
+            if (adaptableObject instanceof IExpressionManager) {
+            	return fgAsyncExpressionManager;
+            }
+            if (adaptableObject instanceof IExpression) {
+            	return fgAsyncExpression;
             }
         }
         return null;
