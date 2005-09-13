@@ -11,44 +11,40 @@
 
 package org.eclipse.debug.internal.ui.elements.adapters;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IRegisterGroup;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IStackFrame;
-import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.ui.IDebugUIConstants;
 
 public class AsyncStackFrameAdapter extends AbstractAsyncPresentationAdapter {
 
-    protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {        
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
         String id = context.getPart().getSite().getId();
         IStackFrame frame = (IStackFrame) parent;
-        try {
-            if (id.equals(IDebugUIConstants.ID_VARIABLE_VIEW)) {
-                IVariable[] variables = frame.getVariables();
-                for (int i = 0; i < variables.length; i++) {
-                    IVariable variable = variables[i];
-                    result.addChild(variable, variable.getValue().hasVariables());
-                }
-            } else if (id.equals(IDebugUIConstants.ID_REGISTER_VIEW)) {
-                IRegisterGroup[] registerGroups = frame.getRegisterGroups();
-                for (int i = 0; i < registerGroups.length; i++) {
-                    IRegisterGroup group = registerGroups[i];
-                    result.addChild(group, group.hasRegisters());
-                }
-            }
-        } catch (DebugException e) {
-            IStatus status = e.getStatus();
-            result.setStatus(status);
-            return status;
-        } finally {
-            result.done();
+        if (id.equals(IDebugUIConstants.ID_VARIABLE_VIEW)) {
+            return frame.getVariables();
+        } else if (id.equals(IDebugUIConstants.ID_REGISTER_VIEW)) {
+            return frame.getRegisterGroups();
         }
-        return Status.OK_STATUS;
-    }
+        return EMPTY;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
+        String id = context.getPart().getSite().getId();
+        IStackFrame frame = (IStackFrame) element;
+        if (id.equals(IDebugUIConstants.ID_VARIABLE_VIEW)) {
+            return frame.hasVariables();
+        } else if (id.equals(IDebugUIConstants.ID_REGISTER_VIEW)) {
+            return frame.hasRegisterGroups();
+        }
+        return false;
+	}
     
     
 

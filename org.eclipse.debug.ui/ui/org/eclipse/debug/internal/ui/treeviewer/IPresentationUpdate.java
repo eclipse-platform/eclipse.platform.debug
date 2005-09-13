@@ -20,7 +20,8 @@ import org.eclipse.core.runtime.IStatus;
  * by the presentation adapter fulfilling the update request. Presentation adapters may
  * report failure by setting an appropriate status on this object. When a request
  * is complete, an adapter must call <code>done()</code> on this update object, no matter
- * if the update succeeded or failed.
+ * if the update succeeded or failed. The <code>done()</code> method does not need to be
+ * called if an update request is canceled.
  * <p>
  * Operations accepting a presentation update are expected to poll the
  * update (using <code>isCanceled</code>) periodically and abort at their

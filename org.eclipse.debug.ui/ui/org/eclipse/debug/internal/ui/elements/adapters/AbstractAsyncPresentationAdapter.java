@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -23,6 +24,7 @@ import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
 import org.eclipse.debug.internal.ui.LazyModelPresentation;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
@@ -33,21 +35,72 @@ import org.eclipse.ui.IWorkbenchPart;
 
 public abstract class AbstractAsyncPresentationAdapter implements IPresentationAdapter {
 	
+	protected static final Object[] EMPTY = new Object[0];
+	
     /* (non-Javadoc)
      * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate)
      */
     public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenUpdate result) {
 		Job job = new Job("Retrieving Children") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
-				return doRetrieveChildren(parent, context, result);
+				IStatus status = Status.OK_STATUS;
+				try {
+					result.addChildren(getChildren(parent, context));
+				} catch (CoreException e) {
+					status = e.getStatus();
+				}
+				result.setStatus(status);
+				result.done();
+				return status;
 			}
 		};
 		job.setSystem(true);
 		job.schedule();
 	}
-
-    protected abstract IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result);
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate)
+     */
+    public void hasChildren(final Object element, final IPresentationContext context, final IExpandableUpdate result) {
+    	Job job = new Job("Computing hasChildren") { //$NON-NLS-1$
+			protected IStatus run(IProgressMonitor monitor) {
+				IStatus status = Status.OK_STATUS;
+				try {
+					result.hasChildren(hasChildren(element, context));
+				} catch (CoreException e) {
+					status = e.getStatus();
+				}
+				result.setStatus(status);
+				result.done();
+				return status;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
+		
+	}
         
+    /**
+     * Returns the children for the given parent in the specified context.
+     * 
+     * @param parent element to retrieve children for
+     * @param context context children will be presented in
+     * @return children
+     * @throws CoreException if an exception occurrs retieving children
+     */
+    protected abstract Object[] getChildren(Object parent, IPresentationContext context) throws CoreException;
+    
+    /**
+     * Returns whether the given element has children in the specified context.
+     * 
+     * @param element element that may have children
+     * @param context context element will be presented in
+     * @return whether the given element has children in the specified context
+     * @throws CoreException if an exception occurrs determining whether the
+     *  element has children
+     */
+    protected abstract boolean hasChildren(Object element, IPresentationContext context) throws CoreException;    
+  
     /* (non-Javadoc)
      * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
      */

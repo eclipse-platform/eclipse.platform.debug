@@ -32,6 +32,18 @@ public interface IPresentationAdapter {
     public void retrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result);
     
     /**
+     * Asynchronously determines whether the given element has children in the specified
+     * context reporting the result back to the given result object. If unable to determine
+     * whether the element has children, an exception should be reported to the result object
+     * with an appropriate status.
+     * 
+     * @param element the element on which children may exist 
+     * @param context the context in which children may exist
+     * @param result object to report the result to
+     */
+    public void hasChildren(Object element, IPresentationContext context, IExpandableUpdate result);
+    
+    /**
      * Asynchronously retrieves the label of the given object reporting back to
      * the given result. If unable to retrieve label information, an exception should be
      * reported back to the result object with an appropriate status.

@@ -31,21 +31,43 @@ import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
 import org.eclipse.debug.internal.ui.LazyModelPresentation;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
+import org.eclipse.debug.internal.ui.views.variables.VariablesView;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugView;
 import org.eclipse.ui.IWorkbenchPart;
 
 public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
 
-    private static final IVariable[] EMPTY_VARS = new IVariable[0];
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+     */
+    protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
+        IVariable variable = (IVariable) parent;
+        IValue value = variable.getValue();
+        if (value != null) {
+            return getValueChildren(variable, value, context);
+        }
+        return EMPTY;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+     */
+    protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
+        IValue value = ((IVariable)element).getValue();
+        return value.hasVariables();
+    }
 
-    
-    
+    /*
+     * (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     * 
+     * TODO: this is an ugly override... needs to be revisited
+     */
     protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelUpdate result) {
     	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
     	// Honor view specific settings in a debug view by copying model presentation settings
@@ -99,57 +121,23 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
 				result.setForeground(DebugElementHelper.getForeground(object));
 			}
         }
-	}
-
-
-	protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
-        IVariable variable = (IVariable) parent;
-        IValue value;
-        try {
-            value = variable.getValue();
-            if (value != null) {
-                IVariable[] valueChildren = getValueChildren(variable, value);
-                for (int i = 0; i < valueChildren.length; i++) {
-                    IVariable valueChild = valueChildren[i];
-                    result.addChild(valueChild, hasChildren(valueChild));    
-                }
-            }
-        } catch (DebugException e1) {
-            DebugUIPlugin.log(e1);
-        }
-        result.done();
-        return Status.OK_STATUS;
-    }
-    
-    protected boolean hasChildren(Object child) {
-        if (child instanceof IVariable) {
-            IVariable var = (IVariable) child;
-            try {
-                IValue value = var.getValue();
-                return value.hasVariables();
-            } catch (DebugException e) {
-            }
-        }
-        return false;
-    }
-
+	}    
     /**
      * Returns children for the given value, creating array paritions if
      * required
      * 
-     * @param parent
-     *            expression or variable containing the given value
-     * @param value
-     *            the value to retrieve children for
+     * @param parent expression or variable containing the given value
+     * @param value the value to retrieve children for
+     * @param context the context in which children have been requested
      * @return children for the given value, creating array paritions if
      *         required
-     * @throws DebugException
+     * @throws CoreException
      */
-    protected IVariable[] getValueChildren(IDebugElement parent, IValue value) throws DebugException {
+    protected Object[] getValueChildren(IDebugElement parent, IValue value, IPresentationContext context) throws CoreException {
         if (value == null) {
-            return EMPTY_VARS;
+            return EMPTY;
         }
-        IValue logicalValue = getLogicalValue(value);
+        IValue logicalValue = getLogicalValue(value, context);
         if (logicalValue instanceof IIndexedValue) {
             IIndexedValue indexedValue = (IIndexedValue) logicalValue;
             int partitionSize = computeParitionSize(indexedValue);
@@ -215,13 +203,14 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
     }
 
     /**
-     * Returns any logical value for the raw value.
+     * Returns any logical value for the raw value in the specified context
      * 
      * @param value
+     * @param context
      * @return
      */
-    protected IValue getLogicalValue(IValue value) {
-        return getLogicalValue(value, new ArrayList());
+    protected IValue getLogicalValue(IValue value, IPresentationContext context) {
+        return getLogicalValue(value, new ArrayList(), context);
     }
 
     /**
@@ -236,8 +225,8 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
      *            Callers should always pass in a new, empty list.
      * @return
      */
-    private IValue getLogicalValue(IValue value, List previousStructureIds) {
-        if (isShowLogicalStructure()) {
+    protected IValue getLogicalValue(IValue value, List previousStructureIds, IPresentationContext context) {
+        if (isShowLogicalStructure(context)) {
             ILogicalStructureType[] types = DebugPlugin.getLogicalStructureTypes(value);
             if (types.length > 0) {
                 ILogicalStructureType type = DebugPlugin.getDefaultStructureType(types);
@@ -245,7 +234,7 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
                     try {
                         value = type.getLogicalStructure(value);
                         previousStructureIds.add(type.getId());
-                        return getLogicalValue(value, previousStructureIds);
+                        return getLogicalValue(value, previousStructureIds, context);
                     } catch (CoreException e) {
                         // unable to display logical structure
                     }
@@ -256,11 +245,17 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
     }
 
     /**
-     * Return wether to show compute a logical structure or a raw structure.
+     * Return wether to show compute a logical structure or a raw structure
+     * in the specified context
      * 
      * @return wether to show compute a logical structure or a raw structure
+     * in the specified context
      */
-    protected boolean isShowLogicalStructure() {
+    protected boolean isShowLogicalStructure(IPresentationContext context) {
+    	IWorkbenchPart part = context.getPart();
+    	if (part instanceof VariablesView) {
+			return ((VariablesView) part).isShowLogicalStructure();
+		}
         return false;
     }
 

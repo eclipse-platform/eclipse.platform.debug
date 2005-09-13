@@ -270,7 +270,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 		Widget[] items = getWidgets(element);
 		if (items != null) {
 			for (int i = 0; i < items.length; i++) {
-				update(element, items[i]);
+				updateLabel(element, items[i]);
 			}
 		}
 	}
@@ -281,7 +281,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param element element to update
 	 * @param item its associated item
 	 */
-	protected void update(Object element, Widget item) {
+	protected void updateLabel(Object element, Widget item) {
 		if (item instanceof TreeItem) {
 			IPresentationAdapter adapter = getPresentationAdapter(element);
 			if (adapter != null) {
@@ -314,6 +314,22 @@ public class AsyncTreeViewer extends StructuredViewer {
 	}
 
 	/**
+	 * Updates whether the given element has children.
+	 * 
+	 * @param element element to update
+	 * @param widget widget associated with the element in this viewer's tree 
+	 */
+	protected void updateHasChildren(Object element, Widget widget) {
+		IPresentationAdapter adapter = getPresentationAdapter(element);
+		if (adapter != null) {
+			IExpandableUpdate update = new ExpandableUpdate(widget, this);
+			schedule(update);
+			adapter.hasChildren(element, getPresentationContext(), update);
+		}
+	}
+
+	
+	/**
 	 * Updates the children of the given element.
 	 * 
 	 * @param parent element of which to update children
@@ -325,14 +341,12 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 *    retrieve children, to update the '+' for a tree item
 	 */
 	protected void updateChildren(Object parent, Widget widget) {
-		//if (parent == fInput || ((TreeItem)widget).getExpanded()) {
-			IPresentationAdapter adapter = getPresentationAdapter(parent);
-			if (adapter != null) {
-				IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
-				schedule(updateChildren);
-				adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
-			}
-		//}
+		IPresentationAdapter adapter = getPresentationAdapter(parent);
+		if (adapter != null) {
+			IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
+			schedule(updateChildren);
+			adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
+		}
 	}
 
 	/**
@@ -596,15 +610,57 @@ public class AsyncTreeViewer extends StructuredViewer {
 			fPendingUpdates.remove(update);
 		}
 	}
+	
+	/**
+	 * Called by <code>ExpandableUpdate</code> after it is determined if
+	 * the widget has children.
+	 * 
+	 * @param widget
+	 * @param hasChildren
+	 */
+	synchronized void setHasChildren(Widget widget, boolean hasChildren) {
+		TreeItem[] prevChildren = null;
+		if (widget instanceof Tree) {
+			Tree tree = (Tree) widget;
+			prevChildren = tree.getItems();
+		} else {
+			prevChildren = ((TreeItem) widget).getItems();
+		}
+		if (hasChildren) {
+			if (prevChildren.length == 0) {
+				if (widget instanceof Tree) {
+					// update root elements in the tree
+					updateChildren(widget.getData(), widget);
+				} else {
+					// insert new dummy node to add +
+					newTreeItem(widget, 0);
+					if (((TreeItem)widget).getExpanded()) {
+						updateChildren(widget.getData(), widget);
+					}
+				}
+			} else {
+				if (widget instanceof Tree || ((TreeItem)widget).getExpanded()) {
+					// if expanded, update the children
+					updateChildren(widget.getData(), widget);
+				}
+			}
+		} else if (prevChildren.length > 0) {
+			// dispose previous children
+			for (int i = 0; i < prevChildren.length; i++) {
+				TreeItem prevChild = prevChildren[i];
+				unmap(prevChild.getData(), prevChild);
+				prevChild.dispose();
+			}				
+		}
+	}
 
 	/**
 	 * Called by <code>ChildrenUpdate</code> after children have been retrieved.
 	 * 
 	 * @param widget
 	 * @param newChildren
-	 * @param hasChildren
 	 */
-	synchronized void setChildren(Widget widget, List newChildren, List hasChildren) {
+	synchronized void setChildren(Widget widget, List newChildren) {
 		//apply filters
 		Object[] children = filter(newChildren.toArray());
 		
@@ -615,56 +671,37 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 		
 		//update tree
-		TreeItem[] oldItems = null;
+		TreeItem[] prevItems = null;
 		if (widget instanceof Tree) {
 			Tree tree = (Tree) widget;
-			oldItems = tree.getItems();
+			prevItems = tree.getItems();
 		} else {
-			oldItems = ((TreeItem) widget).getItems();
+			prevItems = ((TreeItem) widget).getItems();
 		}
 		
 		int index = 0;
 		for (; index < children.length; index++) {
 			Object kid = children[index];
-			boolean hasKids = ((Boolean) hasChildren.get(index)).booleanValue();
-			if (index < oldItems.length) {
-				TreeItem oldItem = oldItems[index];
-				Object oldData = oldItem.getData();
+			TreeItem item = null;
+			if (index < prevItems.length) {
+				item = prevItems[index];
+				Object oldData = item.getData();
 				if (!kid.equals(oldData)) {
-					unmap(oldData, oldItem);
-					map(kid, oldItem);
-				}
-				if (!hasKids && oldItem.getItemCount() > 0) {
-					// dispose children
-					TreeItem[] items = oldItem.getItems();
-					for (int i = 0; i < items.length; i++) {
-						TreeItem oldChild = items[i];
-						unmap(oldChild.getData(), oldChild);
-						oldChild.dispose();
-					}
-				} else if (hasKids && oldItem.getItemCount() == 0) {
-					// dummy to update +
-					new TreeItem(oldItem, SWT.NONE);
+					unmap(oldData, item);
+					map(kid, item);
 				}
 			} else {
-				TreeItem newItem = newTreeItem(widget, index);
-				map(kid, newItem);
-				if (hasKids) {
-					// dummy to update +
-					new TreeItem(newItem, SWT.NONE);
-				}
+				item = newTreeItem(widget, index);
+				map(kid, item);
 			}
+			internalRefresh(kid, item);
 		}
 		// remove left over old items
-		while (index < oldItems.length) {
-			TreeItem oldItem = oldItems[index];
+		while (index < prevItems.length) {
+			TreeItem oldItem = prevItems[index];
 			unmap(oldItem.getData(), oldItem);
 			oldItem.dispose();
 			index++;
-		}
-		// refresh the current kids
-		for (int i = 0; i < children.length; i++) {
-			refresh(children[i]);
 		}
 		
 		attemptExpansion();
@@ -822,7 +859,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @see org.eclipse.jface.viewers.StructuredViewer#doUpdateItem(org.eclipse.swt.widgets.Widget, java.lang.Object, boolean)
 	 */
 	protected void doUpdateItem(Widget item, Object element, boolean fullMap) {
-		update(element, item);
+		updateLabel(element, item);
 	}
 
 	/* (non-Javadoc)
@@ -869,8 +906,8 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param item item to update
 	 */
 	protected void internalRefresh(Object element, Widget item) {
-		update(element, item);
-		updateChildren(element, item);
+		updateLabel(element, item);
+		updateHasChildren(element, item);
 	}	
 
 	/* (non-Javadoc)

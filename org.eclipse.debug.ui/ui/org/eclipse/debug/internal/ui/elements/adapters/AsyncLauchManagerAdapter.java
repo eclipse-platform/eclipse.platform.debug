@@ -11,28 +11,36 @@
 
 package org.eclipse.debug.internal.ui.elements.adapters;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
 public class AsyncLauchManagerAdapter extends AbstractAsyncPresentationAdapter {
 
+    /* (non-Javadoc)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     */
     protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
         result.done();
         return Status.OK_STATUS;
     }
 
-    protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
-        ILaunch[] launches = ((ILaunchManager) parent).getLaunches();
-        for (int i = 0; i < launches.length; i++) {
-            ILaunch launch = launches[i];
-            result.addChild(launch, true);
-        }
-        result.done();
-        return Status.OK_STATUS;
-    }
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
+		return ((ILaunchManager) parent).getLaunches();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
+		return ((ILaunchManager)element).getLaunches().length > 0;
+	}
+    
+    
 }

@@ -24,6 +24,7 @@ import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
 import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
@@ -349,11 +350,12 @@ public class ExpressionInformationControl extends PopupInformationControl {
     private class TreeRoot implements IPresentationAdapter, IAdaptable {
 
 		public void retrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
-			result.addChild(exp, true);
+			result.addChild(exp);
 			result.done();
 		}
 
 		public void retrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
+			result.done();
 		}
 
 		public Object getAdapter(Class adapter) {
@@ -361,6 +363,14 @@ public class ExpressionInformationControl extends PopupInformationControl {
 				return this;
 			}
 			return null;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate)
+		 */
+		public void hasChildren(Object element, IPresentationContext context, IExpandableUpdate result) {
+			result.hasChildren(true);
+			result.done();
 		}
     }
 }

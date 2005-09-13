@@ -87,10 +87,10 @@ public class ExpressionViewEventHandler extends VariablesViewEventHandler implem
 		Runnable r = new Runnable() {
 			public void run() {
 				if (isAvailable()) {
-					getTreeViewer().refresh();
+					getStructuredViewer().refresh();
 					if (expressions.length > 0) {
 						ISelection selection = new StructuredSelection(expressions[0]); 
-						getTreeViewer().setSelection(selection, true);
+						getStructuredViewer().setSelection(selection, true);
 					}
 				}
 			}
@@ -105,11 +105,11 @@ public class ExpressionViewEventHandler extends VariablesViewEventHandler implem
 		Runnable r = new Runnable() {
 			public void run() {
 				if (isAvailable()) {
-					getTreeViewer().getControl().setRedraw(false);
+					getStructuredViewer().getControl().setRedraw(false);
 					for (int i = 0; i < expressions.length; i++) {
 						IExpression expression = expressions[i];
 						remove(expression);
-						IContentProvider provider= getTreeViewer().getContentProvider();
+						IContentProvider provider= getStructuredViewer().getContentProvider();
 						if (provider instanceof RemoteExpressionsContentProvider) {
 							RemoteExpressionsContentProvider expressionProvider= (RemoteExpressionsContentProvider) provider;
 							List decendants = expressionProvider.getCachedDecendants(expression);
@@ -118,11 +118,11 @@ public class ExpressionViewEventHandler extends VariablesViewEventHandler implem
 							expressionProvider.removeCache(decendants.toArray());
 							IExpression[] allExpressions= DebugPlugin.getDefault().getExpressionManager().getExpressions();
 							if (allExpressions.length > 0) {
-								getTreeViewer().setSelection(new StructuredSelection(allExpressions[0]), true);
+								getStructuredViewer().setSelection(new StructuredSelection(allExpressions[0]), true);
 							}
 						}						
 					}
-					getTreeViewer().getControl().setRedraw(true);
+					getStructuredViewer().getControl().setRedraw(true);
 				}
 			}
 		};
@@ -136,7 +136,7 @@ public class ExpressionViewEventHandler extends VariablesViewEventHandler implem
 		Runnable r = new Runnable() {
 			public void run() {
 				if (isAvailable()) {
-					getTreeViewer().getControl().setRedraw(false);
+					getStructuredViewer().getControl().setRedraw(false);
 					for (int i = 0; i < expressions.length; i++) {
 						IExpression expression = expressions[i];
 						refresh(expression);
@@ -146,7 +146,7 @@ public class ExpressionViewEventHandler extends VariablesViewEventHandler implem
 							getVariablesView().populateDetailPane();	
 						}
 					}
-					getTreeViewer().getControl().setRedraw(true);
+					getStructuredViewer().getControl().setRedraw(true);
 				}
 			}
 		};

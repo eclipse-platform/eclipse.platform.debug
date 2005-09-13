@@ -26,6 +26,7 @@ import org.eclipse.debug.ui.AbstractDebugView;
 import org.eclipse.jface.viewers.IBasicPropertyConstants;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.progress.UIJob;
@@ -325,15 +326,15 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 	}
 
 	/**
-	 * Returns this event handler's viewer as a tree
+	 * Returns this event handler's viewer as a structured
 	 * viewer or <code>null</code> if none.
 	 * 
-	 * @return this event handler's viewer as a tree
+	 * @return this event handler's viewer as a structured
 	 * viewer or <code>null</code> if none
 	 */
-	protected TreeViewer getTreeViewer() {
-		if (getViewer() instanceof TreeViewer) {
-			return (TreeViewer)getViewer();
+	protected StructuredViewer getStructuredViewer() {
+		if (getViewer() instanceof StructuredViewer) {
+			return (StructuredViewer)getViewer();
 		} 
 		return null;
 	}

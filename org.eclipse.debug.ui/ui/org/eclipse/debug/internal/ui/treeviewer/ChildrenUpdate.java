@@ -29,12 +29,6 @@ class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
 	 * Collection of children retrieved
 	 */
     private List fChildren = new ArrayList();
-    
-    /**
-     * Each entry is a boolean corresponding to whether asscoaited
-     * child if <code>fChildren</code> has children.
-     */
-    private List fHasChildren = new ArrayList();
 
     /**
      * Constucts an request to retrieve and update the children of the given
@@ -47,20 +41,18 @@ class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChild(java.lang.Object, boolean)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChild(java.lang.Object)
      */
-    public void addChild(Object child, boolean hasChildren) {
+    public void addChild(Object child) {
         fChildren.add(child);
-        fHasChildren.add(new Boolean(hasChildren));
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChildren(java.lang.Object[], boolean[])
+     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChildren(java.lang.Object[])
      */
-    public void addChildren(Object[] children, boolean[] hasChildren) {
+    public void addChildren(Object[] children) {
         for (int i = 0; i < children.length; i++) {
             fChildren.add(children[i]);
-            fHasChildren.add(new Boolean(hasChildren[i]));
         }
     }
     
@@ -68,14 +60,14 @@ class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
      * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#contains(org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate)
      */
     protected boolean contains(AbstractUpdate update) {
-        return (update instanceof ChildrenUpdate) && contains(update.getWidget());
+        return (update instanceof ChildrenUpdate || update instanceof ExpandableUpdate) && contains(update.getWidget());
     }
 
     /* (non-Javadoc)
      * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#performUpdate()
      */
     protected void performUpdate() {
-        getViewer().setChildren(getWidget(), fChildren, fHasChildren);
+        getViewer().setChildren(getWidget(), fChildren);
     }
 
 }

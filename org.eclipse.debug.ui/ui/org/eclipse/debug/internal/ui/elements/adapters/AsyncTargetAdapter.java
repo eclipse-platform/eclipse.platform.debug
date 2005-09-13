@@ -11,31 +11,24 @@
 
 package org.eclipse.debug.internal.ui.elements.adapters;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugException;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
 public class AsyncTargetAdapter extends AbstractAsyncPresentationAdapter {
 
-	protected IStatus doRetrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
-		try {
-			IThread[] threads = ((IDebugTarget) parent).getThreads();
-			for (int i = 0; i < threads.length; i++) {
-				IThread thread = threads[i];
-				result.addChild(thread, thread.isSuspended());
-			}
-		} catch (DebugException e) {
-			IStatus status = e.getStatus();
-			result.setStatus(status);
-			return status;
-		} finally {
-			result.done();
-		}
-		return Status.OK_STATUS;
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
+		return ((IDebugTarget) parent).getThreads();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 */
+	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
+		return ((IDebugTarget)element).hasThreads();
 	}
 
 }
