@@ -160,7 +160,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 *            the parent control
 	 */
 	public AsyncTreeViewer(Composite parent) {
-		this(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		this(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 	}
 
 	/**
