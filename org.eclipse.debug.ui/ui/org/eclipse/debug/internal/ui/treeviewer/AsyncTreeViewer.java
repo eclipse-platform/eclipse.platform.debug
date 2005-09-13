@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -787,7 +788,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param descriptor image descriptor
 	 * @return image
 	 */
-	protected Image getImage(ImageDescriptor descriptor) {
+	Image getImage(ImageDescriptor descriptor) {
 		Image image = (Image) fImageCache.get(descriptor);
 		if (image == null) {
 			image = new Image(getControl().getDisplay(), descriptor.getImageData());
@@ -796,7 +797,14 @@ public class AsyncTreeViewer extends StructuredViewer {
 		return image;
 	}
 
-	public Font getFont(FontData fontData) {
+	/**
+	 * Returns a font for the given font data. Adds the font to this viewer's font 
+	 * cache which is disposed when this viewer is disposed.
+	 * 
+	 * @param fontData font data
+	 * @return font
+	 */
+	Font getFont(FontData fontData) {
 		Font font = (Font) fFontCache.get(fontData);
 		if (font == null) {
 			font = new Font(getControl().getDisplay(), fontData);
@@ -805,7 +813,14 @@ public class AsyncTreeViewer extends StructuredViewer {
 		return font;
 	}
 	
-	public Color getColor(RGB rgb) {
+	/**
+	 * Returns a color for the given RGB. Adds the color to this viewer's color 
+	 * cache which is disposed when this viewer is disposed.
+	 * 
+	 * @param rgb and RGB
+	 * @return color
+	 */
+	Color getColor(RGB rgb) {
 		Color color = (Color) fColorCache.get(rgb);
 		if (color == null) {
 			color = new Color(getControl().getDisplay(), rgb);
@@ -1064,5 +1079,16 @@ public class AsyncTreeViewer extends StructuredViewer {
 			}
 		}
 		item.setExpanded(false);
+	}
+
+	/**
+	 * Notification that a presentation update has completed with a non-OK
+	 * status. Subclasses may override as required. The default implementation
+	 * does nothing.
+	 * 
+	 * @param update update that failed
+	 * @param status status of update
+	 */
+	protected void handlePresentationFailure(IPresentationUpdate update, IStatus status) {
 	}
 }

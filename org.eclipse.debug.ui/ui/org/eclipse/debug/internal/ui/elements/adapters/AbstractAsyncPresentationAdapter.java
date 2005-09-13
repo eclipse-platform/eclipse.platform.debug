@@ -51,7 +51,7 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 				}
 				result.setStatus(status);
 				result.done();
-				return status;
+				return Status.OK_STATUS;
 			}
 		};
 		job.setSystem(true);
@@ -72,7 +72,7 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 				}
 				result.setStatus(status);
 				result.done();
-				return status;
+				return Status.OK_STATUS;
 			}
 		};
 		job.setSystem(true);

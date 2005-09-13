@@ -31,5 +31,14 @@ public class VariablesViewer extends AsyncTreeViewer{
 			fRestoreJob.schedule(100);
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer#handlePresentationFailure(org.eclipse.debug.internal.ui.treeviewer.IPresentationUpdate, org.eclipse.core.runtime.IStatus)
+	 */
+	protected void handlePresentationFailure(IPresentationUpdate update, IStatus status) {
+		fView.showMessage(status.getMessage());
+	}
+	
+	
 	
 }

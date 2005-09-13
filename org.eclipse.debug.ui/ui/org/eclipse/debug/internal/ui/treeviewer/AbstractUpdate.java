@@ -38,6 +38,11 @@ abstract class AbstractUpdate implements IPresentationUpdate {
      * Whether this request has been canelled
      */
     private boolean fCanceled = false;
+    
+    /**
+     * Update request status or <code>null</code>
+     */
+    private IStatus fStatus = null;
 
     /**
      * Constructs an udpate rooted at the given item.
@@ -96,7 +101,7 @@ abstract class AbstractUpdate implements IPresentationUpdate {
      * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationUpdate#setStatus(org.eclipse.core.runtime.IStatus)
      */
     public void setStatus(IStatus status) {
-        // TODO Auto-generated method stub
+        fStatus = status;
     }
 
     /* (non-Javadoc)
@@ -158,8 +163,12 @@ abstract class AbstractUpdate implements IPresentationUpdate {
                 public void run() {
                     // necessary to check if widget is disposed. The item may have been
                     // removed from the tree when another children update occured.
-                    if (!isCanceled() && !getWidget().isDisposed())
+                    if (!isCanceled() && !getWidget().isDisposed()) {
+                    	if (fStatus != null && !fStatus.isOK()) {
+                    		getViewer().handlePresentationFailure(AbstractUpdate.this, fStatus);
+                    	}
                         performUpdate();
+                    }
                 }
             });
         }
