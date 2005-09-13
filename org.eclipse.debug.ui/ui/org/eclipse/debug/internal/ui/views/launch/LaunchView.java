@@ -806,9 +806,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 			if (treePaths != null) {
 				viewer.expand(new TreeSelection(treePaths));
 				if (selectNeeded) {
-					if (!frame.equals(fStackFrame)) {
-						viewer.setSelection(new TreeSelection(treePaths));
-					}
+					viewer.setSelection(new TreeSelection(treePaths));
 				}
 			} else {
 				ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
@@ -818,7 +816,9 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 				
 				TreePath treePath = new TreePath(new Object[] {launchManager, launch, debugTarget, thread, frame});
 				viewer.expand(new TreeSelection(new TreePath[] {treePath}));
-				viewer.setSelection(new TreeSelection(new TreePath[] {treePath}));
+				if (selectNeeded) {
+					viewer.setSelection(new TreeSelection(new TreePath[] {treePath}));
+				}
 			}
 		}
 	}
