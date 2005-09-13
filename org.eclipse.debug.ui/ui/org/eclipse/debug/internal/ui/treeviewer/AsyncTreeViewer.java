@@ -317,17 +317,22 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * Updates the children of the given element.
 	 * 
 	 * @param parent element of which to update children
-	 * @param widget widget associated with the element in this viewer's tree  
+	 * @param widget widget associated with the element in this viewer's tree
+	 * 
+	 *   TODO: separate fetching children and hasChildren into 
+	 *    individual methods on IPresentationAdapter so we can 
+	 *    determine if children are present without having to
+	 *    retrieve children, to update the '+' for a tree item
 	 */
 	protected void updateChildren(Object parent, Widget widget) {
-		if (parent == fInput || ((TreeItem)widget).getExpanded()) {
+		//if (parent == fInput || ((TreeItem)widget).getExpanded()) {
 			IPresentationAdapter adapter = getPresentationAdapter(parent);
 			if (adapter != null) {
 				IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
 				schedule(updateChildren);
 				adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
 			}
-		}
+		//}
 	}
 
 	/**
