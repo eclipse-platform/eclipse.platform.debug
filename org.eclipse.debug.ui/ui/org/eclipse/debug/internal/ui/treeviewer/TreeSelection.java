@@ -139,6 +139,6 @@ public class TreeSelection implements IStructuredSelection {
      * @return the paths in this selection
      */
     public TreePath[] getPaths() {
-        return fPaths;
+        return (TreePath[]) fPaths.clone();
     }
 }
