@@ -661,49 +661,55 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param widget
 	 * @param newChildren
 	 */
-	synchronized void setChildren(Widget widget, List newChildren) {
-		//apply filters
-		Object[] children = filter(newChildren.toArray());
+	synchronized void setChildren(final Widget widget, final List newChildren) {
+		preservingSelection(new Runnable() {
 		
-		//sort filtered children
-		ViewerSorter viewerSorter = getSorter();
-		if (viewerSorter != null) {
-			viewerSorter.sort(this, children);
-		}
-		
-		//update tree
-		TreeItem[] prevItems = null;
-		if (widget instanceof Tree) {
-			Tree tree = (Tree) widget;
-			prevItems = tree.getItems();
-		} else {
-			prevItems = ((TreeItem) widget).getItems();
-		}
-		
-		int index = 0;
-		for (; index < children.length; index++) {
-			Object kid = children[index];
-			TreeItem item = null;
-			if (index < prevItems.length) {
-				item = prevItems[index];
-				Object oldData = item.getData();
-				if (!kid.equals(oldData)) {
-					unmap(oldData, item);
-					map(kid, item);
+			public void run() {
+				//apply filters
+				Object[] children = filter(newChildren.toArray());
+				
+				//sort filtered children
+				ViewerSorter viewerSorter = getSorter();
+				if (viewerSorter != null) {
+					viewerSorter.sort(AsyncTreeViewer.this, children);
 				}
-			} else {
-				item = newTreeItem(widget, index);
-				map(kid, item);
+				
+				//update tree
+				TreeItem[] prevItems = null;
+				if (widget instanceof Tree) {
+					Tree tree = (Tree) widget;
+					prevItems = tree.getItems();
+				} else {
+					prevItems = ((TreeItem) widget).getItems();
+				}
+				
+				int index = 0;
+				for (; index < children.length; index++) {
+					Object kid = children[index];
+					TreeItem item = null;
+					if (index < prevItems.length) {
+						item = prevItems[index];
+						Object oldData = item.getData();
+						if (!kid.equals(oldData)) {
+							unmap(oldData, item);
+							map(kid, item);
+						}
+					} else {
+						item = newTreeItem(widget, index);
+						map(kid, item);
+					}
+					internalRefresh(kid, item);
+				}
+				// remove left over old items
+				while (index < prevItems.length) {
+					TreeItem oldItem = prevItems[index];
+					unmap(oldItem.getData(), oldItem);
+					oldItem.dispose();
+					index++;
+				}		
 			}
-			internalRefresh(kid, item);
-		}
-		// remove left over old items
-		while (index < prevItems.length) {
-			TreeItem oldItem = prevItems[index];
-			unmap(oldItem.getData(), oldItem);
-			oldItem.dispose();
-			index++;
-		}
+		
+		});
 		
 		attemptExpansion();
 		attemptSelection(true);
@@ -977,12 +983,15 @@ public class AsyncTreeViewer extends StructuredViewer {
 			fCurrentSelection = null;
 		}
 		fPendingSelection = selection;
-		fTree.getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				attemptSelection(reveal);
-			}
-		});
-		
+		if (fTree.getDisplay().getThread() == Thread.currentThread()) {
+			attemptSelection(reveal);
+		} else {
+			fTree.getDisplay().asyncExec(new Runnable() {
+				public void run() {
+					attemptSelection(reveal);
+				}
+			});
+		}
 	}
 
 	/**
@@ -1091,4 +1100,18 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 */
 	protected void handlePresentationFailure(IPresentationUpdate update, IStatus status) {
 	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.StructuredViewer#preservingSelection(java.lang.Runnable)
+	 */
+	protected synchronized void preservingSelection(Runnable updateCode) {
+		// if there's a pending selection, there's no point in preserving the selection
+		if (fPendingSelection != null) {
+			updateCode.run();
+		} else {
+			super.preservingSelection(updateCode);
+		}
+	}
+	
+	
 }
