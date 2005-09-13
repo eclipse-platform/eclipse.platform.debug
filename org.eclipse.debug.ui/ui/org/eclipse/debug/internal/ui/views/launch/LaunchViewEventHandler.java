@@ -196,6 +196,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 			}
 			return;
 		}
+		fLastStackFrame = null;
 		refresh(source);
 		resetSelection(source, data);
 	}
