@@ -11,8 +11,6 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
@@ -73,17 +71,23 @@ class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
         	Image image = getViewer().getImage(fImageDescriptor);
             item.setImage(image);
         }
-        if (fFontData != null) {
-        	Font font = getViewer().getFont(fFontData);
-        		item.setFont(font);
+        if (fFontData == null) {
+        	// default
+        	item.setFont(null);
+        } else {
+        	item.setFont(getViewer().getFont(fFontData));
         }
-        if (fForeground != null) {
-        	Color color = getViewer().getColor(fForeground);
-        		item.setForeground(color);
+        if (fForeground == null) { 
+        	// default
+        	item.setForeground(null);
+        } else {
+        	item.setForeground(getViewer().getColor(fForeground));
         }
-        if (fBackground != null) {
-        	Color color = getViewer().getColor(fBackground);
-        		item.setBackground(color);
+        if (fBackground == null) {
+        	// default
+        	item.setBackground(null);
+        } else {
+        	item.setBackground(getViewer().getColor(fBackground));
         }
     }
 
