@@ -60,14 +60,9 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: tree editor not implemented
  * TODO: table tree - what implications does it have on IPresentationAdapter?
  * 
- * TODO: Debug view should subclass and override presentation adapter retrieval.
- * The debug view should honor deferred workbench element adapters, as they were
- * allowed in 3.1.
- *
  * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
  * 
- * TODO: delete all of our non-public deferred workbench adapters and our old
- *  RemoteTreeViewer code. Deprecate the public/abstract deferred workbench adapter
+ * TODO: Deprecate the public/abstract deferred workbench adapter
  *  in favor of the presentation adapter.
  * </p>
  * <p>
