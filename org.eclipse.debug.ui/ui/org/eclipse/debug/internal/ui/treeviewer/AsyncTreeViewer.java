@@ -125,11 +125,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	private Tree fTree;
 
 	/**
-	 * The root element/input to the viewer
-	 */
-	private Object fInput;
-
-	/**
 	 * The context in which this viewer is being used - i.e. what part it is contained
 	 * in any any preference settings associated with it.
 	 */
@@ -260,7 +255,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param element element to update
 	 */
 	public void update(Object element) {
-		if (element == fInput) {
+		if (element == getInput()) {
 			return; // the root is not displayed
 		}
 		Widget[] items = getWidgets(element);
@@ -330,11 +325,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param parent element of which to update children
 	 * @param widget widget associated with the element in this viewer's tree
-	 * 
-	 *   TODO: separate fetching children and hasChildren into 
-	 *    individual methods on IPresentationAdapter so we can 
-	 *    determine if children are present without having to
-	 *    retrieve children, to update the '+' for a tree item
 	 */
 	protected void updateChildren(Object parent, Widget widget) {
 		IPresentationAdapter adapter = getPresentationAdapter(parent);
@@ -467,9 +457,8 @@ public class AsyncTreeViewer extends StructuredViewer {
 		return fTree;
 	}
 
-	
-	/**
-	 * Clears all element/widget caches in the tree. Called when the input is reset.
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.StructuredViewer#unmapAllElements()
 	 */
 	protected synchronized void unmapAllElements() {
 		Iterator iterator = fElementsToWidgets.keySet().iterator();
@@ -508,9 +497,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 */
 	protected void inputChanged(Object input, Object oldInput) {
 		cancelPendingUpdates();
-		unmapAllElements();
-		fInput = input;
-
 		map(input, fTree);
 		refresh();
 	}
@@ -569,7 +555,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 				path.add(0, data);
 				parent = getParentItem(parent);
 			}
-			path.add(0, fInput);
+			path.add(0, getInput());
 			paths[i] = new TreePath(path.toArray());
 			if (widget instanceof TreeItem) {
 				paths[i].setTreeItem((TreeItem) widget);
@@ -854,7 +840,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @see org.eclipse.jface.viewers.StructuredViewer#doFindInputItem(java.lang.Object)
 	 */
 	protected Widget doFindInputItem(Object element) {
-		if (element.equals(fInput)) {
+		if (element.equals(getInput())) {
 			return fTree;
 		}
 		return null;
