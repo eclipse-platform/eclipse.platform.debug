@@ -43,14 +43,16 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
     public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenRequestMonitor result) {
 		Job job = new Job("Retrieving Children") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
-				IStatus status = Status.OK_STATUS;
-				try {
-					result.addChildren(getChildren(parent, context));
-				} catch (CoreException e) {
-					status = e.getStatus();
+				if (!monitor.isCanceled()) {
+					IStatus status = Status.OK_STATUS;
+					try {
+						result.addChildren(getChildren(parent, context));
+					} catch (CoreException e) {
+						status = e.getStatus();
+					}
+					result.setStatus(status);
+					result.done();
 				}
-				result.setStatus(status);
-				result.done();
 				return Status.OK_STATUS;
 			}
 		};
@@ -62,22 +64,23 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
      * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor)
      */
     public void isContainer(final Object element, final IPresentationContext context, final IContainerRequestMonitor result) {
-    	Job job = new Job("Computing hasChildren") { //$NON-NLS-1$
+		Job job = new Job("Computing hasChildren") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
-				IStatus status = Status.OK_STATUS;
-				try {
-					result.setIsContainer(hasChildren(element, context));
-				} catch (CoreException e) {
-					status = e.getStatus();
+				if (!monitor.isCanceled()) {
+					IStatus status = Status.OK_STATUS;
+					try {
+						result.setIsContainer(hasChildren(element, context));
+					} catch (CoreException e) {
+						status = e.getStatus();
+					}
+					result.setStatus(status);
+					result.done();
 				}
-				result.setStatus(status);
-				result.done();
 				return Status.OK_STATUS;
 			}
 		};
 		job.setSystem(true);
 		job.schedule();
-		
 	}
         
     /**
@@ -105,16 +108,20 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
      * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor)
      */
     public void retrieveLabel(final Object object, final IPresentationContext context, final ILabelRequestMonitor result) {
-    	// Default implementation does not run in the UI thread. Clients should override with
-    	// UI job if required
-        Job job = new Job("Retrieving labels") { //$NON-NLS-1$
-            protected IStatus run(IProgressMonitor monitor) {
-                return doRetrieveLabel(object, context, result);
-            }
-        };
-        job.setSystem(true);
-        job.schedule();
-    }
+		// Default implementation does not run in the UI thread. Clients should
+		// override with
+		// UI job if required
+		Job job = new Job("Retrieving labels") { //$NON-NLS-1$
+			protected IStatus run(IProgressMonitor monitor) {
+				if (!monitor.isCanceled()) {
+					return doRetrieveLabel(object, context, result);
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
+	}
     
     protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelRequestMonitor result) {
     	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
@@ -149,11 +156,11 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 	    		}
 	    	}
 		}
-    	result.setLabel(DebugElementHelper.getLabel(object));
-        result.setImageDescriptor(DebugElementHelper.getImageDescriptor(object));
-        result.setFontData(DebugElementHelper.getFont(object));
-        result.setBackground(DebugElementHelper.getBackground(object));
-        result.setForeground(DebugElementHelper.getForeground(object));
+    		result.setLabel(DebugElementHelper.getLabel(object));
+		result.setImageDescriptor(DebugElementHelper.getImageDescriptor(object));
+		result.setFontData(DebugElementHelper.getFont(object));
+		result.setBackground(DebugElementHelper.getBackground(object));
+		result.setForeground(DebugElementHelper.getForeground(object));
         result.done();
         return Status.OK_STATUS;        
     }
