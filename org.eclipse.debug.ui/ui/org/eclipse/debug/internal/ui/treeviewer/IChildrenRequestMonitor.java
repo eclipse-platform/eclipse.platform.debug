@@ -11,24 +11,23 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 /**
- * Children update request. A presentation adapter adds children to
- * this object as they become available.
+ * A presentation monitor that collects children from a presentation adapter.
  * <p>
  * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface IChildrenUpdate extends IPresentationUpdate {
+public interface IChildrenRequestMonitor extends IPresentationRequestMonitor {
 
 	/**
-	 * Adds the given child to this update request.
+	 * Adds the given child to this presentation request.
 	 * 
 	 * @param child child to add
 	 */
     public void addChild(Object child);
     
     /**
-     * Adds the given children to this update request.
+     * Adds the given children to this presentation request.
      * 
      * @param children children to add
      */

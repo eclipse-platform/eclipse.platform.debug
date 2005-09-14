@@ -31,7 +31,7 @@ import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
 import org.eclipse.debug.internal.ui.LazyModelPresentation;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
@@ -64,11 +64,11 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
 
     /*
      * (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor)
      * 
      * TODO: this is an ugly override... needs to be revisited
      */
-    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelUpdate result) {
+    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelRequestMonitor result) {
     	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
     	// Honor view specific settings in a debug view by copying model presentation settings
     	// into the debug element helper's presentation before we get the label. This allows
@@ -104,7 +104,7 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
     }
 
     
-	private void internalDoRetrieveLabel(Object object, ILabelUpdate result) {
+	private void internalDoRetrieveLabel(Object object, ILabelRequestMonitor result) {
     	result.setLabel(DebugElementHelper.getLabel(object));
         result.setImageDescriptor(DebugElementHelper.getImageDescriptor(object));
         result.setFontData(DebugElementHelper.getFont(object));

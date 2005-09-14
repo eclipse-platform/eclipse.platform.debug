@@ -15,16 +15,16 @@ import org.eclipse.core.runtime.IStatus;
 
 /**
  * Common interface for requests made on an <code>IPresentationAdapter</code>. Results
- * of a request are reported back to this object (usually a specialization of this
- * interface). An update request may be cancelled by the client requesting the update, or
- * by the presentation adapter fulfilling the update request. Presentation adapters may
- * report failure by setting an appropriate status on this object. When a request
- * is complete, an adapter must call <code>done()</code> on this update object, no matter
+ * of a presentation request are reported to a presentation requiest monitor (usually a
+ * specialization of this interface). An presentation request may be cancelled by the client
+ * making the request, or by the presentation adapter fulfilling the request. Presentation
+ * adapters may report failure by setting an appropriate status on this monitor. When a request
+ * is complete, an adapter must call <code>done()</code> on the monitor, no matter
  * if the update succeeded or failed. The <code>done()</code> method does not need to be
- * called if an update request is canceled.
+ * called if an presentation request is canceled.
  * <p>
- * Operations accepting a presentation update are expected to poll the
- * update (using <code>isCanceled</code>) periodically and abort at their
+ * Operations accepting a presentation request monitor are expected to poll the
+ * monitor (using <code>isCanceled</code>) periodically and abort at their
  * earliest convenience.
  * </p>
  * <p>
@@ -32,10 +32,10 @@ import org.eclipse.core.runtime.IStatus;
  * </p>
  * @since 3.2
  */
-public interface IPresentationUpdate extends IProgressMonitor {
+public interface IPresentationRequestMonitor extends IProgressMonitor {
 
     /**
-     * Sets the status of this request, possibly <code>null</code>.
+     * Sets the status of this presentation request, possibly <code>null</code>.
      * When a request fails, the status indicates why the request failed.
      * A <code>null</code> status is considered to be successful.
      * 

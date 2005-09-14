@@ -15,14 +15,14 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * Base implementation of an update reqest.
+ * Base implementation of a presentation request monitor.
  * <p>
- * Not intended to be subclassed or instantiated by clients. For use
- * speficially with <code>AsyncTreeViewer</code>.
+ * Not intended to be subclassed or instantiated by clients. For internal use
+ * with the <code>AsyncTreeViewer</code> implementation.
  * </p>
  * @since 3.2
  */
-abstract class AbstractUpdate implements IPresentationUpdate {
+abstract class PresentationRequestMonitor implements IPresentationRequestMonitor {
     
 	/**
 	 * Widget the upadte is rooted at
@@ -49,7 +49,7 @@ abstract class AbstractUpdate implements IPresentationUpdate {
      * 
      * @param item
      */
-    public AbstractUpdate(Widget item, AsyncTreeViewer viewer) {
+    public PresentationRequestMonitor(Widget item, AsyncTreeViewer viewer) {
         fWidget = item;
         fViewer = viewer;
     }
@@ -98,7 +98,7 @@ abstract class AbstractUpdate implements IPresentationUpdate {
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationUpdate#setStatus(org.eclipse.core.runtime.IStatus)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationRequestMonitor#setStatus(org.eclipse.core.runtime.IStatus)
      */
     public void setStatus(IStatus status) {
         fStatus = status;
@@ -165,7 +165,7 @@ abstract class AbstractUpdate implements IPresentationUpdate {
                     // removed from the tree when another children update occured.
                     if (!isCanceled() && !getWidget().isDisposed()) {
                     	if (fStatus != null && !fStatus.isOK()) {
-                    		getViewer().handlePresentationFailure(AbstractUpdate.this, fStatus);
+                    		getViewer().handlePresentationFailure(PresentationRequestMonitor.this, fStatus);
                     	}
                         performUpdate();
                     }
@@ -187,5 +187,5 @@ abstract class AbstractUpdate implements IPresentationUpdate {
      * @param update update to compare to
      * @return whether this update will also perform the given update
      */
-    protected abstract boolean contains(AbstractUpdate update);
+    protected abstract boolean contains(PresentationRequestMonitor update);
 }

@@ -15,15 +15,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.IExpressionManager;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 
 public class AsyncExpressionManagerAdapter extends AbstractAsyncPresentationAdapter {
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor)
      */
-    protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
+    protected IStatus doRetrieveLabel(Object object, IPresentationContext context, ILabelRequestMonitor result) {
         result.done();
         return Status.OK_STATUS;
     }

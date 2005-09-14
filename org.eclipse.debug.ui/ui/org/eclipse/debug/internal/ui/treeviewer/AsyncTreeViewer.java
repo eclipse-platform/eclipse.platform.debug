@@ -74,8 +74,8 @@ import org.eclipse.swt.widgets.Widget;
  * Clients may instantiate and subclass this class.
  * </p>
  * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter
- * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate
- * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate
+ * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor
+ * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor
  * @since 3.2
  */
 public class AsyncTreeViewer extends StructuredViewer {
@@ -286,7 +286,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 		if (item instanceof TreeItem) {
 			IPresentationAdapter adapter = getPresentationAdapter(element);
 			if (adapter != null) {
-				ILabelUpdate labelUpdate = new LabelUpdate(item, this);
+				ILabelRequestMonitor labelUpdate = new LabelRequestMonitor(item, this);
 				schedule(labelUpdate);
 				adapter.retrieveLabel(element, getPresentationContext(), labelUpdate);
 			}
@@ -323,9 +323,9 @@ public class AsyncTreeViewer extends StructuredViewer {
 	protected void updateHasChildren(Object element, Widget widget) {
 		IPresentationAdapter adapter = getPresentationAdapter(element);
 		if (adapter != null) {
-			IExpandableUpdate update = new ExpandableUpdate(widget, this);
+			IContainerRequestMonitor update = new ContainerRequestMonitor(widget, this);
 			schedule(update);
-			adapter.hasChildren(element, getPresentationContext(), update);
+			adapter.isContainer(element, getPresentationContext(), update);
 		}
 	}
 
@@ -344,7 +344,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	protected void updateChildren(Object parent, Widget widget) {
 		IPresentationAdapter adapter = getPresentationAdapter(parent);
 		if (adapter != null) {
-			IChildrenUpdate updateChildren = new ChildrenUpdate(widget, this);
+			IChildrenRequestMonitor updateChildren = new ChildrenRequestMonitor(widget, this);
 			schedule(updateChildren);
 			adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
 		}
@@ -373,12 +373,12 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param update the update to schedule
 	 */
-	protected void schedule(IPresentationUpdate update) {
-		AbstractUpdate absUpdate = (AbstractUpdate) update;
+	protected void schedule(IPresentationRequestMonitor update) {
+		PresentationRequestMonitor absUpdate = (PresentationRequestMonitor) update;
 		synchronized (fPendingUpdates) {
 			Iterator updates = fPendingUpdates.listIterator();
 			while (updates.hasNext()) {
-				AbstractUpdate pendingUpdate = (AbstractUpdate) updates.next();
+				PresentationRequestMonitor pendingUpdate = (PresentationRequestMonitor) updates.next();
 				if (absUpdate.contains(pendingUpdate)) {
 					pendingUpdate.setCanceled(true);
 					updates.remove();
@@ -502,7 +502,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	protected synchronized void cancelPendingUpdates() {
 		Iterator updates = fPendingUpdates.iterator();
 		while (updates.hasNext()) {
-			IPresentationUpdate update = (IPresentationUpdate) updates.next();
+			IPresentationRequestMonitor update = (IPresentationRequestMonitor) updates.next();
 			update.setCanceled(true);
 		}
 		fPendingUpdates.clear();
@@ -606,20 +606,20 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * 
 	 * @param update
 	 */
-	protected void updateComplete(IPresentationUpdate update) {
+	protected void updateComplete(IPresentationRequestMonitor update) {
 		synchronized (fPendingUpdates) {
 			fPendingUpdates.remove(update);
 		}
 	}
 	
 	/**
-	 * Called by <code>ExpandableUpdate</code> after it is determined if
-	 * the widget has children.
+	 * Called by <code>ContainerRequestMonitor</code> after it is determined if
+	 * the widget contains children.
 	 * 
 	 * @param widget
-	 * @param hasChildren
+	 * @param containsChildren
 	 */
-	synchronized void setHasChildren(Widget widget, boolean hasChildren) {
+	synchronized void setIsContainer(Widget widget, boolean containsChildren) {
 		TreeItem[] prevChildren = null;
 		if (widget instanceof Tree) {
 			Tree tree = (Tree) widget;
@@ -627,7 +627,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 		} else {
 			prevChildren = ((TreeItem) widget).getItems();
 		}
-		if (hasChildren) {
+		if (containsChildren) {
 			if (prevChildren.length == 0) {
 				if (widget instanceof Tree) {
 					// update root elements in the tree
@@ -656,7 +656,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	}
 
 	/**
-	 * Called by <code>ChildrenUpdate</code> after children have been retrieved.
+	 * Called by <code>ChildrenRequestMonitor</code> after children have been retrieved.
 	 * 
 	 * @param widget
 	 * @param newChildren
@@ -1098,7 +1098,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param update update that failed
 	 * @param status status of update
 	 */
-	protected void handlePresentationFailure(IPresentationUpdate update, IStatus status) {
+	protected void handlePresentationFailure(IPresentationRequestMonitor update, IStatus status) {
 	}
 
 	/* (non-Javadoc)

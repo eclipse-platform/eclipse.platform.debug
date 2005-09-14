@@ -15,14 +15,14 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 /**
- * Label update request. A presentation adapter reports label attributes back to
- * this object as they become available.
+ * A presentation monitor that collects attributes of a presentation adapter's
+ * label.
  * <p>
  * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface ILabelUpdate extends IPresentationUpdate {
+public interface ILabelRequestMonitor extends IPresentationRequestMonitor {
 
 	/**
 	 * Sets the text of the label. Cannot be <code>null</code>.

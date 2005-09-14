@@ -18,14 +18,15 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * Request to update the label of an element in a tree. 
+ * Implementation of an <code>ILabelRequestMonitor</code>. Collects label
+ * attributes from a presentation adapter. 
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
  * speficially with <code>AsyncTreeViewer</code>.
  * </p>
  * @since 3.2
  */
-class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
+class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRequestMonitor {
 
 	/**
 	 * Retrieved label text. Only <code>null</code> if cancelled or failed.
@@ -55,12 +56,12 @@ class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
      * @param widget widget to update
      * @param viewer viewer containing the widget
      */
-    public LabelUpdate(Widget widget, AsyncTreeViewer viewer) {
+    public LabelRequestMonitor(Widget widget, AsyncTreeViewer viewer) {
         super(widget, viewer);
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#performUpdate()
+     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
         TreeItem item = (TreeItem) getWidget();
@@ -92,42 +93,42 @@ class LabelUpdate extends AbstractUpdate implements ILabelUpdate {
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#contains(org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate)
+     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#contains(org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor)
      */
-    protected boolean contains(AbstractUpdate update) {
-        return update instanceof LabelUpdate && update.getWidget() == getWidget();
+    protected boolean contains(PresentationRequestMonitor update) {
+        return update instanceof LabelRequestMonitor && update.getWidget() == getWidget();
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setLabel(java.lang.String)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setLabel(java.lang.String)
      */
     public void setLabel(String text) {
         fText = text;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setFontData(org.eclipse.swt.graphics.FontData)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setFontData(org.eclipse.swt.graphics.FontData)
      */
     public void setFontData(FontData fontData) {
         fFontData = fontData;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setImageDescriptor(org.eclipse.jface.resource.ImageDescriptor)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setImageDescriptor(org.eclipse.jface.resource.ImageDescriptor)
      */
     public void setImageDescriptor(ImageDescriptor image) {
         fImageDescriptor = image;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setForeground(org.eclipse.swt.graphics.RGB)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setForeground(org.eclipse.swt.graphics.RGB)
      */
     public void setForeground(RGB foreground) {
         fForeground = foreground;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate#setBackground(org.eclipse.swt.graphics.RGB)
+     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setBackground(org.eclipse.swt.graphics.RGB)
      */
     public void setBackground(RGB background) {
         fBackground = background;

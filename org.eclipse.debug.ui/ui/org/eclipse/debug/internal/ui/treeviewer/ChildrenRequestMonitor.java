@@ -16,14 +16,15 @@ import java.util.List;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * Request to update the children of an element in a tree. 
+ * Implementation for <code>IChildrenPresentationMonitor</code>. Collects
+ * children from a presentation adapter.  
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
  * speficially with <code>AsyncTreeViewer</code>.
  * </p>
  * @since 3.2
  */
-class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
+class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChildrenRequestMonitor {
     
 	/**
 	 * Collection of children retrieved
@@ -31,24 +32,24 @@ class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
     private List fChildren = new ArrayList();
 
     /**
-     * Constucts an request to retrieve and update the children of the given
+     * Constucts a monitor to retrieve and update the children of the given
      * widget.
      * 
      * @param widget widget to retrieve children for
      */
-    public ChildrenUpdate(Widget widget, AsyncTreeViewer viewer) {
+    public ChildrenRequestMonitor(Widget widget, AsyncTreeViewer viewer) {
         super(widget, viewer);
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChild(java.lang.Object)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor#addChild(java.lang.Object)
      */
     public void addChild(Object child) {
         fChildren.add(child);
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate#addChildren(java.lang.Object[])
+     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor#addChildren(java.lang.Object[])
      */
     public void addChildren(Object[] children) {
         for (int i = 0; i < children.length; i++) {
@@ -57,14 +58,14 @@ class ChildrenUpdate extends AbstractUpdate implements IChildrenUpdate {
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#contains(org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate)
+     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#contains(org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor)
      */
-    protected boolean contains(AbstractUpdate update) {
-        return (update instanceof ChildrenUpdate || update instanceof ExpandableUpdate) && contains(update.getWidget());
+    protected boolean contains(PresentationRequestMonitor update) {
+        return (update instanceof ChildrenRequestMonitor || update instanceof ContainerRequestMonitor) && contains(update.getWidget());
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.AbstractUpdate#performUpdate()
+     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
         getViewer().setChildren(getWidget(), fChildren);

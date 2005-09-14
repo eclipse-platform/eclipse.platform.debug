@@ -11,20 +11,20 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 /**
- * Update request to determine if an element has children. A presentation adapter
- * notifies this object when it determines whether it has children.
+ * A presentation monitor that collects whether a presentation adapter contains
+ * children.
  * <p>
  * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface IExpandableUpdate extends IPresentationUpdate {
+public interface IContainerRequestMonitor extends IPresentationRequestMonitor {
 
 	/**
-	 * Notification on whether an element has children.
+	 * Sets whether a presentation adapter contains children.
 	 * 
-	 * @param hasChildren whether the element has children
+	 * @param container whether a presentation adapter contains children
 	 */
-    public void hasChildren(boolean hasChildren);
+    public void setIsContainer(boolean container);
     
 }

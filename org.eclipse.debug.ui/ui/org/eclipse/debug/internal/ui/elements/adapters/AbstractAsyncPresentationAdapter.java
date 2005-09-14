@@ -23,9 +23,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
 import org.eclipse.debug.internal.ui.LazyModelPresentation;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
-import org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor;
+import org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
@@ -38,9 +38,9 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 	protected static final Object[] EMPTY = new Object[0];
 	
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor)
      */
-    public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenUpdate result) {
+    public void retrieveChildren(final Object parent, final IPresentationContext context, final IChildrenRequestMonitor result) {
 		Job job = new Job("Retrieving Children") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
@@ -59,14 +59,14 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
 	}
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor)
      */
-    public void hasChildren(final Object element, final IPresentationContext context, final IExpandableUpdate result) {
+    public void isContainer(final Object element, final IPresentationContext context, final IContainerRequestMonitor result) {
     	Job job = new Job("Computing hasChildren") { //$NON-NLS-1$
 			protected IStatus run(IProgressMonitor monitor) {
 				IStatus status = Status.OK_STATUS;
 				try {
-					result.hasChildren(hasChildren(element, context));
+					result.setIsContainer(hasChildren(element, context));
 				} catch (CoreException e) {
 					status = e.getStatus();
 				}
@@ -102,9 +102,9 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
     protected abstract boolean hasChildren(Object element, IPresentationContext context) throws CoreException;    
   
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate)
+     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor)
      */
-    public void retrieveLabel(final Object object, final IPresentationContext context, final ILabelUpdate result) {
+    public void retrieveLabel(final Object object, final IPresentationContext context, final ILabelRequestMonitor result) {
     	// Default implementation does not run in the UI thread. Clients should override with
     	// UI job if required
         Job job = new Job("Retrieving labels") { //$NON-NLS-1$
@@ -116,7 +116,7 @@ public abstract class AbstractAsyncPresentationAdapter implements IPresentationA
         job.schedule();
     }
     
-    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelUpdate result) {
+    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelRequestMonitor result) {
     	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
     	// Honor view specific settings in a debug view by copying model presentation settings
     	// into the debug element helper's presentation before we get the label. This allows

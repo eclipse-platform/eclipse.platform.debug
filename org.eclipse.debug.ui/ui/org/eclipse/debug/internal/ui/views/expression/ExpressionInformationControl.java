@@ -23,9 +23,9 @@ import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
 import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
 import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
-import org.eclipse.debug.internal.ui.treeviewer.IChildrenUpdate;
-import org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelUpdate;
+import org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor;
+import org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor;
+import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
@@ -349,12 +349,12 @@ public class ExpressionInformationControl extends PopupInformationControl {
     
     private class TreeRoot implements IPresentationAdapter, IAdaptable {
 
-		public void retrieveChildren(Object parent, IPresentationContext context, IChildrenUpdate result) {
+		public void retrieveChildren(Object parent, IPresentationContext context, IChildrenRequestMonitor result) {
 			result.addChild(exp);
 			result.done();
 		}
 
-		public void retrieveLabel(Object object, IPresentationContext context, ILabelUpdate result) {
+		public void retrieveLabel(Object object, IPresentationContext context, ILabelRequestMonitor result) {
 			result.done();
 		}
 
@@ -366,10 +366,10 @@ public class ExpressionInformationControl extends PopupInformationControl {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IExpandableUpdate)
+		 * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor)
 		 */
-		public void hasChildren(Object element, IPresentationContext context, IExpandableUpdate result) {
-			result.hasChildren(true);
+		public void isContainer(Object element, IPresentationContext context, IContainerRequestMonitor result) {
+			result.setIsContainer(true);
 			result.done();
 		}
     }
