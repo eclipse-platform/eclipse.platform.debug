@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Widget;
  * </p>
  * @since 3.2
  */
-public class ContainerRequestMonitor extends PresentationRequestMonitor implements IContainerRequestMonitor {
+class ContainerRequestMonitor extends PresentationRequestMonitor implements IContainerRequestMonitor {
 	
 	/**
 	 * Whether the item has children
