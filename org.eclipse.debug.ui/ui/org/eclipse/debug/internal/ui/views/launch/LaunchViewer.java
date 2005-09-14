@@ -53,8 +53,6 @@ public class LaunchViewer extends AsyncTreeViewer {
 					return new WrappedWorkbenchAdapter(nonDeferred);
 				}
 			}
-
-			return new WrappedDeferredWorkbenchAdapter(deferred, element);
 		}
 
 		IPresentationAdapter presentationAdapter = super.getPresentationAdapter(element);
