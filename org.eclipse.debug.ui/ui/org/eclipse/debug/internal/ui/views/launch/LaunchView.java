@@ -258,7 +258,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 * @see org.eclipse.debug.ui.AbstractDebugView#createViewer(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Viewer createViewer(Composite parent) {
-		AsyncTreeViewer viewer = new AsyncTreeViewer(parent);
+		AsyncTreeViewer viewer = new LaunchViewer(parent);
         viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
         viewer.setContext(new PresentationContext(this));
         
