@@ -14,9 +14,10 @@ package org.eclipse.debug.internal.ui.actions;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IExpression;
+import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.TreePath;
+import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.ui.IDebugView;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
 public class RemoveExpressionAction extends AbstractRemoveActionDelegate {
@@ -44,12 +45,17 @@ public class RemoveExpressionAction extends AbstractRemoveActionDelegate {
 		IDebugView adapter= (IDebugView)getView().getAdapter(IDebugView.class);
 		if (adapter != null) {
 			Viewer v= adapter.getViewer();
-			if (v instanceof TreeViewer) {
-				ITreeContentProvider cp = (ITreeContentProvider)((TreeViewer)v).getContentProvider();
-				while (!(obj instanceof IExpression) && obj != null) {
-					obj = cp.getParent(obj);
+			if (v instanceof AsyncTreeViewer) {
+				AsyncTreeViewer viewer = (AsyncTreeViewer) v;
+				TreeSelection selection = (TreeSelection) viewer.getSelection();
+				TreePath[] paths = selection.getPaths();
+				for (int i = paths.length-1; i >=0; i--) {
+					TreePath path = paths[i];
+					Object segment = path.getLastSegment();
+					if (segment instanceof IExpression) {
+						return (IExpression) segment;
+					}
 				}
-				return (IExpression)obj;
 			}	
 		}
 		return null;
