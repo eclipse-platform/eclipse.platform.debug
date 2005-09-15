@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -300,7 +300,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#map(java.lang.Object, org.eclipse.swt.widgets.Widget)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#map(java.lang.Object, org.eclipse.swt.widgets.Widget)
 	 */
 	protected void map(Object element, Widget item) {
 		super.map(element, item);
@@ -582,7 +582,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#internalRefresh(java.lang.Object, org.eclipse.swt.widgets.Widget)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#internalRefresh(java.lang.Object, org.eclipse.swt.widgets.Widget)
 	 */
 	protected void internalRefresh(Object element, Widget item) {
 		super.internalRefresh(element, item);
@@ -603,7 +603,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#attemptSelection(org.eclipse.jface.viewers.ISelection, boolean)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#doAttemptSelectionToWidget(org.eclipse.jface.viewers.ISelection, boolean)
 	 */
 	protected synchronized ISelection doAttemptSelectionToWidget(ISelection selection, boolean reveal) {
 		List remaining = new ArrayList();
@@ -671,7 +671,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#setColor(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.RGB, org.eclipse.swt.graphics.RGB)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#setColor(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.RGB, org.eclipse.swt.graphics.RGB)
 	 */
 	void setColor(Widget widget, RGB foreground, RGB background) {
 		if (widget instanceof TreeItem) {
@@ -682,7 +682,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#setFont(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.FontData)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#setFont(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.FontData)
 	 */
 	void setFont(Widget widget, FontData fontData) {
 		if (widget instanceof TreeItem) {
@@ -692,21 +692,21 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#getParent(org.eclipse.swt.widgets.Widget)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#getParent(org.eclipse.swt.widgets.Widget)
 	 */
 	protected Widget getParent(Widget widget) {
 		return (Widget) fItemToParentItem.get(widget);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#acceptsSelection(org.eclipse.jface.viewers.ISelection)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#acceptsSelection(org.eclipse.jface.viewers.ISelection)
 	 */
 	protected boolean acceptsSelection(ISelection selection) {
 		return selection instanceof TreeSelection;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#getEmptySelection()
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#getEmptySelection()
 	 */
 	protected ISelection getEmptySelection() {
 		return new TreeSelection(new TreePath[0]);

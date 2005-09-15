@@ -8,22 +8,22 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
 /**
- * Common interface for requests made on an <code>IPresentationAdapter</code>. Results
- * of a presentation request are reported to a presentation requiest monitor (usually a
- * specialization of this interface). An presentation request may be cancelled by the client
- * making the request, or by the presentation adapter fulfilling the request. Presentation
- * adapters may report failure by setting an appropriate status on this monitor. When a request
+ * Common interface for requests made on elements in an asynchronous viewer. Results
+ * of a request are reported to a request monitor asynchronously (usually a
+ * specialization of this interface). An request may be cancelled by the client
+ * making the request, or by the adapter fulfilling the request.
+ * Adapters may report failure by setting an appropriate status on this monitor. When a request
  * is complete, an adapter must call <code>done()</code> on the monitor, no matter
  * if the update succeeded or failed. The <code>done()</code> method does not need to be
- * called if an presentation request is canceled.
+ * called if a request is canceled.
  * <p>
- * Operations accepting a presentation request monitor are expected to poll the
+ * Operations accepting a request monitor are expected to poll the
  * monitor (using <code>isCanceled</code>) periodically and abort at their
  * earliest convenience.
  * </p>
@@ -32,10 +32,10 @@ import org.eclipse.core.runtime.IStatus;
  * </p>
  * @since 3.2
  */
-public interface IPresentationRequestMonitor extends IProgressMonitor {
+public interface IAsynchronousRequestMonitor extends IProgressMonitor {
 
     /**
-     * Sets the status of this presentation request, possibly <code>null</code>.
+     * Sets the status of this request, possibly <code>null</code>.
      * When a request fails, the status indicates why the request failed.
      * A <code>null</code> status is considered to be successful.
      * 

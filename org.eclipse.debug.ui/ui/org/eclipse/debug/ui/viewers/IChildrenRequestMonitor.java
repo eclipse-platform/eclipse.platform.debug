@@ -8,26 +8,26 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 /**
- * A presentation monitor that collects children from a presentation adapter.
+ * A request monitor that collects children from an asynchronous tree content adapter.
  * <p>
  * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface IChildrenRequestMonitor extends IPresentationRequestMonitor {
+public interface IChildrenRequestMonitor extends IAsynchronousRequestMonitor {
 
 	/**
-	 * Adds the given child to this presentation request.
+	 * Adds the given child to this request.
 	 * 
 	 * @param child child to add
 	 */
     public void addChild(Object child);
     
     /**
-     * Adds the given children to this presentation request.
+     * Adds the given children to this request.
      * 
      * @param children children to add
      */

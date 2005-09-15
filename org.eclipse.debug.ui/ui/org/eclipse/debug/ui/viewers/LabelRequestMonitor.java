@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.FontData;
@@ -17,14 +17,14 @@ import org.eclipse.swt.widgets.Widget;
 
 /**
  * Implementation of an <code>ILabelRequestMonitor</code>. Collects label
- * attributes from a presentation adapter. 
+ * attributes from an asynchronous label adapter. 
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
- * speficially with <code>AsynchronousTreeViewer</code>.
+ * speficially with <code>AsynchronousViewer</code>.
  * </p>
  * @since 3.2
  */
-class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRequestMonitor {
+class LabelRequestMonitor extends AsynchronousRequestMonitor implements ILabelRequestMonitor {
 
 	/**
 	 * Retrieved label text. Only <code>null</code> if cancelled or failed.
@@ -54,12 +54,12 @@ class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRe
      * @param widget widget to update
      * @param viewer viewer containing the widget
      */
-    public LabelRequestMonitor(Widget widget, AsynchronousViewer viewer) {
+    LabelRequestMonitor(Widget widget, AsynchronousViewer viewer) {
         super(widget, viewer);
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
+     * @see org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
     	AsynchronousViewer viewer = getViewer();
@@ -70,42 +70,42 @@ class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRe
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#contains(org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor)
+     * @see org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor#contains(org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor)
      */
-    protected boolean contains(PresentationRequestMonitor update) {
+    protected boolean contains(AsynchronousRequestMonitor update) {
         return update instanceof LabelRequestMonitor && update.getWidget() == getWidget();
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setLabel(java.lang.String)
+     * @see org.eclipse.debug.ui.viewers.ILabelRequestMonitor#setLabel(java.lang.String)
      */
     public void setLabel(String text) {
         fText = text;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setFontData(org.eclipse.swt.graphics.FontData)
+     * @see org.eclipse.debug.ui.viewers.ILabelRequestMonitor#setFontData(org.eclipse.swt.graphics.FontData)
      */
     public void setFontData(FontData fontData) {
         fFontData = fontData;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setImageDescriptor(org.eclipse.jface.resource.ImageDescriptor)
+     * @see org.eclipse.debug.ui.viewers.ILabelRequestMonitor#setImageDescriptor(org.eclipse.jface.resource.ImageDescriptor)
      */
     public void setImageDescriptor(ImageDescriptor image) {
         fImageDescriptor = image;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setForeground(org.eclipse.swt.graphics.RGB)
+     * @see org.eclipse.debug.ui.viewers.ILabelRequestMonitor#setForeground(org.eclipse.swt.graphics.RGB)
      */
     public void setForeground(RGB foreground) {
         fForeground = foreground;
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor#setBackground(org.eclipse.swt.graphics.RGB)
+     * @see org.eclipse.debug.ui.viewers.ILabelRequestMonitor#setBackground(org.eclipse.swt.graphics.RGB)
      */
     public void setBackground(RGB background) {
         fBackground = background;

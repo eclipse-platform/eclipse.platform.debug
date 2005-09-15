@@ -8,21 +8,21 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
 
 /**
- * A presentation monitor that collects attributes of a presentation adapter's
+ * A request monitor that collects attributes of a element's
  * label.
  * <p>
  * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface ILabelRequestMonitor extends IPresentationRequestMonitor {
+public interface ILabelRequestMonitor extends IAsynchronousRequestMonitor {
 
 	/**
 	 * Sets the text of the label. Cannot be <code>null</code>.

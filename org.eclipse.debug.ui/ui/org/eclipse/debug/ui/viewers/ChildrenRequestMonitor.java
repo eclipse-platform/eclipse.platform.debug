@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +16,15 @@ import java.util.List;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * Implementation for <code>IChildrenPresentationMonitor</code>. Collects
- * children from a presentation adapter.  
+ * Implementation for <code>IChildrenRequestMonitor</code>. Collects
+ * children from an asynchronous tree content adapter.  
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
  * speficially with <code>AsynchronousTreeViewer</code>.
  * </p>
  * @since 3.2
  */
-class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChildrenRequestMonitor {
+class ChildrenRequestMonitor extends AsynchronousRequestMonitor implements IChildrenRequestMonitor {
     
 	/**
 	 * Collection of children retrieved
@@ -37,19 +37,19 @@ class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChil
      * 
      * @param widget widget to retrieve children for
      */
-    public ChildrenRequestMonitor(Widget widget, AsynchronousTreeViewer viewer) {
+    ChildrenRequestMonitor(Widget widget, AsynchronousTreeViewer viewer) {
         super(widget, viewer);
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor#addChild(java.lang.Object)
+     * @see org.eclipse.debug.ui.viewers.IChildrenRequestMonitor#addChild(java.lang.Object)
      */
     public void addChild(Object child) {
         fChildren.add(child);
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor#addChildren(java.lang.Object[])
+     * @see org.eclipse.debug.ui.viewers.IChildrenRequestMonitor#addChildren(java.lang.Object[])
      */
     public void addChildren(Object[] children) {
         for (int i = 0; i < children.length; i++) {
@@ -58,14 +58,14 @@ class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChil
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#contains(org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor)
+     * @see org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor#contains(org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor)
      */
-    protected boolean contains(PresentationRequestMonitor update) {
+    protected boolean contains(AsynchronousRequestMonitor update) {
         return (update instanceof ChildrenRequestMonitor || update instanceof ContainerRequestMonitor) && contains(update.getWidget());
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
+     * @see org.eclipse.debug.ui.viewers.AsynchronousRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
         ((AsynchronousTreeViewer)getViewer()).setChildren(getWidget(), fChildren);

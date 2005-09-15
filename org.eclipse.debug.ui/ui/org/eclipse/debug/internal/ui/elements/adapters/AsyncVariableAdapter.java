@@ -12,14 +12,9 @@
 package org.eclipse.debug.internal.ui.elements.adapters;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILogicalStructureType;
@@ -27,23 +22,16 @@ import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IIndexedValue;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.internal.ui.DebugUIPlugin;
-import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
-import org.eclipse.debug.internal.ui.LazyModelPresentation;
-import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
-import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
-import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
-import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
-import org.eclipse.debug.ui.IDebugModelPresentation;
-import org.eclipse.debug.ui.IDebugView;
+import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
+import org.eclipse.debug.ui.viewers.IPresentationContext;
 import org.eclipse.ui.IWorkbenchPart;
 
-public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
+public class AsyncVariableAdapter extends AsynchronousTreeContentAdapter {
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+     * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
      */
     protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
         IVariable variable = (IVariable) parent;
@@ -55,73 +43,13 @@ public class AsyncVariableAdapter extends AbstractAsyncPresentationAdapter {
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+     * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#hasChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
      */
     protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
         IValue value = ((IVariable)element).getValue();
         return value.hasVariables();
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter#doRetrieveLabel(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext, org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor)
-     * 
-     * TODO: this is an ugly override... needs to be revisited
-     */
-    protected IStatus doRetrieveLabel (Object object, IPresentationContext context, ILabelRequestMonitor result) {
-    	DelegatingModelPresentation presentation = DebugElementHelper.getPresentation();
-    	// Honor view specific settings in a debug view by copying model presentation settings
-    	// into the debug element helper's presentation before we get the label. This allows
-    	// for qualified name and type name settings to remain in tact.
-    	if (object instanceof IDebugElement && context.getPart() instanceof IDebugView) {
-    		IWorkbenchPart part = context.getPart();
-    		if (part instanceof IDebugView) {
-    			IDebugModelPresentation pres = ((IDebugView)part).getPresentation(((IDebugElement)object).getModelIdentifier());
-    			Map settings = null;
-	    		synchronized (presentation) {
-	    			if (pres instanceof DelegatingModelPresentation) {
-	    				settings = ((DelegatingModelPresentation)pres).getAttributes();
-	    			} else if (pres instanceof LazyModelPresentation) {
-	    				settings = ((LazyModelPresentation)pres).getAttributes();
-	    			}
-	    			if (settings != null) {
-			    		Iterator iterator = settings.entrySet().iterator();
-			    		while (iterator.hasNext()) {
-			    			Map.Entry entry = (Entry) iterator.next();
-			    			presentation.setAttribute((String) entry.getKey(), entry.getValue());
-			    		}
-			    		internalDoRetrieveLabel(object, result);
-			            result.done();
-			            return Status.OK_STATUS;  
-	    			}
-	    		}
-	    	}
-		}
-
-    	internalDoRetrieveLabel(object, result);
-        result.done();
-        return Status.OK_STATUS;        
-    }
-
     
-	private void internalDoRetrieveLabel(Object object, ILabelRequestMonitor result) {
-    	result.setLabel(DebugElementHelper.getLabel(object));
-        result.setImageDescriptor(DebugElementHelper.getImageDescriptor(object));
-        result.setFontData(DebugElementHelper.getFont(object));
-        result.setBackground(DebugElementHelper.getBackground(object));
-        if (object instanceof IVariable) {
-        	IVariable variable = (IVariable) object;
-        	try {
-				if (variable.hasValueChanged()) {
-					result.setForeground(DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CHANGED_VARIABLE_COLOR).getRGB());
-				} else {
-					result.setForeground(DebugElementHelper.getForeground(object));			
-				}
-			} catch (DebugException e) {
-				result.setForeground(DebugElementHelper.getForeground(object));
-			}
-        }
-	}    
     /**
      * Returns children for the given value, creating array paritions if
      * required

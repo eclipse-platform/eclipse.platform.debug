@@ -12,7 +12,7 @@ package org.eclipse.debug.internal.ui.actions;
 
 import org.eclipse.debug.internal.ui.DebugPluginImages;
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
-import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
+import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.jface.action.Action;
 
 /**

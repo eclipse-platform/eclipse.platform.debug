@@ -8,27 +8,23 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
-
-import org.eclipse.ui.IWorkbenchPart;
+package org.eclipse.debug.ui.viewers;
 
 /**
- * Context in which a label or children have been requested.
+ * A request monitor that collects whether an element contains
+ * children.
  * <p>
- * Clients are may implement and extend this interface to provide
- * special contexts.
+ * This interface is not intended to be implemented by clients.
  * </p>
  * @since 3.2
  */
-public interface IPresentationContext {
-    
-    /**
-     * Returns the part for which a presentation request is being made
-     * or <code>null</code> if none. 
-     * 
-     * @return the part for which a presentation request is being made
-     * or <code>null</code>
-     */
-    public IWorkbenchPart getPart();
+public interface IContainerRequestMonitor extends IAsynchronousRequestMonitor {
+
+	/**
+	 * Sets whether an element contains children.
+	 * 
+	 * @param container whether an element contains children
+	 */
+    public void setIsContainer(boolean container);
     
 }

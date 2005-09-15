@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import org.eclipse.ui.IWorkbenchPart;
 
@@ -33,7 +33,7 @@ public class PresentationContext implements IPresentationContext {
     }
 
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationContext#getPart()
+     * @see org.eclipse.debug.ui.viewers.IPresentationContext#getPart()
      */
     public IWorkbenchPart getPart() {
         return fPart;

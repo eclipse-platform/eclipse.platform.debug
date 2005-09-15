@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -196,12 +196,12 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * 
 	 * @param update the update to schedule
 	 */
-	protected void schedule(IPresentationRequestMonitor update) {
-		PresentationRequestMonitor absUpdate = (PresentationRequestMonitor) update;
+	protected void schedule(IAsynchronousRequestMonitor update) {
+		AsynchronousRequestMonitor absUpdate = (AsynchronousRequestMonitor) update;
 		synchronized (fPendingUpdates) {
 			Iterator updates = fPendingUpdates.listIterator();
 			while (updates.hasNext()) {
-				PresentationRequestMonitor pendingUpdate = (PresentationRequestMonitor) updates.next();
+				AsynchronousRequestMonitor pendingUpdate = (AsynchronousRequestMonitor) updates.next();
 				if (absUpdate.contains(pendingUpdate)) {
 					pendingUpdate.setCanceled(true);
 					updates.remove();
@@ -264,7 +264,7 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	protected synchronized void cancelPendingUpdates() {
 		Iterator updates = fPendingUpdates.iterator();
 		while (updates.hasNext()) {
-			IPresentationRequestMonitor update = (IPresentationRequestMonitor) updates.next();
+			IAsynchronousRequestMonitor update = (IAsynchronousRequestMonitor) updates.next();
 			update.setCanceled(true);
 		}
 		fPendingUpdates.clear();
@@ -303,7 +303,7 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * 
 	 * @param update
 	 */
-	protected void updateComplete(IPresentationRequestMonitor update) {
+	protected void updateComplete(IAsynchronousRequestMonitor update) {
 		synchronized (fPendingUpdates) {
 			fPendingUpdates.remove(update);
 		}
@@ -550,7 +550,7 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * @param monitor monitor for the presentation request that failed
 	 * @param status status of update
 	 */
-	protected void handlePresentationFailure(IPresentationRequestMonitor monitor, IStatus status) {
+	protected void handlePresentationFailure(IAsynchronousRequestMonitor monitor, IStatus status) {
 	}
 
 	/* (non-Javadoc)

@@ -8,20 +8,20 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * Base implementation of a presentation request monitor.
+ * Base implementation of an asynchronous request monitor.
  * <p>
  * Not intended to be subclassed or instantiated by clients. For internal use
  * with the <code>AsynchronousTreeViewer</code> implementation.
  * </p>
  * @since 3.2
  */
-abstract class PresentationRequestMonitor implements IPresentationRequestMonitor {
+abstract class AsynchronousRequestMonitor implements IAsynchronousRequestMonitor {
     
 	/**
 	 * Widget the upadte is rooted at
@@ -48,7 +48,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
      * 
      * @param item
      */
-    public PresentationRequestMonitor(Widget item, AsynchronousViewer viewer) {
+    AsynchronousRequestMonitor(Widget item, AsynchronousViewer viewer) {
         fWidget = item;
         fViewer = viewer;
     }
@@ -94,7 +94,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
     }
     
     /* (non-Javadoc)
-     * @see org.eclipse.debug.internal.ui.treeviewer.IPresentationRequestMonitor#setStatus(org.eclipse.core.runtime.IStatus)
+     * @see org.eclipse.debug.ui.viewers.IAsynchronousRequestMonitor#setStatus(org.eclipse.core.runtime.IStatus)
      */
     public void setStatus(IStatus status) {
         fStatus = status;
@@ -161,7 +161,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
                     // removed from the tree when another children update occured.
                     if (!isCanceled() && !getWidget().isDisposed()) {
                     	if (fStatus != null && !fStatus.isOK()) {
-                    		getViewer().handlePresentationFailure(PresentationRequestMonitor.this, fStatus);
+                    		getViewer().handlePresentationFailure(AsynchronousRequestMonitor.this, fStatus);
                     	}
                         performUpdate();
                     }
@@ -183,5 +183,5 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
      * @param update update to compare to
      * @return whether this update will also perform the given update
      */
-    protected abstract boolean contains(PresentationRequestMonitor update);
+    protected abstract boolean contains(AsynchronousRequestMonitor update);
 }

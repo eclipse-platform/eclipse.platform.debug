@@ -8,11 +8,11 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 /**
  * Provides content for elements in a tree viewer. Note that implementations
- * are intended to provide content asynchronously. 
+ * must provide content asynchronously. 
  * <p>
  * Clients may implement this interface.
  * </p>
@@ -27,7 +27,7 @@ public interface IAsynchronousTreeContentAdapter {
      * 
      * @param parent the element to retrieve children for
      * @param context the context in which children have been requested
-     * @param monitor presentation request monitor to report children to
+     * @param monitor request monitor to report children to
      */
     public void retrieveChildren(Object parent, IPresentationContext context, IChildrenRequestMonitor result);
     
@@ -39,7 +39,7 @@ public interface IAsynchronousTreeContentAdapter {
      * 
      * @param element the element on which children may exist 
      * @param context the context in which children may exist
-     * @param monitor presentation request monitor to report the result to
+     * @param monitor request monitor to report the result to
      */
     public void isContainer(Object element, IPresentationContext context, IContainerRequestMonitor result);
 

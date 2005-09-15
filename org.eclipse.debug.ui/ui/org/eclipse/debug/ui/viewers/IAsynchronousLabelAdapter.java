@@ -8,11 +8,11 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.treeviewer;
+package org.eclipse.debug.ui.viewers;
 
 /**
  * Provides labels for elements. Note that implementations
- * are intended to provide labels asynchronously. 
+ * are must provide labels asynchronously. 
  * <p>
  * Clients may implement this interface.
  * </p>
@@ -27,7 +27,7 @@ public interface IAsynchronousLabelAdapter {
      *  
      * @param object the element for which a label is requested
      * @param context the context in which the label has been requested
-     * @param monitor presentation request monitor to report the result to
+     * @param monitor request monitor to report the result to
      */
     public void retrieveLabel(Object object, IPresentationContext context, ILabelRequestMonitor result);
     
