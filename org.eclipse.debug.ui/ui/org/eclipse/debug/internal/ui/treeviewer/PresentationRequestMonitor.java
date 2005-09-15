@@ -11,14 +11,13 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
  * Base implementation of a presentation request monitor.
  * <p>
  * Not intended to be subclassed or instantiated by clients. For internal use
- * with the <code>AsyncTreeViewer</code> implementation.
+ * with the <code>AsynchronousTreeViewer</code> implementation.
  * </p>
  * @since 3.2
  */
@@ -32,7 +31,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
     /**
      * Viewer the update is being performed for
      */
-    private AsyncTreeViewer fViewer;
+    private AsynchronousViewer fViewer;
     
     /**
      * Whether this request has been canelled
@@ -49,7 +48,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
      * 
      * @param item
      */
-    public PresentationRequestMonitor(Widget item, AsyncTreeViewer viewer) {
+    public PresentationRequestMonitor(Widget item, AsynchronousViewer viewer) {
         fWidget = item;
         fViewer = viewer;
     }
@@ -59,7 +58,7 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
      * 
      * @return the viewer this update is being peformed for
      */
-    protected AsyncTreeViewer getViewer() {
+    protected AsynchronousViewer getViewer() {
         return fViewer;
     }
     
@@ -84,15 +83,12 @@ abstract class PresentationRequestMonitor implements IPresentationRequestMonitor
     	if (widget == getWidget()) {
     		return true;
     	}
-        if (widget instanceof TreeItem) {
-	        final TreeItem item = (TreeItem)widget;
-	        TreeItem parent = getViewer().getParentItem(item);
-	        while (parent != null) {
-	            if (parent.equals(getWidget())) {
-	                return true;
-	            }
-	            parent = getViewer().getParentItem(parent);
-	        }
+        Widget parent = getViewer().getParent(widget);
+        while (parent != null) {
+            if (parent.equals(getWidget())) {
+                return true;
+            }
+            parent = getViewer().getParent(parent);
         }
         return false;
     }

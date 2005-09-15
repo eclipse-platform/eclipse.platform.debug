@@ -45,7 +45,7 @@ import org.eclipse.debug.internal.ui.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.actions.ShowTypesAction;
 import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
@@ -330,8 +330,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		Viewer viewer = getViewer();
 		if (viewer != null) {
 			getDetailDocument().removeDocumentListener(getDetailDocumentListener());
-			if (viewer instanceof AsyncTreeViewer) {
-				AsyncTreeViewer asyncTreeViewer = (AsyncTreeViewer) viewer;
+			if (viewer instanceof AsynchronousTreeViewer) {
+				AsynchronousTreeViewer asyncTreeViewer = (AsynchronousTreeViewer) viewer;
 				asyncTreeViewer.dispose();
 			}
 		}
@@ -769,7 +769,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		action = new ToggleLogicalStructureAction(this);
 		setAction("ToggleContentProviders", action); //$NON-NLS-1$
 		
-		action = new CollapseAllAction((AsyncTreeViewer)getViewer());
+		action = new CollapseAllAction((AsynchronousTreeViewer)getViewer());
 		setAction("CollapseAll", action); //$NON-NLS-1$
 
 		action = new ChangeVariableValueAction(this);

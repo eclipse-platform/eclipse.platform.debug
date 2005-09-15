@@ -14,7 +14,7 @@ package org.eclipse.debug.internal.ui.actions;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IExpression;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.ui.IDebugView;
@@ -45,8 +45,8 @@ public class RemoveExpressionAction extends AbstractRemoveActionDelegate {
 		IDebugView adapter= (IDebugView)getView().getAdapter(IDebugView.class);
 		if (adapter != null) {
 			Viewer v= adapter.getViewer();
-			if (v instanceof AsyncTreeViewer) {
-				AsyncTreeViewer viewer = (AsyncTreeViewer) v;
+			if (v instanceof AsynchronousTreeViewer) {
+				AsynchronousTreeViewer viewer = (AsynchronousTreeViewer) v;
 				TreeSelection selection = (TreeSelection) viewer.getSelection();
 				TreePath[] paths = selection.getPaths();
 				for (int i = paths.length-1; i >=0; i--) {

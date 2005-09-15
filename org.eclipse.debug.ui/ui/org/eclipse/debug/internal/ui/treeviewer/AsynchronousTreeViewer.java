@@ -13,29 +13,19 @@ package org.eclipse.debug.internal.ui.treeviewer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.TreeEvent;
 import org.eclipse.swt.events.TreeListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
@@ -73,12 +63,7 @@ import org.eclipse.swt.widgets.Widget;
  * @see org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor
  * @since 3.2
  */
-public class AsyncTreeViewer extends StructuredViewer {
-
-	/**
-	 * A map of elements to associated tree items or tree
-	 */
-	private Map fElementsToWidgets = new HashMap();
+public class AsynchronousTreeViewer extends AsynchronousViewer {
 
 	/**
 	 * A map of widget to parent widgets used to avoid requirement for parent
@@ -86,38 +71,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * updates on updates of children.
 	 */
 	private Map fItemToParentItem = new HashMap();
-
-	/**
-	 * Map of widgets to their data elements used to avoid requirement to access
-	 * data in UI thread.
-	 */
-	private Map fWidgetsToElements = new HashMap();
-
-	/**
-	 * List of updates currently being performed.
-	 */
-	private List fPendingUpdates = new ArrayList();
-
-	/**
-	 * Cache of images used for elements in this tree viewer. Label updates
-	 * use the method <code>getImage(...)</code> to cache images for
-	 * image descriptors. The images are disposed when this viewer is disposed.
-	 */
-	private Map fImageCache = new HashMap();
-
-	/**
-	 * Cache of the fonts used for elements in this tree viewer. Label updates
-	 * use the method <code>getFont(...)</code> to cache fonts for
-	 * FontData objects. The fonts are disposed with the viewer.
-	 */
-	private Map fFontCache = new HashMap();
-
-	/**
-	 * Cache of the colors used for elements in this tree viewer. Label updates
-	 * use the method <code>getColor(...)</code> to cache colors for
-	 * RGB values. The colors are disposed with the viewer.
-	 */
-	private Map fColorCache = new HashMap();
 	
 	/**
 	 * The tree
@@ -125,20 +78,10 @@ public class AsyncTreeViewer extends StructuredViewer {
 	private Tree fTree;
 
 	/**
-	 * The context in which this viewer is being used - i.e. what part it is contained
-	 * in any any preference settings associated with it.
-	 */
-	private IPresentationContext fContext;
-
-	TreeSelection fPendingSelection;
-
-	TreeSelection fCurrentSelection;
-
-	/**
 	 * Array of tree paths to be expanded. As paths are expanded, those
 	 * entries are set to <code>null</code>.
 	 */
-	TreePath[] fPendingExpansion;
+	private TreePath[] fPendingExpansion;
 
 	/**
 	 * Creates an asynchronous tree viewer on a newly-created tree control under
@@ -150,7 +93,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param parent
 	 *            the parent control
 	 */
-	public AsyncTreeViewer(Composite parent) {
+	public AsynchronousTreeViewer(Composite parent) {
 		this(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 	}
 
@@ -164,7 +107,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param style
 	 *            the SWT style bits used to create the tree.
 	 */
-	public AsyncTreeViewer(Composite parent, int style) {
+	public AsynchronousTreeViewer(Composite parent, int style) {
 		this(new Tree(parent, style));
 	}
 
@@ -176,12 +119,11 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param tree
 	 *            the tree control
 	 */
-	public AsyncTreeViewer(Tree tree) {
+	public AsynchronousTreeViewer(Tree tree) {
 		super();
 		fTree = tree;
 		hookControl(fTree);
 		setUseHashlookup(false);
-		setContentProvider(new NullContentProvider());
 		tree.addTreeListener(new TreeListener() {
 			public void treeExpanded(TreeEvent e) {
 				((TreeItem)e.item).setExpanded(true);
@@ -221,88 +163,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	public Tree getTree() {
 		return fTree;
 	}
-	
-	/**
-	 * Clients must call this methods when this viewer is no longer needed
-	 * so it can perform cleanup.
-	 */
-	public void dispose() {
-		Iterator images = fImageCache.values().iterator();
-		while (images.hasNext()) {
-			Image image = (Image) images.next();
-			image.dispose();
-		}
-		
-		Iterator fonts = fFontCache.values().iterator();
-		while (fonts.hasNext()) {
-			Font font = (Font) fonts.next();
-			font.dispose();
-		}
-		
-		Iterator colors = fColorCache.values().iterator();
-		while (colors.hasNext()) {
-			Color color = (Color) colors.next();
-			color.dispose();
-		}
-		
-		fElementsToWidgets.clear();
-		fPendingUpdates.clear();
-	}
-
-	/**
-	 * Updates all occurrences of the given element in this tree.
-	 * 
-	 * @param element element to update
-	 */
-	public void update(Object element) {
-		if (element == getInput()) {
-			return; // the root is not displayed
-		}
-		Widget[] items = getWidgets(element);
-		if (items != null) {
-			for (int i = 0; i < items.length; i++) {
-				updateLabel(element, items[i]);
-			}
-		}
-	}
-	
-	/**
-	 * Updates the label for a specific element and item.
-	 * 
-	 * @param element element to update
-	 * @param item its associated item
-	 */
-	protected void updateLabel(Object element, Widget item) {
-		if (item instanceof TreeItem) {
-			IPresentationAdapter adapter = getPresentationAdapter(element);
-			if (adapter != null) {
-				ILabelRequestMonitor labelUpdate = new LabelRequestMonitor(item, this);
-				schedule(labelUpdate);
-				adapter.retrieveLabel(element, getPresentationContext(), labelUpdate);
-			}
-		}
-	}
-	
-	/**
-	 * Returns the presentation context to be used in update requests.
-	 * Clients may override this method if required to provide special
-	 * implementations of contexts.
-	 * 
-	 * @return presentation contenxt
-	 */
-	protected IPresentationContext getPresentationContext() {
-		return fContext;
-	}
-
-	/**
-	 * Refreshes all occurrences of the given element in this tree, and visible
-	 * children.
-	 * 
-	 * @param element element to refresh
-	 */
-	public void refresh(Object element) {
-		internalRefresh(element);
-	}
 
 	/**
 	 * Updates whether the given element has children.
@@ -311,7 +171,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param widget widget associated with the element in this viewer's tree 
 	 */
 	protected void updateHasChildren(Object element, Widget widget) {
-		IPresentationAdapter adapter = getPresentationAdapter(element);
+		IAsynchronousTreeContentAdapter adapter = getTreeContentAdapter(element);
 		if (adapter != null) {
 			IContainerRequestMonitor update = new ContainerRequestMonitor(widget, this);
 			schedule(update);
@@ -327,66 +187,31 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param widget widget associated with the element in this viewer's tree
 	 */
 	protected void updateChildren(Object parent, Widget widget) {
-		IPresentationAdapter adapter = getPresentationAdapter(parent);
+		IAsynchronousTreeContentAdapter adapter = getTreeContentAdapter(parent);
 		if (adapter != null) {
-			IChildrenRequestMonitor updateChildren = new ChildrenRequestMonitor(widget, this);
-			schedule(updateChildren);
-			adapter.retrieveChildren(parent, getPresentationContext(), updateChildren);
+			IChildrenRequestMonitor update = new ChildrenRequestMonitor(widget, this);
+			schedule(update);
+			adapter.retrieveChildren(parent, getPresentationContext(), update);
 		}
 	}
 
 	/**
-	 * Returns the presentation adapter for the given element or <code>null</code> if none.
+	 * Returns the tree element adapter for the given element or <code>null</code> if none.
 	 * 
 	 * @param element element to retrieve adapter for
 	 * @return presentation adapter or <code>null</code>
 	 */
-	protected IPresentationAdapter getPresentationAdapter(Object element) {
-		IPresentationAdapter adapter = null;
-		if (element instanceof IPresentationAdapter) {
-			adapter = (IPresentationAdapter) element;
+	protected IAsynchronousTreeContentAdapter getTreeContentAdapter(Object element) {
+		IAsynchronousTreeContentAdapter adapter = null;
+		if (element instanceof IAsynchronousTreeContentAdapter) {
+			adapter = (IAsynchronousTreeContentAdapter) element;
 		} else if (element instanceof IAdaptable) {
 			IAdaptable adaptable = (IAdaptable) element;
-			adapter = (IPresentationAdapter) adaptable.getAdapter(IPresentationAdapter.class);
+			adapter = (IAsynchronousTreeContentAdapter) adaptable.getAdapter(IAsynchronousTreeContentAdapter.class);
 		}
 		return adapter;
 	}
 
-	/**
-	 * Cancels any conflicting updates for children of the given item, and
-	 * schedules the new update.
-	 * 
-	 * @param update the update to schedule
-	 */
-	protected void schedule(IPresentationRequestMonitor update) {
-		PresentationRequestMonitor absUpdate = (PresentationRequestMonitor) update;
-		synchronized (fPendingUpdates) {
-			Iterator updates = fPendingUpdates.listIterator();
-			while (updates.hasNext()) {
-				PresentationRequestMonitor pendingUpdate = (PresentationRequestMonitor) updates.next();
-				if (absUpdate.contains(pendingUpdate)) {
-					pendingUpdate.setCanceled(true);
-					updates.remove();
-				}
-			}
-			fPendingUpdates.add(update);
-		}
-	}
-
-	/**
-	 * Returns the widgets associated with the given element or
-	 * <code>null</code>.
-	 * 
-	 * @param element element to retrieve widgets for
-	 * @return widgets or <code>null</code> if none
-	 */
-	protected synchronized Widget[] getWidgets(Object element) {
-		if (element == null) {
-			return null;
-		}
-		return (Widget[]) fElementsToWidgets.get(element);
-	}
-	
 	/**
 	 * Expands all elements in the given tree selection.
 	 * 
@@ -424,7 +249,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 		int segmentCount = path.getSegmentCount();
 		for (int j = segmentCount - 1; j >= 0; j--) {
 			Object element = path.getSegment(j);
-			Widget[] treeItems = (Widget[]) fElementsToWidgets.get(element);
+			Widget[] treeItems = getWidgets(element);
 			if (treeItems != null) {
 				for (int k = 0; k < treeItems.length; k++) {
 					if (treeItems[k] instanceof TreeItem) {
@@ -461,65 +286,24 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @see org.eclipse.jface.viewers.StructuredViewer#unmapAllElements()
 	 */
 	protected synchronized void unmapAllElements() {
-		Iterator iterator = fElementsToWidgets.keySet().iterator();
-		while (iterator.hasNext()) {
-			Object element = iterator.next();
-			Widget[] widgets = getWidgets(element);
-			if (widgets != null) {
-				for (int i = 0; i < widgets.length; i++) {
-					Widget widget = widgets[i];
-					if (widget instanceof TreeItem) {
-						TreeItem item = (TreeItem) widget;
-						item.dispose();
-					}
-				}
-			}
-		}
-		fElementsToWidgets.clear();
+		super.unmapAllElements();
 		fItemToParentItem.clear();
-		fWidgetsToElements.clear();
-	}
-
-	/**
-	 * Cancels all pending update requests.
-	 */
-	protected synchronized void cancelPendingUpdates() {
-		Iterator updates = fPendingUpdates.iterator();
-		while (updates.hasNext()) {
-			IPresentationRequestMonitor update = (IPresentationRequestMonitor) updates.next();
-			update.setCanceled(true);
-		}
-		fPendingUpdates.clear();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.Viewer#inputChanged(java.lang.Object, java.lang.Object)
 	 */
 	protected void inputChanged(Object input, Object oldInput) {
-		cancelPendingUpdates();
+		super.inputChanged(input, oldInput);
 		map(input, fTree);
 		refresh();
 	}
 
-	/**
-	 * Maps the given element to the given item.
-	 * 
-	 * @param element model element
-	 * @param item TreeItem or Tree
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#map(java.lang.Object, org.eclipse.swt.widgets.Widget)
 	 */
 	protected void map(Object element, Widget item) {
-		item.setData(element);
-		Object object = fElementsToWidgets.get(element);
-		fWidgetsToElements.put(item, element);
-		if (object == null) {
-			fElementsToWidgets.put(element, new Widget[] { item });
-		} else {
-			Widget[] old = (Widget[]) object;
-			Widget[] items = new Widget[old.length + 1];
-			System.arraycopy(old, 0, items, 0, old.length);
-			items[old.length] = item;
-			fElementsToWidgets.put(element, items);
-		}
+		super.map(element, item);
 		if (item instanceof TreeItem) {
 			TreeItem treeItem = (TreeItem) item;
 			TreeItem parentItem = treeItem.getParentItem();
@@ -551,7 +335,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 				parent = getParentItem(treeItem);
 			}
 			while (parent != null) {
-				Object data = fWidgetsToElements.get(parent);
+				Object data = getElement(parent);
 				path.add(0, data);
 				parent = getParentItem(parent);
 			}
@@ -580,17 +364,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 		path.add(0, fTree.getData());
 		return new TreePath(path.toArray());
-	}
-
-	/**
-	 * Removes the update from the pending updates list.
-	 * 
-	 * @param update
-	 */
-	protected void updateComplete(IPresentationRequestMonitor update) {
-		synchronized (fPendingUpdates) {
-			fPendingUpdates.remove(update);
-		}
 	}
 	
 	/**
@@ -652,7 +425,7 @@ public class AsyncTreeViewer extends StructuredViewer {
 				//sort filtered children
 				ViewerSorter viewerSorter = getSorter();
 				if (viewerSorter != null) {
-					viewerSorter.sort(AsyncTreeViewer.this, children);
+					viewerSorter.sort(AsynchronousTreeViewer.this, children);
 				}
 				
 				//update tree
@@ -734,95 +507,22 @@ public class AsyncTreeViewer extends StructuredViewer {
 	 * @param kid
 	 * @param oldItem
 	 */
-	protected synchronized void unmap(Object kid, TreeItem oldItem) {
+	protected synchronized void unmap(Object kid, Widget widget) {
 		if (kid == null) {
 			// when unmapping a dummy item
 			return;
 		}
-		Widget[] widgets = (Widget[]) fElementsToWidgets.get(kid);
-		fWidgetsToElements.remove(oldItem);
-		if (widgets != null) {
-			for (int i = 0; i < widgets.length; i++) {
-				Widget item = widgets[i];
-				if (item == oldItem) {
-					fItemToParentItem.remove(item);
-					if (widgets.length == 1) {
-						fElementsToWidgets.remove(kid);
-					} else {
-						Widget[] newItems = new Widget[widgets.length - 1];
-						System.arraycopy(widgets, 0, newItems, 0, i);
-						if (i < newItems.length) {
-							System.arraycopy(widgets, i + 1, newItems, i, newItems.length - i);
-						}
-						fElementsToWidgets.put(kid, newItems);
-					}
-				}
-			}
+		super.unmap(kid, widget);
+		fItemToParentItem.remove(widget);
+		if (widget instanceof TreeItem) {
+			TreeItem item = (TreeItem) widget;
+			TreeItem[] children = item.getItems();
+			for (int i = 0; i < children.length; i++) {
+				TreeItem child = children[i];
+				unmap(child.getData(), child);
+				child.dispose();
+			}			
 		}
-		TreeItem[] children = oldItem.getItems();
-		for (int i = 0; i < children.length; i++) {
-			TreeItem child = children[i];
-			unmap(child.getData(), child);
-			child.dispose();
-		}
-	}
-
-	/**
-	 * Returns an image for the given image descriptor. Adds the image to a cache
-	 * of images if it does not already exist. The cache is cleared when this viewer
-	 * is disposed. 
-	 * 
-	 * @param descriptor image descriptor
-	 * @return image
-	 */
-	Image getImage(ImageDescriptor descriptor) {
-		Image image = (Image) fImageCache.get(descriptor);
-		if (image == null) {
-			image = new Image(getControl().getDisplay(), descriptor.getImageData());
-			fImageCache.put(descriptor, image);
-		}
-		return image;
-	}
-
-	/**
-	 * Returns a font for the given font data. Adds the font to this viewer's font 
-	 * cache which is disposed when this viewer is disposed.
-	 * 
-	 * @param fontData font data
-	 * @return font
-	 */
-	Font getFont(FontData fontData) {
-		Font font = (Font) fFontCache.get(fontData);
-		if (font == null) {
-			font = new Font(getControl().getDisplay(), fontData);
-			fFontCache.put(fontData, font);
-		}
-		return font;
-	}
-	
-	/**
-	 * Returns a color for the given RGB. Adds the color to this viewer's color 
-	 * cache which is disposed when this viewer is disposed.
-	 * 
-	 * @param rgb and RGB
-	 * @return color
-	 */
-	Color getColor(RGB rgb) {
-		Color color = (Color) fColorCache.get(rgb);
-		if (color == null) {
-			color = new Color(getControl().getDisplay(), rgb);
-			fColorCache.put(rgb, color);
-		}
-		return color;
-	}
-	
-	/**
-	 * Sets the context for this viewer. 
-	 * 
-	 * @param context
-	 */
-	public void setContext(IPresentationContext context) {
-		fContext = context;
 	}
 
 	/**
@@ -858,13 +558,6 @@ public class AsyncTreeViewer extends StructuredViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#doUpdateItem(org.eclipse.swt.widgets.Widget, java.lang.Object, boolean)
-	 */
-	protected void doUpdateItem(Widget item, Object element, boolean fullMap) {
-		updateLabel(element, item);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
 	 */
 	public ISelection getSelection() {
@@ -887,28 +580,12 @@ public class AsyncTreeViewer extends StructuredViewer {
 		}
 		return Arrays.asList(paths);
 	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#internalRefresh(java.lang.Object)
-	 */
-	protected void internalRefresh(Object element) {
-		Widget[] items = getWidgets(element);
-		if (items == null) {
-			return;
-		}
-		for (int i = 0; i < items.length; i++) {
-			internalRefresh(element, items[i]);
-		}
-	}
 	
-	/**
-	 * Refreshes a specific occurrence of an element.
-	 * 
-	 * @param element element to update
-	 * @param item item to update
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#internalRefresh(java.lang.Object, org.eclipse.swt.widgets.Widget)
 	 */
 	protected void internalRefresh(Object element, Widget item) {
-		updateLabel(element, item);
+		super.internalRefresh(element, item);
 		updateHasChildren(element, item);
 	}	
 
@@ -926,121 +603,43 @@ public class AsyncTreeViewer extends StructuredViewer {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#setSelectionToWidget(org.eclipse.jface.viewers.ISelection, boolean)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#attemptSelection(org.eclipse.jface.viewers.ISelection, boolean)
 	 */
-	protected void setSelectionToWidget(ISelection selection, boolean reveal) {
-		if (selection instanceof TreeSelection) {
-			setSelectionToWidget((TreeSelection) selection, reveal);
-		} else {
-			super.setSelectionToWidget(selection, reveal);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#setSelectionToWidget(java.util.List, boolean)
-	 */
-	protected void setSelectionToWidget(List list, boolean reveal) {
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			Object selection = iter.next();
-			if (selection instanceof TreeSelection) {
-				setSelectionToWidget((TreeSelection) selection, reveal);
+	protected synchronized ISelection doAttemptSelectionToWidget(ISelection selection, boolean reveal) {
+		List remaining = new ArrayList();
+		List toSelect = new ArrayList();
+		TreeSelection treeSelection = (TreeSelection) selection;
+		TreePath[] paths = treeSelection.getPaths();
+		for (int i = 0; i < paths.length; i++) {
+			TreePath path = paths[i];
+			if (path == null) {
+				continue; 
 			}
-		}
-	}
-
-	/**
-	 * Schedules a pending selection update if the specified selection is not the
-	 * same as the current selection.
-	 * 
-	 * @param selection new selection
-	 * @param reveal wether to reveal the selection
-	 */
-	protected void setSelectionToWidget(TreeSelection selection, final boolean reveal) {
-		// check if same
-		if (fCurrentSelection != null) {
-			if (fCurrentSelection.equals(selection) && selection.equals(getSelection())) {
-				return;
-			}
-			fCurrentSelection = null;
-		}
-		fPendingSelection = selection;
-		if (fTree.getDisplay().getThread() == Thread.currentThread()) {
-			attemptSelection(reveal);
-		} else {
-			fTree.getDisplay().asyncExec(new Runnable() {
-				public void run() {
-					attemptSelection(reveal);
-				}
-			});
-		}
-	}
-
-	/**
-	 * Attempts to select elements in the pending selection.
-	 * 
-	 * @param reveal whether to reveal items in the selection
-	 */
-	synchronized void attemptSelection(final boolean reveal) {
-		if (fPendingSelection != null) {
-			List remaining = new ArrayList();
-			List toSelect = new ArrayList();
-			TreePath[] paths = fPendingSelection.getPaths();
-			if (paths == null) {
-				return;
-			}
-			for (int i = 0; i < paths.length; i++) {
-				TreePath path = paths[i];
-				if (path == null) {
-					continue; 
-				}
-				TreePath[] treePaths = getTreePaths(path.getLastSegment());
-				boolean selected = false;
-				if (treePaths != null) {
-					for (int j = 0; j < treePaths.length; j++) {
-						TreePath existingPath = treePaths[j];
-						if (existingPath.equals(path)) {
-							toSelect.add(existingPath.getTreeItem());
-							selected = true;
-							break;
-						}
+			TreePath[] treePaths = getTreePaths(path.getLastSegment());
+			boolean selected = false;
+			if (treePaths != null) {
+				for (int j = 0; j < treePaths.length; j++) {
+					TreePath existingPath = treePaths[j];
+					if (existingPath.equals(path)) {
+						toSelect.add(existingPath.getTreeItem());
+						selected = true;
+						break;
 					}
 				}
-				if (!selected) {
-					remaining.add(path);
-				}
 			}
-			if (remaining.isEmpty()) {
-				// done
-				fPendingSelection = null;
-			} else {
-				fPendingSelection = new TreeSelection((TreePath[]) remaining.toArray(new TreePath[remaining.size()]));
-			}
-			if (!toSelect.isEmpty()) {
-				final TreeItem[] items = (TreeItem[]) toSelect.toArray(new TreeItem[toSelect.size()]);
-
-				fTree.setSelection(items);
-				if (reveal) {
-					fTree.showItem(items[0]);
-				}
-				fCurrentSelection = (TreeSelection) getSelection();
-				fireSelectionChanged(new SelectionChangedEvent(AsyncTreeViewer.this, fCurrentSelection));
+			if (!selected) {
+				remaining.add(path);
 			}
 		}
-	}
+		if (!toSelect.isEmpty()) {
+			final TreeItem[] items = (TreeItem[]) toSelect.toArray(new TreeItem[toSelect.size()]);
 
-	/**
-	 * A content provider that does nothing.
-	 */
-	private class NullContentProvider implements IStructuredContentProvider {
-		public void dispose() {
+			fTree.setSelection(items);
+			if (reveal) {
+				fTree.showItem(items[0]);
+			}
 		}
-
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		}
-
-		public Object[] getElements(Object inputElement) {
-			return null;
-		}
+		return new TreeSelection((TreePath[]) remaining.toArray(new TreePath[remaining.size()]));
 	}
 
 	/**
@@ -1071,28 +670,46 @@ public class AsyncTreeViewer extends StructuredViewer {
 		item.setExpanded(false);
 	}
 
-	/**
-	 * Notification that a presentation update has completed with a non-OK
-	 * status. Subclasses may override as required. The default implementation
-	 * does nothing.
-	 * 
-	 * @param update update that failed
-	 * @param status status of update
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#setColor(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.RGB, org.eclipse.swt.graphics.RGB)
 	 */
-	protected void handlePresentationFailure(IPresentationRequestMonitor update, IStatus status) {
+	void setColor(Widget widget, RGB foreground, RGB background) {
+		if (widget instanceof TreeItem) {
+			TreeItem item = (TreeItem) widget;
+			item.setForeground(getColor(foreground));
+			item.setBackground(getColor(background));
+		}
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#preservingSelection(java.lang.Runnable)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#setFont(org.eclipse.swt.widgets.Widget, org.eclipse.swt.graphics.FontData)
 	 */
-	protected synchronized void preservingSelection(Runnable updateCode) {
-		// if there's a pending selection, there's no point in preserving the selection
-		if (fPendingSelection != null) {
-			updateCode.run();
-		} else {
-			super.preservingSelection(updateCode);
+	void setFont(Widget widget, FontData fontData) {
+		if (widget instanceof TreeItem) {
+			TreeItem item = (TreeItem) widget;
+			item.setFont(getFont(fontData));
 		}
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#getParent(org.eclipse.swt.widgets.Widget)
+	 */
+	protected Widget getParent(Widget widget) {
+		return (Widget) fItemToParentItem.get(widget);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#acceptsSelection(org.eclipse.jface.viewers.ISelection)
+	 */
+	protected boolean acceptsSelection(ISelection selection) {
+		return selection instanceof TreeSelection;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#getEmptySelection()
+	 */
+	protected ISelection getEmptySelection() {
+		return new TreeSelection(new TreePath[0]);
+	}
 	
 }

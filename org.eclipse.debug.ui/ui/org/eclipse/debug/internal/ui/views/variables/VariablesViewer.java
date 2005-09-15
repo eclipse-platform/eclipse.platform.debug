@@ -3,12 +3,12 @@ package org.eclipse.debug.internal.ui.views.variables;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationRequestMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 
-public class VariablesViewer extends AsyncTreeViewer{
+public class VariablesViewer extends AsynchronousTreeViewer{
 
 	private VariablesView fView;
 
@@ -33,7 +33,7 @@ public class VariablesViewer extends AsyncTreeViewer{
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer#handlePresentationFailure(org.eclipse.debug.internal.ui.treeviewer.IPresentationRequestMonitor, org.eclipse.core.runtime.IStatus)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer#handlePresentationFailure(org.eclipse.debug.internal.ui.treeviewer.IPresentationRequestMonitor, org.eclipse.core.runtime.IStatus)
 	 */
 	protected void handlePresentationFailure(IPresentationRequestMonitor update, IStatus status) {
 		fView.showMessage(status.getMessage());

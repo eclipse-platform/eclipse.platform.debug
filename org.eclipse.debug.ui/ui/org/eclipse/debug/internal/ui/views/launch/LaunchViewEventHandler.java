@@ -28,7 +28,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandler;
@@ -144,7 +144,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 					break;
 				case DebugEvent.CHANGE :
                     Object element = null;
-                    AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+                    AsynchronousTreeViewer viewer = (AsynchronousTreeViewer) getViewer();
                     IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                     
                     element = selection.getFirstElement();
@@ -175,7 +175,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 	}
 	
 	private void update(Object element) {
-		AsyncTreeViewer viewer = (AsyncTreeViewer) getLaunchView().getViewer();
+		AsynchronousTreeViewer viewer = (AsynchronousTreeViewer) getLaunchView().getViewer();
 		viewer.update(element);
 	}
 
@@ -203,7 +203,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 	
 	private void resetSelection(Object source, Object data) {
 		if (source instanceof IThread) {
-			AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+			AsynchronousTreeViewer viewer = (AsynchronousTreeViewer) getViewer();
 			TreePath[] treePaths = null;
 			if (data instanceof IStackFrame) {
 				treePaths = viewer.getTreePaths(data);

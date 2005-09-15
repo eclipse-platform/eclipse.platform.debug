@@ -17,7 +17,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.views.DebugViewDecoratingLabelProvider;
 import org.eclipse.debug.internal.ui.views.DebugViewInterimLabelProvider;
 import org.eclipse.debug.internal.ui.views.DebugViewLabelDecorator;
@@ -65,7 +65,7 @@ public class FindVariableDialog extends Dialog {
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
         }
         public Object[] getElements(Object inputElement) {
-            return getVariables(((AsyncTreeViewer) fView.getViewer()).getTree().getItems());
+            return getVariables(((AsynchronousTreeViewer) fView.getViewer()).getTree().getItems());
         }
         private IVariable[] getVariables(TreeItem[] items) {
             List variables= new ArrayList();

@@ -15,7 +15,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,7 +34,7 @@ public abstract class AbstractViewerState {
 	/**
 	 * Constructs a memento for the given viewer.
 	 */
-	public AbstractViewerState(AsyncTreeViewer viewer) {
+	public AbstractViewerState(AsynchronousTreeViewer viewer) {
 		saveState(viewer);
 	}
 
@@ -44,7 +44,7 @@ public abstract class AbstractViewerState {
 	 * 
 	 * @param viewer viewer of which to save the state
 	 */
-	public void saveState(AsyncTreeViewer viewer) {
+	public void saveState(AsynchronousTreeViewer viewer) {
 		List expanded = new ArrayList();
 		fSavedExpansion = null;
 		TreeItem[] items = viewer.getTree().getItems();
@@ -116,7 +116,7 @@ public abstract class AbstractViewerState {
 	 * 
 	 * @param viewer viewer to which state is restored
 	 */
-	public void restoreState(AsyncTreeViewer viewer) {
+	public void restoreState(AsynchronousTreeViewer viewer) {
 	    boolean expansionComplete = true;
 	    if (fSavedExpansion != null && fSavedExpansion.size() > 0) {
 			for (int i = 0; i < fSavedExpansion.size(); i++) {
@@ -176,6 +176,6 @@ public abstract class AbstractViewerState {
 	 * @return element represented by the path, or <code>null</code> if none
 	 * @throws DebugException if unable to locate a variable
 	 */
-	protected abstract Object decodePath(IPath path, AsyncTreeViewer viewer) throws DebugException;
+	protected abstract Object decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException;
 
 }

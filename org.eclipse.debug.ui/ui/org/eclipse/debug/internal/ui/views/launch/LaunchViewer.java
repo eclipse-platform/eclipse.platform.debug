@@ -10,8 +10,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.elements.adapters.AbstractAsyncPresentationAdapter;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
-import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousLabelAdapter;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousTreeContentAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -19,13 +20,53 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 import org.eclipse.ui.progress.IElementCollector;
 import org.osgi.framework.Bundle;
 
-public class LaunchViewer extends AsyncTreeViewer {
+public class LaunchViewer extends AsynchronousTreeViewer {
 
 	public LaunchViewer(Composite parent) {
 		super(parent);
 	}
 
-	protected IPresentationAdapter getPresentationAdapter(Object element) {
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousViewer#getLabelAdapter(java.lang.Object)
+	 */
+	protected IAsynchronousLabelAdapter getLabelAdapter(Object element) {
+		AbstractAsyncPresentationAdapter legacyAdapter = getLegacyAdapter(element);
+		if (legacyAdapter != null) {
+			return legacyAdapter;
+		}
+
+		IAsynchronousLabelAdapter presentationAdapter = super.getLabelAdapter(element);
+		if (presentationAdapter != null) {
+			return presentationAdapter;
+		}
+		
+		return new BogusAdapter();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer#getTreeContentAdapter(java.lang.Object)
+	 */
+	protected IAsynchronousTreeContentAdapter getTreeContentAdapter(Object element) {
+		AbstractAsyncPresentationAdapter legacyAdapter = getLegacyAdapter(element);
+		if (legacyAdapter != null) {
+			return legacyAdapter;
+		}
+
+		IAsynchronousTreeContentAdapter presentationAdapter = super.getTreeContentAdapter(element);
+		if (presentationAdapter != null) {
+			return presentationAdapter;
+		}
+		
+		return new BogusAdapter();
+	}
+
+	/**
+	 * Returns a wrapper to the legacy workbench adapter if supported by the given object.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	private AbstractAsyncPresentationAdapter getLegacyAdapter(Object element) {
 		if (element instanceof IDeferredWorkbenchAdapter) {
 			return new WrappedDeferredWorkbenchAdapter((IDeferredWorkbenchAdapter) element, element);
 		}
@@ -54,13 +95,7 @@ public class LaunchViewer extends AsyncTreeViewer {
 				}
 			}
 		}
-
-		IPresentationAdapter presentationAdapter = super.getPresentationAdapter(element);
-		if (presentationAdapter != null) {
-			return presentationAdapter;
-		}
-		
-		return new BogusAdapter();
+		return null;
 	}
 
 	private class ElementCollector implements IElementCollector {

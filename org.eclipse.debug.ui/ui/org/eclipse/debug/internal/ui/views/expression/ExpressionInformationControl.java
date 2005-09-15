@@ -22,19 +22,20 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
 import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousLabelAdapter;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousTreeContentAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
-import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
 import org.eclipse.debug.internal.ui.views.DebugUIViewsMessages;
-import org.eclipse.debug.internal.ui.views.variables.VariablesViewer;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
+import org.eclipse.debug.internal.ui.views.variables.VariablesViewer;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
@@ -75,7 +76,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 	
 	private IWorkbenchPage page;
 	private IExpression exp;
-	private AsyncTreeViewer viewer;
+	private AsynchronousTreeViewer viewer;
 	private IDebugModelPresentation modelPresentation;
 	private StyledText valueDisplay;
 	private SashForm sashForm;
@@ -347,7 +348,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
         	exp.dispose();
     }
     
-    private class TreeRoot implements IPresentationAdapter, IAdaptable {
+    private class TreeRoot implements IAsynchronousLabelAdapter, IAsynchronousTreeContentAdapter, IAdaptable {
 
 		public void retrieveChildren(Object parent, IPresentationContext context, IChildrenRequestMonitor result) {
 			result.addChild(exp);
@@ -359,7 +360,7 @@ public class ExpressionInformationControl extends PopupInformationControl {
 		}
 
 		public Object getAdapter(Class adapter) {
-			if (adapter == IPresentationAdapter.class) {
+			if (adapter == IAsynchronousLabelAdapter.class || adapter == IAsynchronousTreeContentAdapter.class) {
 				return this;
 			}
 			return null;

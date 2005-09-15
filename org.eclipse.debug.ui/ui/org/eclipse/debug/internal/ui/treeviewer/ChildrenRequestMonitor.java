@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Widget;
  * children from a presentation adapter.  
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
- * speficially with <code>AsyncTreeViewer</code>.
+ * speficially with <code>AsynchronousTreeViewer</code>.
  * </p>
  * @since 3.2
  */
@@ -37,7 +37,7 @@ class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChil
      * 
      * @param widget widget to retrieve children for
      */
-    public ChildrenRequestMonitor(Widget widget, AsyncTreeViewer viewer) {
+    public ChildrenRequestMonitor(Widget widget, AsynchronousTreeViewer viewer) {
         super(widget, viewer);
     }
     
@@ -68,7 +68,7 @@ class ChildrenRequestMonitor extends PresentationRequestMonitor implements IChil
      * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
-        getViewer().setChildren(getWidget(), fChildren);
+        ((AsynchronousTreeViewer)getViewer()).setChildren(getWidget(), fChildren);
     }
 
 }

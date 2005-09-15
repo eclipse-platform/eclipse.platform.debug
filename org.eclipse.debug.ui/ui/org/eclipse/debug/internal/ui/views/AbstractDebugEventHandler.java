@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.AbstractDebugView;
 import org.eclipse.jface.viewers.IBasicPropertyConstants;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -224,8 +224,8 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 			if (viewer instanceof TreeViewer) {
 				TreeViewer tv = (TreeViewer) viewer;
 				tv.remove(element);
-			} else if (viewer instanceof AsyncTreeViewer) {
-				AsyncTreeViewer atv = (AsyncTreeViewer) viewer;
+			} else if (viewer instanceof AsynchronousTreeViewer) {
+				AsynchronousTreeViewer atv = (AsynchronousTreeViewer) viewer;
 				atv.refresh();
 			}
 		}
@@ -241,8 +241,8 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 			if (viewer instanceof TreeViewer) {
 				TreeViewer tv = (TreeViewer) viewer;
 				tv.update(element, new String[] {IBasicPropertyConstants.P_TEXT});
-			} else if (viewer instanceof AsyncTreeViewer) {
-				AsyncTreeViewer atv = (AsyncTreeViewer) viewer;
+			} else if (viewer instanceof AsynchronousTreeViewer) {
+				AsynchronousTreeViewer atv = (AsynchronousTreeViewer) viewer;
 				atv.update(element);
 			}
 		}
@@ -258,8 +258,8 @@ public abstract class AbstractDebugEventHandler implements IDebugEventSetListene
 			 if (viewer instanceof TreeViewer) {
 				 TreeViewer treeViewer = (TreeViewer) viewer;
 				 treeViewer.refresh(element);
-			 } else if (viewer instanceof AsyncTreeViewer) {
-				 AsyncTreeViewer asyncTreeViewer = (AsyncTreeViewer) viewer;
+			 } else if (viewer instanceof AsynchronousTreeViewer) {
+				 AsynchronousTreeViewer asyncTreeViewer = (AsynchronousTreeViewer) viewer;
 				 asyncTreeViewer.refresh(element);
 			 }
 		}

@@ -12,9 +12,7 @@ package org.eclipse.debug.internal.ui.treeviewer;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
@@ -22,7 +20,7 @@ import org.eclipse.swt.widgets.Widget;
  * attributes from a presentation adapter. 
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
- * speficially with <code>AsyncTreeViewer</code>.
+ * speficially with <code>AsynchronousTreeViewer</code>.
  * </p>
  * @since 3.2
  */
@@ -56,7 +54,7 @@ class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRe
      * @param widget widget to update
      * @param viewer viewer containing the widget
      */
-    public LabelRequestMonitor(Widget widget, AsyncTreeViewer viewer) {
+    public LabelRequestMonitor(Widget widget, AsynchronousViewer viewer) {
         super(widget, viewer);
     }
 
@@ -64,32 +62,11 @@ class LabelRequestMonitor extends PresentationRequestMonitor implements ILabelRe
      * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
      */
     protected void performUpdate() {
-        TreeItem item = (TreeItem) getWidget();
-        if (fText != null) {
-            item.setText(fText);
-        }
-        if (fImageDescriptor != null) {
-        	Image image = getViewer().getImage(fImageDescriptor);
-            item.setImage(image);
-        }
-        if (fFontData == null) {
-        	// default
-        	item.setFont(null);
-        } else {
-        	item.setFont(getViewer().getFont(fFontData));
-        }
-        if (fForeground == null) { 
-        	// default
-        	item.setForeground(null);
-        } else {
-        	item.setForeground(getViewer().getColor(fForeground));
-        }
-        if (fBackground == null) {
-        	// default
-        	item.setBackground(null);
-        } else {
-        	item.setBackground(getViewer().getColor(fBackground));
-        }
+    	AsynchronousViewer viewer = getViewer();
+		Widget widget = getWidget();
+		viewer.setLabel(widget, fText, fImageDescriptor);
+    	viewer.setColor(widget, fForeground, fBackground);
+    	viewer.setFont(widget, fFontData);
     }
 
     /* (non-Javadoc)

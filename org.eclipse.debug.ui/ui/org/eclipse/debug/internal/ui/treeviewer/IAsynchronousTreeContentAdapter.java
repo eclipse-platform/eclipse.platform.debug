@@ -11,14 +11,14 @@
 package org.eclipse.debug.internal.ui.treeviewer;
 
 /**
- * Provides labels and children for elements in a tree viewer. Note that implementations
- * are intended to provide labels and children asynchronously. 
+ * Provides content for elements in a tree viewer. Note that implementations
+ * are intended to provide content asynchronously. 
  * <p>
  * Clients may implement this interface.
  * </p>
  * @since 3.2
  */
-public interface IPresentationAdapter {
+public interface IAsynchronousTreeContentAdapter {
 
     /**
      * Asynchronously retrieves the children of the given parent reporting to the
@@ -42,17 +42,5 @@ public interface IPresentationAdapter {
      * @param monitor presentation request monitor to report the result to
      */
     public void isContainer(Object element, IPresentationContext context, IContainerRequestMonitor result);
-    
-    /**
-     * Asynchronously retrieves the label of the given object reporting to
-     * the given monitor. If unable to retrieve label information, an exception should be
-     * reported to the monitor with an appropriate status.
-     *  
-     * @param object the element for which a label is requested
-     * @param context the context in which the label has been requested
-     * @param monitor presentation request monitor to report the result to
-     */
-    public void retrieveLabel(Object object, IPresentationContext context, ILabelRequestMonitor result);
-    
 
 }

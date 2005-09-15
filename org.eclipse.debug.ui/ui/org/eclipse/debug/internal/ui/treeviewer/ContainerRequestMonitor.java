@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Widget;
  * a presentation adapter contains children. 
  * <p>
  * Not intended to be subclassed or instantiated by clients. For use
- * speficially with <code>AsyncTreeViewer</code>.
+ * speficially with <code>AsynchronousTreeViewer</code>.
  * </p>
  * @since 3.2
  */
@@ -34,7 +34,7 @@ class ContainerRequestMonitor extends PresentationRequestMonitor implements ICon
 	 * @param item item to update
 	 * @param viewer viewer the update was issued for
 	 */
-	public ContainerRequestMonitor(Widget item, AsyncTreeViewer viewer) {
+	public ContainerRequestMonitor(Widget item, AsynchronousTreeViewer viewer) {
 		super(item, viewer);
 	}
 
@@ -42,7 +42,7 @@ class ContainerRequestMonitor extends PresentationRequestMonitor implements ICon
 	 * @see org.eclipse.debug.internal.ui.treeviewer.PresentationRequestMonitor#performUpdate()
 	 */
 	protected void performUpdate() {
-		getViewer().setIsContainer(getWidget(), fIsChildren);
+		((AsynchronousTreeViewer)getViewer()).setIsContainer(getWidget(), fIsChildren);
 
 	}
 

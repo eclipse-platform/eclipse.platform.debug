@@ -48,7 +48,7 @@ import org.eclipse.debug.internal.ui.actions.EditLaunchConfigurationAction;
 import org.eclipse.debug.internal.ui.sourcelookup.EditSourceLookupPathAction;
 import org.eclipse.debug.internal.ui.sourcelookup.LookupSourceAction;
 import org.eclipse.debug.internal.ui.sourcelookup.SourceLookupResult;
-import org.eclipse.debug.internal.ui.treeviewer.AsyncTreeViewer;
+import org.eclipse.debug.internal.ui.treeviewer.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.treeviewer.PresentationContext;
 import org.eclipse.debug.internal.ui.treeviewer.TreePath;
 import org.eclipse.debug.internal.ui.treeviewer.TreeSelection;
@@ -258,7 +258,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 * @see org.eclipse.debug.ui.AbstractDebugView#createViewer(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Viewer createViewer(Composite parent) {
-		AsyncTreeViewer viewer = new LaunchViewer(parent);
+		AsynchronousTreeViewer viewer = new LaunchViewer(parent);
         viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
         viewer.setContext(new PresentationContext(this));
         
@@ -470,8 +470,8 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	    Viewer viewer = getViewer();
 		if (viewer != null) {
 			viewer.removeSelectionChangedListener(this);
-			if (viewer instanceof AsyncTreeViewer) {
-				AsyncTreeViewer asyncTreeViewer = (AsyncTreeViewer) viewer;
+			if (viewer instanceof AsynchronousTreeViewer) {
+				AsynchronousTreeViewer asyncTreeViewer = (AsynchronousTreeViewer) viewer;
 				asyncTreeViewer.dispose();
 			}
 		}
@@ -799,7 +799,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 * @param selectNeeded whether the element should be selected
 	 */
 	public void autoExpand(Object element, boolean selectNeeded) {
-		AsyncTreeViewer viewer = (AsyncTreeViewer) getViewer();
+		AsynchronousTreeViewer viewer = (AsynchronousTreeViewer) getViewer();
 		TreePath[] treePaths = viewer.getTreePaths(element);
 		if (element instanceof IStackFrame) {
 			IStackFrame frame = (IStackFrame) element;

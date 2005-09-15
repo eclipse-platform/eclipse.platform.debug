@@ -23,17 +23,23 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.internal.ui.DelegatingModelPresentation;
 import org.eclipse.debug.internal.ui.LazyModelPresentation;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousLabelAdapter;
+import org.eclipse.debug.internal.ui.treeviewer.IAsynchronousTreeContentAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IChildrenRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.IContainerRequestMonitor;
 import org.eclipse.debug.internal.ui.treeviewer.ILabelRequestMonitor;
-import org.eclipse.debug.internal.ui.treeviewer.IPresentationAdapter;
 import org.eclipse.debug.internal.ui.treeviewer.IPresentationContext;
 import org.eclipse.debug.internal.ui.views.launch.DebugElementHelper;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugView;
 import org.eclipse.ui.IWorkbenchPart;
 
-public abstract class AbstractAsyncPresentationAdapter implements IPresentationAdapter {
+/**
+ * TODO: we can provide a generic abstract implementation of this adapter
+ *
+ * @since 3.2
+ */
+public abstract class AbstractAsyncPresentationAdapter implements IAsynchronousLabelAdapter, IAsynchronousTreeContentAdapter {
 	
 	protected static final Object[] EMPTY = new Object[0];
 	
