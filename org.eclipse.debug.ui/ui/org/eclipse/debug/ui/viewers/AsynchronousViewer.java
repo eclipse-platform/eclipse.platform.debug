@@ -33,6 +33,23 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
 
 /**
+ * A viewer that retrieves labels and content asynchronously via adapters and supports
+ * duplicate elements in the viewer. Retrieving conetnt and labels asynchrnously allows
+ * for arbitrary latency without blocking the UI thread.
+ * <p>
+ * This viewer uses adapters to retreive labels and content rather than
+ * a label provider and content provider. As such, the label provider for this viewer
+ * is <code>null</code> by default. The content provider returned by this viewer is
+ * non-<code>null</code> to conform to the viewer specification, but performs no 
+ * useful function.
+ * </p>
+ * <p>
+ * The selection in this viewer is also set asynchronously. When the selection is set,
+ * the viewer attempts to perform the selection. If the elements in the specified selection
+ * are not yet in the viewer, the portion of the selection that could not be honored
+ * becomes a pending selection. As more elements are added to viewer, the pending selection
+ * is attempted to be set.  
+ * </p>
  * @since 3.2
  */
 public abstract class AsynchronousViewer extends StructuredViewer {
