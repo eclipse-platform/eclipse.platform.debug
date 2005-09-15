@@ -50,8 +50,6 @@ import org.eclipse.swt.widgets.Widget;
  * TODO: tree editor not implemented
  * TODO: table tree - what implications does it have on IPresentationAdapter?
  * 
- * TODO: convert all JDT deferred workbench adapters to IPresentationAdapters
- * 
  * TODO: Deprecate the public/abstract deferred workbench adapter
  *  in favor of the presentation adapter.
  * </p>
