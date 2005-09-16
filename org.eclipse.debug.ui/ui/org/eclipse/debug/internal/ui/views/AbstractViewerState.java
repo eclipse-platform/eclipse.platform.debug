@@ -18,7 +18,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.TreePath;
 import org.eclipse.debug.ui.viewers.TreeSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.TreeItem;
 
 /**
@@ -123,7 +122,7 @@ public abstract class AbstractViewerState {
 				IPath path = (IPath) fSavedExpansion.get(i);
 				if (path != null) {
 					try {
-						TreePath treePath = (TreePath) decodePath(path, viewer);
+						TreePath treePath = decodePath(path, viewer);
 						if (treePath != null) {
 							viewer.expand(new TreeSelection(new TreePath[] { treePath }));
 							
@@ -147,10 +146,10 @@ public abstract class AbstractViewerState {
 	        List selection = new ArrayList(fSelection.length);
 	        for (int i = 0; i < fSelection.length; i++) {
 	            IPath path = fSelection[i];
-	            Object obj;
+	            TreePath obj;
 	            try {
 	                obj = decodePath(path, viewer);
-	                if (obj != null) {
+	                if (obj != null && obj.getSegmentCount()-1 == path.segmentCount()) {
 	                    selection.add(obj);
 	                } else {
 	                    selectionComplete = false;               
@@ -159,7 +158,8 @@ public abstract class AbstractViewerState {
 	            }
 	        }
             if (selection.size() > 0) {
-                viewer.setSelection(new StructuredSelection(selection));
+            		TreePath[] treePaths = (TreePath[]) selection.toArray(new TreePath[0]);
+                viewer.setSelection(new TreeSelection(treePaths));
             }
 	        if (selectionComplete) {
 	            fSelection = null;
@@ -176,6 +176,6 @@ public abstract class AbstractViewerState {
 	 * @return element represented by the path, or <code>null</code> if none
 	 * @throws DebugException if unable to locate a variable
 	 */
-	protected abstract Object decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException;
+	protected abstract TreePath decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException;
 
 }

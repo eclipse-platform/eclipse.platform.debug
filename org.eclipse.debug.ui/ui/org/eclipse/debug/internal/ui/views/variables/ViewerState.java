@@ -54,7 +54,7 @@ public class ViewerState extends AbstractViewerState {
 	 * @see org.eclipse.debug.internal.ui.views.AbstractViewerState#decodePath(org.eclipse.core.runtime.IPath,
 	 *      org.eclipse.jface.viewers.TreeViewer)
 	 */
-	protected Object decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException {
+	protected TreePath decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException {
 		String[] names = path.segments();
 		Tree tree = viewer.getTree();
 		TreeItem[] items = tree.getItems();
