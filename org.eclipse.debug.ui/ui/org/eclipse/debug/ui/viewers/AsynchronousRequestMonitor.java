@@ -154,11 +154,11 @@ abstract class AsynchronousRequestMonitor implements IAsynchronousRequestMonitor
      */
     public final void done() {
         if (!isCanceled()) {
-            getViewer().updateComplete(this);
             getViewer().getControl().getDisplay().asyncExec(new Runnable() {
                 public void run() {
                     // necessary to check if widget is disposed. The item may have been
                     // removed from the tree when another children update occured.
+                	getViewer().updateComplete(AsynchronousRequestMonitor.this);
                     if (!isCanceled() && !getWidget().isDisposed()) {
                     	if (fStatus != null && !fStatus.isOK()) {
                     		getViewer().handlePresentationFailure(AsynchronousRequestMonitor.this, fStatus);

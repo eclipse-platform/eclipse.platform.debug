@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Color;
@@ -29,6 +28,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
 
@@ -468,9 +468,13 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	}	
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.StructuredViewer#setSelectionToWidget(org.eclipse.jface.viewers.ISelection, boolean)
+	 * @see org.eclipse.jface.viewers.Viewer#setSelection(org.eclipse.jface.viewers.ISelection, boolean)
 	 */
-	protected void setSelectionToWidget(ISelection selection, final boolean reveal) {
+	public synchronized void setSelection(ISelection selection, final boolean reveal) {
+		Control control = getControl();
+		if (control == null || control.isDisposed()) {
+			return;
+		}
 		if (!acceptsSelection(selection)) {
 			selection = getEmptySelection();
 		}
@@ -489,14 +493,23 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 					attemptSelection(reveal);
 				}
 			});
-		}			
+		}		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.StructuredViewer#setSelectionToWidget(org.eclipse.jface.viewers.ISelection, boolean)
+	 */
+	final protected void setSelectionToWidget(ISelection selection, final boolean reveal) {
+		// NOT USED
+		throw new IllegalArgumentException("This method should not be called"); //$NON-NLS-1$
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.StructuredViewer#setSelectionToWidget(java.util.List, boolean)
 	 */
-	protected void setSelectionToWidget(List l, boolean reveal) {
+	final protected void setSelectionToWidget(List l, boolean reveal) {
 		// NOT USED
+		throw new IllegalArgumentException("This method should not be called"); //$NON-NLS-1$
 	}	
 		
 	/**
@@ -513,7 +526,7 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 			ISelection currentSelection = getSelection();
 			if (!currentSelection.equals(fCurrentSelection)) {
 				fCurrentSelection = currentSelection;
-				fireSelectionChanged(new SelectionChangedEvent(this, fCurrentSelection));
+				updateSelection(fCurrentSelection);
 			}
 		}
 	}
@@ -574,11 +587,23 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * @see org.eclipse.jface.viewers.StructuredViewer#preservingSelection(java.lang.Runnable)
 	 */
 	protected synchronized void preservingSelection(Runnable updateCode) {
-		// if there's a pending selection, there's no point in preserving the selection
-		if (fPendingSelection != null) {
-			updateCode.run();
+		if (fPendingSelection == null) {
+			ISelection oldSelection = null;
+			try {
+				// preserve selection
+				oldSelection = getSelection();
+				// perform the update
+				updateCode.run();
+			} finally {
+				// restore selection
+				doAttemptSelectionToWidget(oldSelection, false);
+				// send out notification if old and new differ
+				ISelection newSelection = getSelection();
+				if (!newSelection.equals(oldSelection))
+					handleInvalidSelection(oldSelection, newSelection);
+			}
 		} else {
-			super.preservingSelection(updateCode);
+			updateCode.run();
 		}
 	}
 	
