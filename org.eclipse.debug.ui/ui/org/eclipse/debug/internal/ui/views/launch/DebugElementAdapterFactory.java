@@ -21,17 +21,17 @@ import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncExpressionAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncExpressionManagerAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncLauchManagerAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncLaunchAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncProcessAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncRegisterGroupAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncStackFrameAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncTargetAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncThreadAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncVariableAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsyncVariableLabelAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.ExpressionTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.ExpressionManagerTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.LauchManagerTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.LaunchTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.ProcessTreeAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.RegisterGroupTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.StackFrameTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.DebugTargetTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.ThreadTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.VariableTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.VariableLabelAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugLabelAdapter;
 import org.eclipse.debug.ui.viewers.IAsynchronousLabelAdapter;
 import org.eclipse.debug.ui.viewers.IAsynchronousTreeContentAdapter;
@@ -45,18 +45,18 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 public class DebugElementAdapterFactory implements IAdapterFactory {
     
     private static IAsynchronousLabelAdapter fgDebugLabelAdapter = new AsynchronousDebugLabelAdapter();
-    private static IAsynchronousLabelAdapter fgVariableLabelAdapter = new AsyncVariableLabelAdapter();
+    private static IAsynchronousLabelAdapter fgVariableLabelAdapter = new VariableLabelAdapter();
     
-    private static IAsynchronousTreeContentAdapter fgAsyncLaunchManager = new AsyncLauchManagerAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncLaunch = new AsyncLaunchAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncTarget = new AsyncTargetAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncProcess = new AsyncProcessAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncThread = new AsyncThreadAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncFrame = new AsyncStackFrameAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncVariable = new AsyncVariableAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncRegisterGroup = new AsyncRegisterGroupAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncExpressionManager = new AsyncExpressionManagerAdapter();
-    private static IAsynchronousTreeContentAdapter fgAsyncExpression = new AsyncExpressionAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncLaunchManager = new LauchManagerTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncLaunch = new LaunchTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncTarget = new DebugTargetTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncProcess = new ProcessTreeAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncThread = new ThreadTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncFrame = new StackFrameTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncVariable = new VariableTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncRegisterGroup = new RegisterGroupTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncExpressionManager = new ExpressionManagerTreeContentAdapter();
+    private static IAsynchronousTreeContentAdapter fgAsyncExpression = new ExpressionTreeContentAdapter();
 
     /* (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)

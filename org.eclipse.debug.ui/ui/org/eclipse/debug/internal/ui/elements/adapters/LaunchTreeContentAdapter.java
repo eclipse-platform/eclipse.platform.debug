@@ -12,24 +12,24 @@
 package org.eclipse.debug.internal.ui.elements.adapters;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.model.IDebugTarget;
+import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
-public class AsyncTargetAdapter extends AsynchronousTreeContentAdapter {
+public class LaunchTreeContentAdapter extends AsynchronousTreeContentAdapter {
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
 	 */
 	protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
-		return ((IDebugTarget) parent).getThreads();
+		return ((ILaunch) parent).getChildren();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#hasChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
 	 */
 	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
-		return ((IDebugTarget)element).hasThreads();
+		return ((ILaunch)element).hasChildren();
 	}
-
+	
 }

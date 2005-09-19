@@ -12,25 +12,24 @@
 package org.eclipse.debug.internal.ui.elements.adapters;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.IExpressionManager;
+import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
-public class AsyncExpressionManagerAdapter extends AsynchronousTreeContentAdapter {
+public class DebugTargetTreeContentAdapter extends AsynchronousTreeContentAdapter {
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
 	 */
 	protected Object[] getChildren(Object parent, IPresentationContext context) throws CoreException {
-		return ((IExpressionManager) parent).getExpressions();
+		return ((IDebugTarget) parent).getThreads();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugTreeContentAdapter#hasChildren(java.lang.Object, org.eclipse.debug.internal.ui.treeviewer.IPresentationContext)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#hasChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
 	 */
 	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
-		return ((IExpressionManager)element).hasExpressions();
+		return ((IDebugTarget)element).hasThreads();
 	}
-    
-    
+
 }

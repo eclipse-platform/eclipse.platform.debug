@@ -18,7 +18,7 @@ import org.eclipse.debug.ui.viewers.IPresentationContext;
 /**
  *
  */
-public class AsyncExpressionAdapter extends AsyncVariableAdapter {
+public class ExpressionTreeContentAdapter extends VariableTreeContentAdapter {
 
     /* (non-Javadoc)
      * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)

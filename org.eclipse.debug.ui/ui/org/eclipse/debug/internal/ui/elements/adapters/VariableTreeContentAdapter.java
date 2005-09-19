@@ -28,7 +28,7 @@ import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 import org.eclipse.ui.IWorkbenchPart;
 
-public class AsyncVariableAdapter extends AsynchronousTreeContentAdapter {
+public class VariableTreeContentAdapter extends AsynchronousTreeContentAdapter {
 
     /* (non-Javadoc)
      * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)

@@ -17,7 +17,7 @@ import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
-public class AsyncStackFrameAdapter extends AsynchronousTreeContentAdapter {
+public class StackFrameTreeContentAdapter extends AsynchronousTreeContentAdapter {
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)

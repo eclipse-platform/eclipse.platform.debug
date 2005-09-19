@@ -16,7 +16,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
-public class AsyncLauchManagerAdapter extends AsynchronousTreeContentAdapter {
+public class LauchManagerTreeContentAdapter extends AsynchronousTreeContentAdapter {
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#getChildren(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
