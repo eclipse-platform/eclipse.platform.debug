@@ -16,6 +16,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -33,6 +36,7 @@ import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.TreePath;
 import org.eclipse.debug.ui.viewers.TreeSelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * Handles debug events, updating the launch view and viewer.
@@ -473,13 +477,16 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 					// Refresh the UI to show that the thread
 					// is performing a long evaluation
 					final IThread thread= (IThread)entry.getKey();
-					fStopTimes.remove(thread);	
-					getView().asyncExec(new Runnable() {
-						public void run() {
+					fStopTimes.remove(thread);
+					WorkbenchJob job = new WorkbenchJob("updateRunningThread") { //$NON-NLS-1$
+						public IStatus runInUIThread(IProgressMonitor monitor) {
 							fTimedOutThreads.add(thread);
 							updateRunningThread(thread);
+							return Status.OK_STATUS;
 						}
-					});
+					};
+					job.setSystem(true);
+					job.schedule();
 				} else {
 					timeToWait= Math.min(timeToWait, stopTime - currentTime);
 				}
@@ -520,8 +527,8 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 	 * @see org.eclipse.debug.core.ILaunchesListener#launchesChanged(org.eclipse.debug.core.ILaunch)
 	 */
 	public void launchesChanged(final ILaunch[] launches) {
-		Runnable r= new Runnable() {
-			public void run() {
+		WorkbenchJob job = new WorkbenchJob("LaunchViewEventHandler.launchesChanged") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
 				if (isAvailable()) {	
 					if (launches.length == 1) {
 						refresh(launches[0]);
@@ -534,21 +541,22 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 						}						
 					}
 				}
+				return Status.OK_STATUS;
 			}
 		};
-		
-		getView().asyncExec(r);				
+		job.setSystem(true);
+		job.schedule();
 	}
 
 	/**
 	 * @see org.eclipse.debug.core.ILaunchesListener#launchesRemoved(org.eclipse.debug.core.ILaunch)
 	 */
 	public void launchesRemoved(final ILaunch[] launches) {
-		Runnable r= new Runnable() {
-			public void run() {
+		WorkbenchJob job = new WorkbenchJob("LaunchViewEventHandler.launchesRemoved") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
 				if (isAvailable()) {
 					if (launches.length == 1) {
-						remove(launches[0]);
+						LaunchViewEventHandler.this.remove(launches[0]);
 					} else {
 						refresh();
 					}
@@ -567,7 +575,7 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 									if (topStackFrame != null) {
 									    getLaunchView().autoExpand(topStackFrame, true);
 									}
-									return;
+									return Status.OK_STATUS;
 								}
 							}						
 						} catch (DebugException de) {
@@ -577,10 +585,12 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 						getLaunchView().autoExpand(target.getLaunch(), true);
 					}
 				}
+				return Status.OK_STATUS;
 			}
 		};
-
-		getView().asyncExec(r);		
+		
+		job.setSystem(true);
+		job.schedule();
 	}
 
 
@@ -597,12 +607,15 @@ public class LaunchViewEventHandler extends AbstractDebugEventHandler implements
 				}
 			}
 		}
-		Runnable r= new Runnable() {
-			public void run() {
+		WorkbenchJob job = new WorkbenchJob("LaunchViewEventHandler.launchesTerminated") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
 				getLaunchView().cleanupLaunches(launches);
+				return Status.OK_STATUS;
 			}
+			
 		};
-		getView().asyncExec(r);
+		job.setSystem(true);
+		job.schedule();
 	}
 
     /* (non-Javadoc)

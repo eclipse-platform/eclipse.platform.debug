@@ -111,6 +111,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.console.actions.TextViewerAction;
+import org.eclipse.ui.progress.WorkbenchJob;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
@@ -983,12 +984,15 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * detail pane.
 	 */
 	protected void populateDetailPaneFromSelection(final IStructuredSelection selection) {
-        Runnable runnable = new Runnable() {
-            public void run() {
+        WorkbenchJob wJob = new WorkbenchJob("Populate Details Pane") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
                 getDetailDocument().set(""); //$NON-NLS-1$        
-            }
+				return Status.OK_STATUS;
+			}
         };
-        DebugUIPlugin.getStandardDisplay().asyncExec(runnable);
+        wJob.setSystem(true);
+        wJob.schedule();
+        
 		try {
 			if (!selection.isEmpty()) {
 				IValue val = null;
@@ -1012,8 +1016,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 				}
 				
                 final IValue finalVal = val;
-                runnable = new Runnable() {
-                    public void run() {
+                
+                wJob = new WorkbenchJob("Populate Details Pane"){ //$NON-NLS-1$
+					public IStatus runInUIThread(IProgressMonitor monitor) {
                         getDetailDocument().set(""); //$NON-NLS-1$
                         setDebugModel(finalVal.getModelIdentifier());
                         fValueSelection = selection;
@@ -1021,16 +1026,22 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
                         fSelectionIterator.next();
                         fLastValueDetail= finalVal;
                         getModelPresentation().computeDetail(finalVal, VariablesView.this);        
-                    }
-                };
-                DebugUIPlugin.getStandardDisplay().asyncExec(runnable);
+						return Status.OK_STATUS;
+					}
+				};
+				wJob.setSystem(true);
+				wJob.schedule();
 			} 
 		} catch (DebugException de) {
-            DebugUIPlugin.getStandardDisplay().asyncExec(new Runnable() {
-                public void run() {
-                    getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18); 
-                }
-            });
+			wJob = new WorkbenchJob("Populate Details Pane") { //$NON-NLS-1$
+				public IStatus runInUIThread(IProgressMonitor monitor) {
+					getDetailDocument().set(VariablesViewMessages.VariablesView__error_occurred_retrieving_value__18);
+					return Status.OK_STATUS;
+				}
+				
+			};
+			wJob.setSystem(true);
+			wJob.schedule();
 		}				
 	}
 	

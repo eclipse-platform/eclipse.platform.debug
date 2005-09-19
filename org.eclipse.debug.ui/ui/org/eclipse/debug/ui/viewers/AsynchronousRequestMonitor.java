@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.viewers;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * Base implementation of an asynchronous request monitor.
@@ -153,27 +156,31 @@ abstract class AsynchronousRequestMonitor implements IAsynchronousRequestMonitor
      * @see org.eclipse.core.runtime.IProgressMonitor#done()
      */
     public final void done() {
-        if (!isCanceled()) {
-            getViewer().getControl().getDisplay().asyncExec(new Runnable() {
-                public void run() {
-                    // necessary to check if widget is disposed. The item may have been
-                    // removed from the tree when another children update occured.
-                	getViewer().updateComplete(AsynchronousRequestMonitor.this);
-                    if (!isCanceled() && !getWidget().isDisposed()) {
-                    	if (fStatus != null && !fStatus.isOK()) {
-                    		getViewer().handlePresentationFailure(AsynchronousRequestMonitor.this, fStatus);
-                    	}
-                        performUpdate();
-                    }
-                }
-            });
-        }
-    }
+		if (!isCanceled()) {
+			WorkbenchJob job = new WorkbenchJob("AsynchronousRequestMonitor.done()") { //$NON-NLS-1$
+				public IStatus runInUIThread(IProgressMonitor monitor) {
+					// necessary to check if widget is disposed. The item may
+					// have been removed from the tree when another children update
+					// occured.
+					getViewer().updateComplete(AsynchronousRequestMonitor.this);
+					if (!isCanceled() && !getWidget().isDisposed()) {
+						if (fStatus != null && !fStatus.isOK()) {
+							getViewer().handlePresentationFailure(AsynchronousRequestMonitor.this, fStatus);
+						}
+						performUpdate();
+					}
+					return Status.OK_STATUS;
+				}
+			};
+			job.setSystem(true);
+			job.schedule();
+		}
+	}
 
     /**
-     * Notification this update has been completed and should now be applied
-     * to this update's viewer. This method is called in the UI thread.
-     */
+	 * Notification this update has been completed and should now be applied to
+	 * this update's viewer. This method is called in the UI thread.
+	 */
     protected abstract void performUpdate();
     
     /**

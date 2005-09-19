@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -31,6 +33,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * A viewer that retrieves labels and content asynchronously via adapters and supports
@@ -488,11 +491,15 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		if (getControl().getDisplay().getThread() == Thread.currentThread()) {
 			attemptSelection(reveal);
 		} else {
-			getControl().getDisplay().asyncExec(new Runnable() {
-				public void run() {
+			WorkbenchJob job = new WorkbenchJob("attemptSelection") { //$NON-NLS-1$
+				public IStatus runInUIThread(IProgressMonitor monitor) {
 					attemptSelection(reveal);
+					return Status.OK_STATUS;
 				}
-			});
+				
+			};
+			job.setSystem(true);
+			job.schedule();
 		}		
 	}
 
