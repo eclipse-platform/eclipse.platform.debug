@@ -28,7 +28,7 @@ import org.eclipse.ui.progress.UIJob;
  * </p>
  * @since 3.2
  */
-public abstract class AsynchornousLabelAdapter implements IAsynchronousLabelAdapter {
+public abstract class AsynchronousLabelAdapter implements IAsynchronousLabelAdapter {
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.viewers.IAsynchronousLabelAdapter#retrieveLabel(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext, org.eclipse.debug.ui.viewers.ILabelRequestMonitor)

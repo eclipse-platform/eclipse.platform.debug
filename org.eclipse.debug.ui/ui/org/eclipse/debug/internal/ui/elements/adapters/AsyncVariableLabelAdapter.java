@@ -27,7 +27,7 @@ import org.eclipse.swt.graphics.RGB;
 public class AsyncVariableLabelAdapter extends AsynchronousDebugLabelAdapter {
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.viewers.AsynchornousLabelAdapter#getForeground(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousLabelAdapter#getForeground(java.lang.Object, org.eclipse.debug.ui.viewers.IPresentationContext)
 	 */
 	protected RGB getForeground(Object element, IPresentationContext context) throws CoreException {
         if (element instanceof IVariable) {
