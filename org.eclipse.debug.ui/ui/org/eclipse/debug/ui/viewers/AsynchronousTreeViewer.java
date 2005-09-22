@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -33,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * A tree viewer that retrieves children and labels asynchronously via
@@ -208,10 +212,22 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	public synchronized void expand(ISelection selection) {
 		if (selection instanceof TreeSelection) {
 			fPendingExpansion = ((TreeSelection) selection).getPaths();
-			attemptExpansion();
+			if (getControl().getDisplay().getThread() == Thread.currentThread()) {
+				attemptExpansion();
+			} else {
+				WorkbenchJob job = new WorkbenchJob("attemptExpansion") { //$NON-NLS-1$
+					public IStatus runInUIThread(IProgressMonitor monitor) {
+						attemptExpansion();
+						return Status.OK_STATUS;
+					}
+					
+				};
+				job.setSystem(true);
+				job.schedule();
+			}		
 		}
 	}
-
+	
 	/**
 	 * Attempts to expand all pending expansions.
 	 */
@@ -395,6 +411,7 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 				prevChild.dispose();
 			}				
 		}
+		attemptExpansion();
 	}
 
 	/**
@@ -699,5 +716,5 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 	protected ISelection getEmptySelection() {
 		return new TreeSelection(new TreePath[0]);
 	}
-	
+
 }
