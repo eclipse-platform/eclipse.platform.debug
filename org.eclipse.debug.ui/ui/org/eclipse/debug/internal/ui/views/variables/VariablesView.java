@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IExpression;
 import org.eclipse.debug.core.model.IStackFrame;
@@ -44,6 +45,7 @@ import org.eclipse.debug.internal.ui.actions.CollapseAllAction;
 import org.eclipse.debug.internal.ui.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.actions.ShowTypesAction;
 import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
+import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
@@ -51,6 +53,8 @@ import org.eclipse.debug.internal.ui.views.IDebugExceptionHandler;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
+import org.eclipse.debug.ui.contexts.IDebugContextListener;
+import org.eclipse.debug.ui.contexts.IDebugContextService;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.PresentationContext;
 import org.eclipse.jface.action.Action;
@@ -84,7 +88,6 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -102,9 +105,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
-import org.eclipse.ui.INullSelectionListener;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPart;
@@ -120,11 +120,10 @@ import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 /**
  * This view shows variables and their values for a particular stack frame
  */
-public class VariablesView extends AbstractDebugEventHandlerView implements ISelectionListener, 
+public class VariablesView extends AbstractDebugEventHandlerView implements IDebugContextListener,
 																	IPropertyChangeListener,
 																	IValueDetailListener,
-																	IDebugExceptionHandler,
-																	INullSelectionListener {
+																	IDebugExceptionHandler {
 
 	
 	/**
@@ -325,7 +324,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 */
 	public void dispose() {
 		getViewSite().getActionBars().getStatusLineManager().remove(fStatusLineItem);
-		getSite().getPage().removeSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
+		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
+		contextService.removeDebugContextListener(this);
+		//getSite().getPage().removeSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
 		DebugUIPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
 		JFaceResources.getFontRegistry().removeListener(this);
 		Viewer viewer = getViewer();
@@ -343,24 +344,17 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		super.dispose();
 	}
 
-	protected void setViewerInput(IStructuredSelection ssel) {
-		IStackFrame frame= null;
-		if (ssel.size() == 1) {
-			Object input= ssel.getFirstElement();
-			if (input instanceof IStackFrame) {
-				frame= (IStackFrame)input;
-			}
-		}
+	protected void setViewerInput(Object context) {
 		
-		getDetailViewer().setEditable(frame != null);
+		getDetailViewer().setEditable(context != null);
 		
 		Object current= getViewer().getInput();
 		
-		if (current == null && frame == null) {
+		if (current == null && context == null) {
 			return;
 		}
 
-		if (current != null && current.equals(frame)) {
+		if (current != null && current.equals(context)) {
 			return;
 		}
 
@@ -370,20 +364,19 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 			fSelectionStates.put(current, fLastState);
 		}		
 		
-		if (frame != null) {
-			setDebugModel(frame.getModelIdentifier());
+		if (context instanceof IDebugElement) {
+			setDebugModel(((IDebugElement)context).getModelIdentifier());
 		}
 		showViewer();
-		getViewer().setInput(frame);
-		
+		getViewer().setInput(context);
 		restoreState();
 	}
     
     protected void restoreState() {
         VariablesViewer viewer = (VariablesViewer) getViewer();
-        IStackFrame frame = (IStackFrame) viewer.getInput();
-        if (frame != null) {
-            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(frame);
+        Object context= viewer.getInput();
+        if (context != null) {
+            AbstractViewerState state = (AbstractViewerState)fSelectionStates.get(context);
             if (state == null) {
                 // attempt to restore selection/expansion based on last frame
                 state = fLastState;
@@ -398,6 +391,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	/**
 	 * Clears expanded state for stack frames which are
 	 * a child of the given thread or debug target.
+	 * 
+	 * TODO: this was called by event handler which no longer exists
 	 */
 	protected void clearExpandedVariables(Object parent) {
 		List list = null;
@@ -596,10 +591,15 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 		getVariablesViewSelectionProvider().setUnderlyingSelectionProvider(variablesViewer);
 		getSite().setSelectionProvider(getVariablesViewSelectionProvider());
 
-		// listen to selection in debug view
-		getSite().getPage().addSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
+		// listen to debug context
+		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
+		contextService.addDebugContextListener(this);
+		// getSite().getPage().addSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
 		VariablesViewEventHandler handler = createEventHandler();
-		setEventHandler(handler);
+		// TODO: replaced with update policy
+		if (handler != null) {
+			setEventHandler(handler);
+		}
 
 		return variablesViewer;
 	}
@@ -647,7 +647,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @return an event handler
 	 */
 	protected VariablesViewEventHandler createEventHandler() {
-		return new VariablesViewEventHandler(this);
+		// TODO: replaced by update policy
+		return null;
 	}	
 		
 	/* (non-Javadoc)
@@ -1274,23 +1275,17 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	protected VariablesViewSelectionProvider getVariablesViewSelectionProvider() {
 		return fSelectionProvider;
 	}
-	/** 
-	 * The <code>VariablesView</code> listens for selection changes in the <code>LaunchView</code>
-	 *
-	 * @see ISelectionListener#selectionChanged(IWorkbenchPart, ISelection)
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextListener#contextActivated(java.lang.Object, org.eclipse.ui.IWorkbenchPart)
 	 */
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+	public void contextActivated(Object context, IWorkbenchPart part) {
 		if (!isAvailable() || !isVisible()) {
 			return;
 		}
 		
-		if (selection == null) {
-			setViewerInput(new StructuredSelection());
-		} else if (selection instanceof IStructuredSelection) {
-			setViewerInput((IStructuredSelection) selection);
-		} else {
-			getDetailViewer().setEditable(false);
-		}
+		setViewerInput(context);
+		
 		updateAction("ContentAssist"); //$NON-NLS-1$
 		updateAction("FindVariable"); //$NON-NLS-1$
 	}
@@ -1398,7 +1393,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 * @see org.eclipse.debug.ui.AbstractDebugView#becomesHidden()
 	 */
 	protected void becomesHidden() {
-		setViewerInput(new StructuredSelection());
+		setViewerInput(null);
 		super.becomesHidden();
 	}
 
@@ -1407,11 +1402,9 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 	 */
 	protected void becomesVisible() {
 		super.becomesVisible();
-		IViewPart part = getSite().getPage().findView(IDebugUIConstants.ID_DEBUG_VIEW);
-		if (part != null) {
-			ISelection selection = getSite().getPage().getSelection(IDebugUIConstants.ID_DEBUG_VIEW);
-			selectionChanged(part, selection);
-		}
+		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
+		Object context = contextService.getActiveContext(IDebugUIConstants.ID_DEBUG_VIEW);
+		setViewerInput(context);
 	}
 
 	/**
@@ -1495,4 +1488,5 @@ public class VariablesView extends AbstractDebugEventHandlerView implements ISel
 			return ""; //$NON-NLS-1$
 		}
 	}
+
 }

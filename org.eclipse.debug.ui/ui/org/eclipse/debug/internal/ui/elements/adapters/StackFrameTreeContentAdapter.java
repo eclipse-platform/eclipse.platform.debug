@@ -47,6 +47,11 @@ public class StackFrameTreeContentAdapter extends AsynchronousTreeContentAdapter
         return false;
 	}
     
-    
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+	 */
+	protected boolean supportsPartId(String id) {
+		return id.equals(IDebugUIConstants.ID_VARIABLE_VIEW) || id.equals(IDebugUIConstants.ID_REGISTER_VIEW);
+	}    
 
 }

@@ -24,6 +24,7 @@ import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.internal.ui.views.variables.IndexedVariablePartition;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 import org.eclipse.ui.IWorkbenchPart;
@@ -198,4 +199,11 @@ public class VariableTreeContentAdapter extends AsynchronousTreeContentAdapter {
         // TODO: should fix this with a user pref
         return 100;
     }
+    
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+	 */
+	protected boolean supportsPartId(String id) {
+		return id.equals(IDebugUIConstants.ID_VARIABLE_VIEW) || id.equals(IDebugUIConstants.ID_REGISTER_VIEW);
+	}   	    
 }

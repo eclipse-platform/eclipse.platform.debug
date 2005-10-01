@@ -24,8 +24,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
@@ -45,6 +47,7 @@ import org.eclipse.debug.internal.ui.IInternalDebugUIConstants;
 import org.eclipse.debug.internal.ui.InstructionPointerManager;
 import org.eclipse.debug.internal.ui.actions.AddToFavoritesAction;
 import org.eclipse.debug.internal.ui.actions.EditLaunchConfigurationAction;
+import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
 import org.eclipse.debug.internal.ui.sourcelookup.EditSourceLookupPathAction;
 import org.eclipse.debug.internal.ui.sourcelookup.LookupSourceAction;
 import org.eclipse.debug.internal.ui.sourcelookup.SourceLookupResult;
@@ -54,6 +57,8 @@ import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugEditorPresentation;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
+import org.eclipse.debug.ui.contexts.IDebugContextListener;
+import org.eclipse.debug.ui.contexts.IDebugContextProvider;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.PresentationContext;
@@ -65,6 +70,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.ListenerList;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -141,6 +147,76 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 */
 	private IWorkbenchSiteProgressService fProgressService = null;
 
+	class ContextProvider implements IDebugContextProvider {
+		/**
+		 * Context listeners
+		 */
+		private ListenerList fListeners = new ListenerList();
+		
+		private Object fContext = null;
+		
+		protected void dispose() { 
+			fContext = null;
+			fListeners.clear();
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.contexts.IDebugContextProvider#getPart()
+		 */
+		public IWorkbenchPart getPart() {
+			return LaunchView.this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.contexts.IDebugContextProvider#addDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener)
+		 */
+		public void addDebugContextListener(IDebugContextListener listener) {
+			fListeners.add(listener);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.contexts.IDebugContextProvider#removeDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener)
+		 */
+		public void removeDebugContextListener(IDebugContextListener listener) {
+			fListeners.remove(listener);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.contexts.IDebugContextProvider#getActiveContext()
+		 */
+		public synchronized Object getActiveContext() {
+			return fContext;
+		}	
+		
+		protected synchronized void activate(ISelection selection) {
+			Object context = null;
+			if (selection instanceof IStructuredSelection) {
+				IStructuredSelection ss = (IStructuredSelection) selection;
+				context = ss.getFirstElement();
+			}
+			fContext = context;
+			Object[] listeners = fListeners.getListeners();
+			for (int i = 0; i < listeners.length; i++) {
+				final IDebugContextListener listener = (IDebugContextListener) listeners[i];
+				Platform.run(new ISafeRunnable() {
+					public void run() throws Exception {
+						listener.contextActivated(fContext, ContextProvider.this.getPart());
+					}
+					public void handleException(Throwable exception) {
+						DebugUIPlugin.log(exception);
+					}
+				});
+				
+			}
+		}
+		
+	}
+	
+	/**
+	 * Context provider
+	 */
+	private ContextProvider fProvider = new ContextProvider();
+	
 	/**
 	 * Context manager which automatically opens and closes views
 	 * based on debug contexts.
@@ -259,11 +335,12 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 */
 	protected Viewer createViewer(Composite parent) {
 		AsynchronousTreeViewer viewer = new LaunchViewer(parent);
+		viewer.setContext(new PresentationContext(this));
         viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
-        viewer.setContext(new PresentationContext(this));
         
         viewer.addSelectionChangedListener(this);
-        viewer.addPostSelectionChangedListener(this);
+        // TODO: why post and selection change listener?
+        // viewer.addPostSelectionChangedListener(this);
         viewer.getControl().addKeyListener(new KeyAdapter() {
         	public void keyPressed(KeyEvent event) {
         		if (event.character == SWT.DEL && event.stateMask == 0) {
@@ -276,7 +353,8 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
         // add my viewer as a selection provider, so selective re-launch works
 		getSite().setSelectionProvider(viewer);
 		viewer.setInput(DebugPlugin.getDefault().getLaunchManager());
-		setEventHandler(new LaunchViewEventHandler(this));
+		//setEventHandler(new LaunchViewEventHandler(this));
+		DebugContextManager.getDefault().addDebugContextProvider(fProvider);
 		return viewer;
 	}
 		
@@ -467,6 +545,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 * @see org.eclipse.ui.IWorkbenchPart#dispose()
 	 */
 	public void dispose() {
+		fProvider.dispose();
 	    Viewer viewer = getViewer();
 		if (viewer != null) {
 			viewer.removeSelectionChangedListener(this);
@@ -514,15 +593,21 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 * @see org.eclipse.jface.viewers.ISelectionChangedListener#selectionChanged(org.eclipse.jface.viewers.SelectionChangedEvent)
 	 */
 	public void selectionChanged(SelectionChangedEvent event) {
-		clearStatusLine();
-		updateObjects();
-		Object element = ((IStructuredSelection) getViewer().getSelection()).getFirstElement();
-		if (element != null && !element.equals(fStackFrame)) {
-			showEditorForCurrentSelection();
-		}
+		fProvider.activate(event.getSelection());
+		
+//		clearStatusLine();
+//		updateObjects();
+//		Object element = ((IStructuredSelection) getViewer().getSelection()).getFirstElement();
+//		if (element != null && !element.equals(fStackFrame)) {
+//			showEditorForCurrentSelection();
+//		}
+		
+//		 TODO: replace view conetxt stuff based on debug context
 		if (isActive()) {
+			Object element = ((IStructuredSelection)event.getSelection()).getFirstElement();
 		    fContextListener.updateForSelection(element);
 		}
+		
 	}
 
 	/**
@@ -1065,4 +1150,5 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 	 */
 	public void partInputChanged(IWorkbenchPartReference partRef) {
 	}
+
 }

@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.debug.ui.IDebugUIConstants;
+import org.eclipse.ui.IWorkbenchPart;
 
 /**
  * Abstract implementation of an asynchronous tree contenxt adapter.
@@ -67,7 +69,9 @@ public abstract class AsynchronousTreeContentAdapter implements IAsynchronousTre
 		if (!monitor.isCanceled()) {
 			IStatus status = Status.OK_STATUS;
 			try {
-				monitor.addChildren(getChildren(parent, context));
+				if (supportsContext(context)) {
+					monitor.addChildren(getChildren(parent, context));
+				}
 			} catch (CoreException e) {
 				status = e.getStatus();
 			}
@@ -117,4 +121,25 @@ public abstract class AsynchronousTreeContentAdapter implements IAsynchronousTre
      */
     protected abstract boolean hasChildren(Object element, IPresentationContext context) throws CoreException;    
 
+    /**
+     * Returns whether this adapter supports the given context.
+     * 
+     * @param context
+     * @return whether this adapter supports the given context
+     */
+    protected boolean supportsContext(IPresentationContext context) {
+		IWorkbenchPart part = context.getPart();
+		if (part != null) {
+			return supportsPartId(part.getSite().getId());
+		}
+		return true;    	
+    }
+    
+    /**
+     * Returns whether this adapter provides content in the specified part.
+     * 
+     * @param id part id
+     * @return whether this adapter provides content in the specified part
+     */
+    protected abstract boolean supportsPartId(String id);
 }

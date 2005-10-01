@@ -340,6 +340,10 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 			}
 			while (parent != null) {
 				Object data = getElement(parent);
+				if (data == null) {
+					// if the parent is unmapped while attempting selection
+					return null;
+				}
 				path.add(0, data);
 				parent = getParentItem(parent);
 			}

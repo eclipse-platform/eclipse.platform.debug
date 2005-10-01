@@ -2,6 +2,7 @@ package org.eclipse.debug.internal.ui.elements.adapters;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.model.IRegisterGroup;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
@@ -20,5 +21,11 @@ public class RegisterGroupTreeContentAdapter extends AsynchronousTreeContentAdap
 	protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
 		return ((IRegisterGroup)element).hasRegisters();
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+	 */
+	protected boolean supportsPartId(String id) {
+		return id.equals(IDebugUIConstants.ID_REGISTER_VIEW);
+	}   
 }

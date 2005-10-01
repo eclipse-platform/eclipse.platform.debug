@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugLabelAdapter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -103,7 +104,12 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	private ISelection fPendingSelection;
 
 	private ISelection fCurrentSelection;
-
+	
+	/**
+	 * Cache of update policies keyed by element
+	 */
+	private Map fUpdatePolicies = new HashMap();
+	
 	/**
 	 * Creates a presentation adapter viewer 
 	 */
@@ -121,21 +127,38 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 			Image image = (Image) images.next();
 			image.dispose();
 		}
+		fImageCache.clear();
 		
 		Iterator fonts = fFontCache.values().iterator();
 		while (fonts.hasNext()) {
 			Font font = (Font) fonts.next();
 			font.dispose();
 		}
+		fFontCache.clear();
 		
 		Iterator colors = fColorCache.values().iterator();
 		while (colors.hasNext()) {
 			Color color = (Color) colors.next();
 			color.dispose();
 		}
+		fColorCache.clear();
+		
+		disposeAllUpdatePolicies();
 		
 		unmapAllElements();
 		fPendingUpdates.clear();
+	}
+
+	/**
+	 * Unintalls all update policies installed in this viewer
+	 */
+	private void disposeAllUpdatePolicies() {
+		Iterator updatePolicies = fUpdatePolicies.values().iterator();
+		while (updatePolicies.hasNext()) {
+			IUpdatePolicy policy = (IUpdatePolicy)updatePolicies.next();
+			policy.dispose();
+		}
+		fUpdatePolicies.clear();
 	}
 
 	/**
@@ -179,19 +202,24 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * 
 	 * @return presentation contenxt
 	 */
-	protected IPresentationContext getPresentationContext() {
+	public IPresentationContext getPresentationContext() {
 		return fContext;
 	}
 
-	/**
-	 * Refreshes all occurrences of the given element in this tree, and visible
-	 * children.
-	 * 
-	 * @param element element to refresh
-	 */
-	public void refresh(Object element) {
-		internalRefresh(element);
-	}
+//	/**
+//	 * Refreshes all occurrences of the given element in this tree, and visible
+//	 * children.
+//	 * 
+//	 * @param element element to refresh
+//	 */
+//	public void refresh(final Object element) {
+//		// TODO: preserving selection currently has to be UI thread
+////		preservingSelection(new Runnable() {
+////			public void run() {
+//				internalRefresh(element);
+////			}
+////		});		
+//	}
 	
 	/**
 	 * Returns the label adapter for the given element or <code>null</code> if none.
@@ -206,6 +234,27 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		} else if (element instanceof IAdaptable) {
 			IAdaptable adaptable = (IAdaptable) element;
 			adapter = (IAsynchronousLabelAdapter) adaptable.getAdapter(IAsynchronousLabelAdapter.class);
+		}
+		// if no adapter, use default (i.e. model presentation)
+		if (adapter == null) {
+			return new AsynchronousDebugLabelAdapter();
+		}
+		return adapter;
+	}	
+	
+	/**
+	 * Returns the update policy adapter for the given element or <code>null</code> if none.
+	 * 
+	 * @param element element to retrieve adapter for
+	 * @return update policy adapter or <code>null</code>
+	 */
+	protected IUpdatePolicyFactory getUpdatePolicyAdapter(Object element) {
+		IUpdatePolicyFactory adapter = null;
+		if (element instanceof IUpdatePolicyFactory) {
+			adapter = (IUpdatePolicyFactory) element;
+		} else if (element instanceof IAdaptable) {
+			IAdaptable adaptable = (IAdaptable) element;
+			adapter = (IUpdatePolicyFactory) adaptable.getAdapter(IUpdatePolicyFactory.class);
 		}
 		return adapter;
 	}	
@@ -276,6 +325,7 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		}
 		fElementsToWidgets.clear();
 		fWidgetsToElements.clear();
+		disposeAllUpdatePolicies();
 	}
 
 	/**
@@ -298,7 +348,8 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	}
 
 	/**
-	 * Maps the given element to the given item.
+	 * Maps the given element to the given item. Installs the elememt's
+	 * update policy if not already installed.
 	 * 
 	 * @param element model element
 	 * @param item TreeItem or Tree
@@ -315,6 +366,42 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 			System.arraycopy(old, 0, items, 0, old.length);
 			items[old.length] = item;
 			fElementsToWidgets.put(element, items);
+		}
+		installUpdatePolicy(element);
+	}
+
+	/**
+	 * Installs the update policy for the given element into this viewer
+	 * if not already installed.
+	 * 
+	 * @param element element to install an update policy for
+	 */
+	public void installUpdatePolicy(Object element) {
+		synchronized (fUpdatePolicies) {
+			if (!fUpdatePolicies.containsKey(element)) {
+				IUpdatePolicyFactory factory = getUpdatePolicyAdapter(element);
+				if (factory != null) {
+					IUpdatePolicy policy = factory.createUpdatePolicy(element, this.getPresentationContext());
+					if (policy != null) {
+						policy.init(this);
+						fUpdatePolicies.put(element, policy);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Uninstalls the update policy installed for the given element, if any.
+	 * 
+	 * @param element
+	 */
+	protected void disposeUpdatePolicy(Object element) {
+		synchronized (fUpdatePolicies) {
+			IUpdatePolicy policy = (IUpdatePolicy) fUpdatePolicies.remove(element);
+			if (policy != null) {
+				policy.dispose();
+			}
 		}
 	}
 
@@ -349,6 +436,8 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 				if (item == widget) {
 					if (widgets.length == 1) {
 						fElementsToWidgets.remove(kid);
+						// uninstall its update policy, if element no longer in viewer
+						disposeUpdatePolicy(kid);
 					} else {
 						Widget[] newItems = new Widget[widgets.length - 1];
 						System.arraycopy(widgets, 0, newItems, 0, i);
@@ -481,12 +570,6 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		if (!acceptsSelection(selection)) {
 			selection = getEmptySelection();
 		}
-		if (fCurrentSelection != null) {
-			if (fCurrentSelection.equals(selection) && selection.equals(getSelection())) {
-				return;
-			}
-			fCurrentSelection = null;
-		}
 		fPendingSelection = selection;
 		if (getControl().getDisplay().getThread() == Thread.currentThread()) {
 			attemptSelection(reveal);
@@ -531,11 +614,23 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 				fPendingSelection = null;
 			}
 			ISelection currentSelection = getSelection();
-			if (!currentSelection.equals(fCurrentSelection)) {
-				fCurrentSelection = currentSelection;
-				updateSelection(fCurrentSelection);
+			if (isSuppressEqualSelections() && currentSelection.equals(fCurrentSelection)) {
+				return;
 			}
+			fCurrentSelection = currentSelection;
+			updateSelection(fCurrentSelection);
 		}
+	}
+	
+	/**
+	 * Controls whether selection change notification is sent even when
+	 * successive selections are equal.
+	 * 
+	 * @return whether to suppress change notification for equal successive
+	 *  selections
+	 */
+	protected boolean isSuppressEqualSelections() {
+		return true;
 	}
 	
 	/**
@@ -598,22 +693,41 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 			ISelection oldSelection = null;
 			try {
 				// preserve selection
-				oldSelection = getSelection();
+				oldSelection = fCurrentSelection;
 				// perform the update
 				updateCode.run();
 			} finally {
 				// restore selection
-				doAttemptSelectionToWidget(oldSelection, false);
-				// send out notification if old and new differ
-				ISelection newSelection = getSelection();
-				if (!newSelection.equals(oldSelection))
-					handleInvalidSelection(oldSelection, newSelection);
+				if (oldSelection == null) {
+					oldSelection = new TreeSelection(new TreePath[0]);
+				}
+				if (getControl().getDisplay().getThread() == Thread.currentThread()) {
+					restoreSelection(oldSelection);
+				} else {
+					final ISelection tempSelection = oldSelection;
+					WorkbenchJob job = new WorkbenchJob("attemptSelection") { //$NON-NLS-1$
+						public IStatus runInUIThread(IProgressMonitor monitor) {
+							restoreSelection(tempSelection);
+							return Status.OK_STATUS;
+						}
+						
+					};
+					job.setSystem(true);
+					job.schedule();
+				}							
 			}
 		} else {
 			updateCode.run();
 		}
 	}
 	
+	protected synchronized void restoreSelection(ISelection oldSelection) {
+		doAttemptSelectionToWidget(oldSelection, false);
+		// send out notification if old and new differ
+		fCurrentSelection = getSelection();
+		if (!fCurrentSelection.equals(oldSelection))
+			handleInvalidSelection(oldSelection, fCurrentSelection);		
+	}
 	/**
 	 * Sets the color attributes of the given widget.
 	 * 
@@ -654,4 +768,5 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	 * @return parent widget or <code>null</code>
 	 */
 	protected abstract Widget getParent(Widget widget);
+
 }

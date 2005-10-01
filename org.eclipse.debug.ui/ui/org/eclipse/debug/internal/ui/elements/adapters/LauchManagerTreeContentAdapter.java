@@ -13,6 +13,7 @@ package org.eclipse.debug.internal.ui.elements.adapters;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IPresentationContext;
 
@@ -32,5 +33,10 @@ public class LauchManagerTreeContentAdapter extends AsynchronousTreeContentAdapt
 		return ((ILaunchManager)element).getLaunches().length > 0;
 	}
     
-    
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+	 */
+	protected boolean supportsPartId(String id) {
+		return IDebugUIConstants.ID_DEBUG_VIEW.equals(id);
+	}    
 }

@@ -21,20 +21,24 @@ import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.internal.ui.elements.adapters.ExpressionTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugLabelAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.DebugTargetTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.ExpressionManagerTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.ExpressionTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.LauchManagerTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.LaunchTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.ProcessTreeAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.RegisterGroupTreeContentAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.StackFrameSourceLookupAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.StackFrameTreeContentAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.DebugTargetTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.ThreadTreeContentAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.VariableTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.VariableLabelAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugLabelAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.VariableTreeContentAdapter;
+import org.eclipse.debug.internal.ui.viewers.update.DefaultUpdatePolicyFactory;
+import org.eclipse.debug.ui.contexts.ISourceLookupContext;
 import org.eclipse.debug.ui.viewers.IAsynchronousLabelAdapter;
 import org.eclipse.debug.ui.viewers.IAsynchronousTreeContentAdapter;
+import org.eclipse.debug.ui.viewers.IUpdatePolicyFactory;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.IWorkbenchAdapter2;
 import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
@@ -43,6 +47,8 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
  * DebugElementAdapterFactory
  */
 public class DebugElementAdapterFactory implements IAdapterFactory {
+	
+	private static IUpdatePolicyFactory fgUpdatePolicyAdapter = new DefaultUpdatePolicyFactory();
     
     private static IAsynchronousLabelAdapter fgDebugLabelAdapter = new AsynchronousDebugLabelAdapter();
     private static IAsynchronousLabelAdapter fgVariableLabelAdapter = new VariableLabelAdapter();
@@ -105,6 +111,19 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
         	}
         	return fgDebugLabelAdapter;
         }
+        
+        if (adapterType.equals(IUpdatePolicyFactory.class)) {
+        	if (adaptableObject instanceof ILaunch || adaptableObject instanceof IDebugTarget ||
+        			adaptableObject instanceof IProcess || adaptableObject instanceof ILaunchManager ||
+        			adaptableObject instanceof IStackFrame)
+        	return fgUpdatePolicyAdapter;
+        }
+        
+        if (adapterType.equals(ISourceLookupContext.class)) {
+        	if (adaptableObject instanceof IStackFrame) {
+        		return new StackFrameSourceLookupAdapter((IStackFrame)adaptableObject);
+        	}
+        }
         return null;
     }
 
@@ -112,7 +131,8 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
      */
     public Class[] getAdapterList() {
-        return new Class[] {IWorkbenchAdapter.class, IWorkbenchAdapter2.class, IDeferredWorkbenchAdapter.class, IAsynchronousLabelAdapter.class, IAsynchronousTreeContentAdapter.class};
+        return new Class[] {IWorkbenchAdapter.class, IWorkbenchAdapter2.class, IDeferredWorkbenchAdapter.class, IAsynchronousLabelAdapter.class, IAsynchronousTreeContentAdapter.class,
+        		IUpdatePolicyFactory.class, ISourceLookupContext.class};
     }
 
 }

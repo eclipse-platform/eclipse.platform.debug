@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.IAsynchronousTreeContentAdapter;
@@ -124,6 +125,13 @@ public class LaunchViewer extends AsynchronousTreeViewer {
 			}
 			return fAdapter.isContainer();
 		}
+		
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+		 */
+		protected boolean supportsPartId(String id) {
+			return IDebugUIConstants.ID_DEBUG_VIEW.equals(id);
+		}		
 	}
 
 	private class WrappedWorkbenchTreeAdapter extends AsynchronousTreeContentAdapter {
@@ -144,6 +152,13 @@ public class LaunchViewer extends AsynchronousTreeViewer {
 			return fAdapter.getChildren(element).length > 0;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+		 */
+		protected boolean supportsPartId(String id) {
+			return IDebugUIConstants.ID_DEBUG_VIEW.equals(id);
+		}
+
 	}
 	
 	private class BogusTreeAdapter extends AsynchronousTreeContentAdapter {
@@ -153,6 +168,21 @@ public class LaunchViewer extends AsynchronousTreeViewer {
 		protected boolean hasChildren(Object element, IPresentationContext context) throws CoreException {
 			return false;
 		}
+		/* (non-Javadoc)
+		 * @see org.eclipse.debug.ui.viewers.AsynchronousTreeContentAdapter#supportsPartId(java.lang.String)
+		 */
+		protected boolean supportsPartId(String id) {
+			return false;
+		}
 	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.viewers.AsynchronousViewer#isSuppressEqualSelections()
+	 */
+	protected boolean isSuppressEqualSelections() {
+		// fire activation changes all the time
+		return false;
+	}
+	
 
 }
