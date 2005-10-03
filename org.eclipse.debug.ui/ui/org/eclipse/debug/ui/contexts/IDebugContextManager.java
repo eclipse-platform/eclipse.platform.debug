@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
@@ -30,14 +31,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 public interface IDebugContextManager {
 	
 	/**
-	 * Returns the debug context service for a specific window.
-	 * 
-	 * @param window
-	 * @return
-	 */
-	public IDebugContextService getDebugContextService(IWorkbenchWindow window);
-	
-	/**
 	 * Registers the given debug context provider.
 	 * 
 	 * @param provider
@@ -50,4 +43,57 @@ public interface IDebugContextManager {
 	 * @param provider
 	 */
 	public void removeDebugContextProvider(IDebugContextProvider provider);	
+	
+	/**
+	 * Registers for context activation notification in the given window.
+	 * 
+	 * @param listener
+	 * @param window
+	 */
+	public void addDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window);
+	/**
+	 * Deregisters for context activation notification in this service in the
+	 * given window.
+	 * 
+	 * @param listener
+	 * @param window
+	 */	
+	public void removeDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window);
+	
+	/**
+	 * Registers for context activation notification in the specified part of the
+	 * specified window.
+	 * 
+	 * @param listener
+	 * @param window
+	 * @param partId
+	 */
+	public void addDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window, String partId);
+	
+	/**
+	 * Deregisters for context activation notification in the specified part of
+	 * the specified window.
+	 * 
+	 * @param listener
+	 * @param partId
+	 */
+	public void removeDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window, String partId);
+		
+	/**
+	 * Returns the active context in the given window
+	 * or <code>null</code>.
+	 * 
+	 * @param window
+	 * @return
+	 */
+	public ISelection getActiveContext(IWorkbenchWindow window);
+	
+	/**
+	 * Returns the active context in the specified part of the given 
+	 * window or <code>null</code>.
+	 * 
+	 * @param partId
+	 * @return
+	 */
+	public ISelection getActiveContext(IWorkbenchWindow window, String partId);	
 }

@@ -42,11 +42,11 @@ public class SourceLookupService implements IDebugContextListener {
 	
 	public SourceLookupService(IWorkbenchWindow window) {
 		fWindow = window;
-		DebugContextManager.getDefault().getDebugContextService(window).addDebugContextListener(this);
+		DebugContextManager.getDefault().addDebugContextListener(this, window);
 	}
 	
 	public void dispose() {
-		DebugContextManager.getDefault().getDebugContextService(fWindow).removeDebugContextListener(this);
+		DebugContextManager.getDefault().removeDebugContextListener(this, fWindow);
 	}
 	
 	/**

@@ -46,6 +46,7 @@ import org.eclipse.debug.internal.ui.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.actions.ShowTypesAction;
 import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
 import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
+import org.eclipse.debug.internal.ui.contexts.IDebugContextService;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
@@ -54,7 +55,6 @@ import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.debug.ui.IValueDetailListener;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
-import org.eclipse.debug.ui.contexts.IDebugContextService;
 import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.PresentationContext;
 import org.eclipse.jface.action.Action;
@@ -324,8 +324,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements IDeb
 	 */
 	public void dispose() {
 		getViewSite().getActionBars().getStatusLineManager().remove(fStatusLineItem);
-		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
-		contextService.removeDebugContextListener(this);
+		DebugContextManager.getDefault().removeDebugContextListener(this, getSite().getWorkbenchWindow());
 		//getSite().getPage().removeSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
 		DebugUIPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
 		JFaceResources.getFontRegistry().removeListener(this);
@@ -592,8 +591,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements IDeb
 		getSite().setSelectionProvider(getVariablesViewSelectionProvider());
 
 		// listen to debug context
-		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
-		contextService.addDebugContextListener(this);
+		DebugContextManager.getDefault().addDebugContextListener(this, getSite().getWorkbenchWindow());
 		// getSite().getPage().addSelectionListener(IDebugUIConstants.ID_DEBUG_VIEW, this);
 		VariablesViewEventHandler handler = createEventHandler();
 		// TODO: replaced with update policy
@@ -1404,9 +1402,8 @@ public class VariablesView extends AbstractDebugEventHandlerView implements IDeb
 	 */
 	protected void becomesVisible() {
 		super.becomesVisible();
-		IDebugContextService contextService = DebugContextManager.getDefault().getDebugContextService(getSite().getWorkbenchWindow());
-		Object context = contextService.getActiveContext(IDebugUIConstants.ID_DEBUG_VIEW);
-		setViewerInput(context);
+		ISelection selection = DebugContextManager.getDefault().getActiveContext(getSite().getWorkbenchWindow());
+		contextActivated(selection, null);
 	}
 
 	/**

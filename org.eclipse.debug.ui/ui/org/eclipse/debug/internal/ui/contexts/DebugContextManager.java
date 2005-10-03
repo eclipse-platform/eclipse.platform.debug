@@ -13,9 +13,10 @@ package org.eclipse.debug.internal.ui.contexts;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.debug.ui.contexts.IDebugContextListener;
 import org.eclipse.debug.ui.contexts.IDebugContextManager;
 import org.eclipse.debug.ui.contexts.IDebugContextProvider;
-import org.eclipse.debug.ui.contexts.IDebugContextService;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 
@@ -38,13 +39,6 @@ public class DebugContextManager implements IDebugContextManager {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#getDebugContextService(org.eclipse.ui.IWorkbenchWindow)
-	 */
-	public synchronized IDebugContextService getDebugContextService(IWorkbenchWindow window) {
-		return createService(window);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#addDebugContextProvider(org.eclipse.debug.ui.contexts.IDebugContextProvider)
 	 */
 	public void addDebugContextProvider(IDebugContextProvider provider) {
@@ -63,6 +57,10 @@ public class DebugContextManager implements IDebugContextManager {
 		}
 		return service;
 	}
+	
+	protected IDebugContextService getService(IWorkbenchWindow window) {
+		return (ContextService) fServices.get(window);
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#removeDebugContextProvider(org.eclipse.debug.ui.contexts.IDebugContextProvider)
@@ -74,6 +72,64 @@ public class DebugContextManager implements IDebugContextManager {
 		if (service != null) {
 			service.removeProvider(provider);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#addDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener, org.eclipse.ui.IWorkbenchWindow)
+	 */
+	public void addDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window) {
+		IDebugContextService service = createService(window);
+		service.addDebugContextListener(listener);			
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#removeDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener, org.eclipse.ui.IWorkbenchWindow)
+	 */
+	public void removeDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window) {
+		IDebugContextService service = getService(window);
+		if (service != null) {
+			service.removeDebugContextListener(listener);
+		}	
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#addDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener, org.eclipse.ui.IWorkbenchWindow, java.lang.String)
+	 */
+	public void addDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window, String partId) {
+		ContextService service = createService(window);
+		service.addDebugContextListener(listener, partId);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#removeDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener, org.eclipse.ui.IWorkbenchWindow, java.lang.String)
+	 */
+	public void removeDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window, String partId) {
+		IDebugContextService service = getService(window);
+		if (service != null) {
+			service.removeDebugContextListener(listener, partId);
+		}		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#getActiveContext(org.eclipse.ui.IWorkbenchWindow)
+	 */
+	public ISelection getActiveContext(IWorkbenchWindow window) {
+		IDebugContextService service = getService(window);
+		if (service != null) {
+			return service.getActiveContext();
+		}
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#getActiveContext(org.eclipse.ui.IWorkbenchWindow, java.lang.String)
+	 */
+	public ISelection getActiveContext(IWorkbenchWindow window, String partId) {
+		IDebugContextService service = getService(window);
+		if (service != null) {
+			return service.getActiveContext(partId);
+		}
+		return null;
 	}
 	
 }
