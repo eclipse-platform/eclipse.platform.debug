@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.jface.viewers.ISelection;
+
 
 /** 
  * Debug context service for a window.
@@ -53,7 +55,7 @@ public interface IDebugContextService {
 	 * 
 	 * @return
 	 */
-	public Object getActiveContext();
+	public ISelection getActiveContext();
 	
 	/**
 	 * Returns the active context in the specified part or <code>null</code>.
@@ -61,6 +63,6 @@ public interface IDebugContextService {
 	 * @param partId
 	 * @return
 	 */
-	public Object getActiveContext(String partId);
+	public ISelection getActiveContext(String partId);
 	
 }

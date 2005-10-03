@@ -1279,12 +1279,14 @@ public class VariablesView extends AbstractDebugEventHandlerView implements IDeb
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextListener#contextActivated(java.lang.Object, org.eclipse.ui.IWorkbenchPart)
 	 */
-	public void contextActivated(Object context, IWorkbenchPart part) {
+	public void contextActivated(ISelection selection, IWorkbenchPart part) {
 		if (!isAvailable() || !isVisible()) {
 			return;
 		}
 		
-		setViewerInput(context);
+		if (selection instanceof IStructuredSelection) {
+			setViewerInput(((IStructuredSelection)selection).getFirstElement());
+		}
 		
 		updateAction("ContentAssist"); //$NON-NLS-1$
 		updateAction("FindVariable"); //$NON-NLS-1$

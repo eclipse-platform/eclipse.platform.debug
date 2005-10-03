@@ -22,6 +22,7 @@ import org.eclipse.debug.ui.contexts.IDebugContextListener;
 import org.eclipse.debug.ui.contexts.IDebugContextProvider;
 import org.eclipse.debug.ui.contexts.IDebugContextService;
 import org.eclipse.jface.util.ListenerList;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -108,7 +109,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 		}
 	}
 	
-	protected void notifyActivated(Object context, IWorkbenchPart part) {
+	protected void notifyActivated(ISelection context, IWorkbenchPart part) {
 		if (context == null) {
 			System.out.println("CONTEXT ACTIVATED: NULL");
 		} else {
@@ -119,7 +120,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 			notifyActivated(getListeners(part), context, part);
 		}
 	}
-	protected void notifyActivated(ListenerList list, final Object context, final IWorkbenchPart part) {
+	protected void notifyActivated(ListenerList list, final ISelection context, final IWorkbenchPart part) {
 		if (list != null) {
 			Object[] listeners = list.getListeners();
 			for (int i = 0; i < listeners.length; i++) {
@@ -169,7 +170,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextService#getActiveContext(java.lang.String)
 	 */
-	public Object getActiveContext(String partId) {
+	public ISelection getActiveContext(String partId) {
 		IDebugContextProvider provider = (IDebugContextProvider) fProvidersByPartId.get(partId);
 		if (provider != null) {
 			return provider.getActiveContext();
@@ -180,7 +181,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextService#getActiveContext()
 	 */
-	public Object getActiveContext() {
+	public ISelection getActiveContext() {
 		if (!fProviders.isEmpty()) {
 			((IDebugContextProvider)fProviders.get(0)).getActiveContext();
 		}
@@ -252,7 +253,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextListener#contextActivated(java.lang.Object, org.eclipse.ui.IWorkbenchPart)
 	 */
-	public synchronized void contextActivated(Object context, IWorkbenchPart part) {
+	public synchronized void contextActivated(ISelection context, IWorkbenchPart part) {
 		if (!fProviders.isEmpty()) {
 			IDebugContextProvider provider = (IDebugContextProvider) fProviders.get(0);
 			if (provider.getPart() == part) {

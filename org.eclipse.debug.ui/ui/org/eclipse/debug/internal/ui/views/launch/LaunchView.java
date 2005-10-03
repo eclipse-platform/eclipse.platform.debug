@@ -153,7 +153,7 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 		 */
 		private ListenerList fListeners = new ListenerList();
 		
-		private Object fContext = null;
+		private ISelection fContext = null;
 		
 		protected void dispose() { 
 			fContext = null;
@@ -184,17 +184,12 @@ public class LaunchView extends AbstractDebugEventHandlerView implements ISelect
 		/* (non-Javadoc)
 		 * @see org.eclipse.debug.ui.contexts.IDebugContextProvider#getActiveContext()
 		 */
-		public synchronized Object getActiveContext() {
+		public synchronized ISelection getActiveContext() {
 			return fContext;
 		}	
 		
 		protected synchronized void activate(ISelection selection) {
-			Object context = null;
-			if (selection instanceof IStructuredSelection) {
-				IStructuredSelection ss = (IStructuredSelection) selection;
-				context = ss.getFirstElement();
-			}
-			fContext = context;
+			fContext = selection;
 			Object[] listeners = fListeners.getListeners();
 			for (int i = 0; i < listeners.length; i++) {
 				final IDebugContextListener listener = (IDebugContextListener) listeners[i];

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
@@ -26,6 +27,6 @@ public interface IDebugContextListener {
 	 * @param context
 	 * @param part workbench part or <code>null</code>
 	 */
-	public void contextActivated(Object context, IWorkbenchPart part);
+	public void contextActivated(ISelection context, IWorkbenchPart part);
 
 }

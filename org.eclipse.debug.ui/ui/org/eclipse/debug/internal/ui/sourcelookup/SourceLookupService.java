@@ -21,6 +21,8 @@ import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
 import org.eclipse.debug.ui.contexts.ISourceLookupContext;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -121,20 +123,27 @@ public class SourceLookupService implements IDebugContextListener {
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextListener#contextActivated(java.lang.Object, org.eclipse.ui.IWorkbenchPart)
 	 */
-	public synchronized void contextActivated(Object context, IWorkbenchPart part) {
-		if (context instanceof IAdaptable) {
-			IAdaptable adaptable = (IAdaptable) context;
-			ISourceLookupContext adapter = (ISourceLookupContext) adaptable.getAdapter(ISourceLookupContext.class);
-			if (adapter != null) {
-				IWorkbenchPage page = part.getSite().getPage();
-				Object target = adapter.getSourceLookupTarget();
-				if (target.equals(fPrevTarget)) {
-					(new SourceDisplayJob(fPrevResult, page)).schedule();
-				} else {
-					(new SourceLookupJob(target, adapter.getSourceLocator(), page)).schedule();
+	public synchronized void contextActivated(ISelection selection, IWorkbenchPart part) {
+		if (selection instanceof IStructuredSelection) {
+			IStructuredSelection structuredSelection = (IStructuredSelection)selection;
+			if (structuredSelection.size() == 1) {
+				Object context = (structuredSelection).getFirstElement();
+				if (context instanceof IAdaptable) {
+					IAdaptable adaptable = (IAdaptable) context;
+					ISourceLookupContext adapter = (ISourceLookupContext) adaptable.getAdapter(ISourceLookupContext.class);
+					if (adapter != null) {
+						IWorkbenchPage page = part.getSite().getPage();
+						Object target = adapter.getSourceLookupTarget();
+						if (target.equals(fPrevTarget)) {
+							(new SourceDisplayJob(fPrevResult, page)).schedule();
+						} else {
+							(new SourceLookupJob(target, adapter.getSourceLocator(), page)).schedule();
+						}
+					}
 				}
 			}
 		}
+
 		// TODO: listen for changes in source lookup context to clear
 		// TODO: distinguish top/secondary frame?
 		

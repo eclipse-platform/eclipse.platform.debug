@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
@@ -29,6 +30,6 @@ public interface IDebugContextProvider {
 	public void addDebugContextListener(IDebugContextListener listener);
 	public void removeDebugContextListener(IDebugContextListener listener);
 	
-	public Object getActiveContext();
+	public ISelection getActiveContext();
 
 }
