@@ -88,10 +88,14 @@ public class ThreadEventHandler extends DebugEventHandler {
 				getViewer().refresh(thread);
 			}
 		}
-		TreePath path = new TreePath(new Object[]{DebugPlugin.getDefault().getLaunchManager(), frame.getLaunch(), frame.getDebugTarget(), thread, frame});
+		TreePath path = getPath(frame);
 		ISelection selection = new TreeSelection(new TreePath[]{path});
 		((AsynchronousTreeViewer)getViewer()).expand(selection);
 		getViewer().setSelection(selection, true);
+	}
+	
+	protected TreePath getPath(IStackFrame frame) {
+		return new TreePath(new Object[]{DebugPlugin.getDefault().getLaunchManager(), frame.getLaunch(), frame.getDebugTarget(), frame.getThread(), frame});
 	}
 
 	/* (non-Javadoc)

@@ -453,7 +453,12 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
 					if (index < prevItems.length) {
 						item = prevItems[index];
 						Object oldData = item.getData();
-						if (!kid.equals(oldData)) {
+						if (kid.equals(oldData)) {
+							if (kid != oldData) {
+								// if equal but not identical, remap the element
+								remap(kid, item);
+							}
+						} else {
 							unmap(oldData, item);
 							map(kid, item);
 						}

@@ -369,6 +369,21 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		}
 		installUpdatePolicy(element);
 	}
+	
+	/**
+	 * Updates the cached information that maps the given element to the
+	 * specified widget. This can be useful when an element is being remapped
+	 * to an equal (but not identical) object.
+	 * 
+	 * @param element
+	 * @param item
+	 */
+	protected void remap(Object element, Widget item) {
+		item.setData(element);
+		fWidgetsToElements.put(item, element);
+		Object object = fElementsToWidgets.remove(element);
+		fElementsToWidgets.put(element, object);
+	}
 
 	/**
 	 * Installs the update policy for the given element into this viewer

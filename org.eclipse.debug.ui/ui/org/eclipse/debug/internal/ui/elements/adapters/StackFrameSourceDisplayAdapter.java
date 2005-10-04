@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.elements.adapters;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,6 +22,7 @@ import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.InstructionPointerManager;
+import org.eclipse.debug.internal.ui.sourcelookup.SourceLookupResult;
 import org.eclipse.debug.internal.ui.views.launch.DecorationManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.ISourceDisplayAdapter;
@@ -38,7 +36,7 @@ import org.eclipse.ui.progress.UIJob;
 public class StackFrameSourceDisplayAdapter implements ISourceDisplayAdapter {
 
 	private IStackFrame fPrevFrame;
-	private ISourceLookupResult fPrevResult;
+	private SourceLookupResult fPrevResult;
 	
 	/**
 	 * Constructs singleton source display adapter for stack frames.
@@ -90,7 +88,7 @@ public class StackFrameSourceDisplayAdapter implements ISourceDisplayAdapter {
 				ISourceLookupResult result = null;
 				result = DebugUITools.lookupSource(fTarget, fLocator);
 				synchronized (StackFrameSourceDisplayAdapter.this) {
-					fPrevResult = result;
+					fPrevResult = (SourceLookupResult)result;
 					fPrevFrame = fTarget;
 				}
 				if (!monitor.isCanceled()) {
@@ -137,6 +135,7 @@ public class StackFrameSourceDisplayAdapter implements ISourceDisplayAdapter {
 	public synchronized void displaySource(Object context, IWorkbenchPage page) {
 		IStackFrame frame = (IStackFrame)context;
 		if (frame.equals(fPrevFrame)) {
+			fPrevResult.updateArtifact(context);
 			(new SourceDisplayJob(fPrevResult, page)).schedule();
 		} else {
 			(new SourceLookupJob(frame, frame.getLaunch().getSourceLocator(), page)).schedule();
