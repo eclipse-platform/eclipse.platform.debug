@@ -20,13 +20,12 @@ import org.eclipse.ui.IWorkbenchPart;
 public interface IDebugContextListener {
 	
 	/**
-	 * Notification the given context is the active context in the given part.
-	 * When part is <code>null</code>, the context is active in the global
-	 * context queue.
+	 * Notification the given selection contains the active context in the 
+	 * specified part.
 	 * 
-	 * @param context
+	 * @param selection selection containing active context
 	 * @param part workbench part or <code>null</code>
 	 */
-	public void contextActivated(ISelection context, IWorkbenchPart part);
+	public void contextActivated(ISelection selection, IWorkbenchPart part);
 
 }

@@ -11,22 +11,15 @@
 package org.eclipse.debug.internal.ui.sourcelookup;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
-import org.eclipse.debug.ui.contexts.ISourceLookupContext;
+import org.eclipse.debug.ui.contexts.ISourceDisplayAdapter;
 import org.eclipse.debug.ui.sourcelookup.ISourceLookupResult;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.progress.UIJob;
 
 /**
  * Performs source lookup in a window.
@@ -48,76 +41,6 @@ public class SourceLookupService implements IDebugContextListener {
 	public void dispose() {
 		DebugContextManager.getDefault().removeDebugContextListener(this, fWindow);
 	}
-	
-	/**
-	 * A job to perform source lookup on the currently selected stack frame.
-	 */
-	class SourceLookupJob extends Job {
-		
-		private Object fTarget;
-		private ISourceLocator fLocator;
-		private IWorkbenchPage fPage;
-
-		/**
-		 * Constructs a new source lookup job.
-		 */
-		public SourceLookupJob(Object target, ISourceLocator locator, IWorkbenchPage page) {
-			super("Debug Source Lookup"); 
-			setPriority(Job.INTERACTIVE);
-			setSystem(true);
-			fTarget = target;
-			fLocator = locator;
-			fPage = page;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.core.runtime.jobs.Job#run(org.eclipse.core.runtime.IProgressMonitor)
-		 */
-		protected IStatus run(IProgressMonitor monitor) {
-			if (!monitor.isCanceled()) {
-				ISourceLookupResult result = null;
-				result = DebugUITools.lookupSource(fTarget, fLocator);
-				synchronized (SourceLookupService.this) {
-					fPrevResult = result;
-					fPrevTarget = fTarget;
-				}
-				if (!monitor.isCanceled()) {
-					SourceDisplayJob job = new SourceDisplayJob(result, fPage);
-					job.schedule();
-				}
-			}
-			return Status.OK_STATUS;
-		}
-		
-	}
-	
-	class SourceDisplayJob extends UIJob {
-		
-		private ISourceLookupResult fResult;
-		private IWorkbenchPage fPage;
-
-		/**
-		 * Constructs a new source display job
-		 */
-		public SourceDisplayJob(ISourceLookupResult result, IWorkbenchPage page) {
-			super("Debug Source Display"); 
-			setSystem(true);
-			setPriority(Job.INTERACTIVE);
-			fResult = result;
-			fPage = page;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.ui.progress.UIJob#runInUIThread(org.eclipse.core.runtime.IProgressMonitor)
-		 */
-		public IStatus runInUIThread(IProgressMonitor monitor) {
-			if (!monitor.isCanceled()) {
-				DebugUITools.displaySource(fResult, fPage);
-			}
-			return Status.OK_STATUS;
-		}
-		
-	}
 
 
 	/* (non-Javadoc)
@@ -130,22 +53,18 @@ public class SourceLookupService implements IDebugContextListener {
 				Object context = (structuredSelection).getFirstElement();
 				if (context instanceof IAdaptable) {
 					IAdaptable adaptable = (IAdaptable) context;
-					ISourceLookupContext adapter = (ISourceLookupContext) adaptable.getAdapter(ISourceLookupContext.class);
+					ISourceDisplayAdapter adapter = (ISourceDisplayAdapter) adaptable.getAdapter(ISourceDisplayAdapter.class);
 					if (adapter != null) {
-						IWorkbenchPage page = part.getSite().getPage();
-						Object target = adapter.getSourceLookupTarget();
-						if (target.equals(fPrevTarget)) {
-							(new SourceDisplayJob(fPrevResult, page)).schedule();
+						IWorkbenchPage page = null;
+						if (part == null) {
+							page = fWindow.getActivePage();
 						} else {
-							(new SourceLookupJob(target, adapter.getSourceLocator(), page)).schedule();
-						}
+							page = part.getSite().getPage();
+						} 
+						adapter.displaySource(context, page);
 					}
 				}
 			}
 		}
-
-		// TODO: listen for changes in source lookup context to clear
-		// TODO: distinguish top/secondary frame?
-		
 	}
 }

@@ -29,13 +29,13 @@ import org.eclipse.debug.internal.ui.elements.adapters.LauchManagerTreeContentAd
 import org.eclipse.debug.internal.ui.elements.adapters.LaunchTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.ProcessTreeAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.RegisterGroupTreeContentAdapter;
-import org.eclipse.debug.internal.ui.elements.adapters.StackFrameSourceLookupAdapter;
+import org.eclipse.debug.internal.ui.elements.adapters.StackFrameSourceDisplayAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.StackFrameTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.ThreadTreeContentAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.VariableLabelAdapter;
 import org.eclipse.debug.internal.ui.elements.adapters.VariableTreeContentAdapter;
 import org.eclipse.debug.internal.ui.viewers.update.DefaultUpdatePolicyFactory;
-import org.eclipse.debug.ui.contexts.ISourceLookupContext;
+import org.eclipse.debug.ui.contexts.ISourceDisplayAdapter;
 import org.eclipse.debug.ui.viewers.IAsynchronousLabelAdapter;
 import org.eclipse.debug.ui.viewers.IAsynchronousTreeContentAdapter;
 import org.eclipse.debug.ui.viewers.IUpdatePolicyFactory;
@@ -49,6 +49,7 @@ import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 public class DebugElementAdapterFactory implements IAdapterFactory {
 	
 	private static IUpdatePolicyFactory fgUpdatePolicyAdapter = new DefaultUpdatePolicyFactory();
+	private static ISourceDisplayAdapter fgStackFrameSourceDisplayAdapter = new StackFrameSourceDisplayAdapter();
     
     private static IAsynchronousLabelAdapter fgDebugLabelAdapter = new AsynchronousDebugLabelAdapter();
     private static IAsynchronousLabelAdapter fgVariableLabelAdapter = new VariableLabelAdapter();
@@ -119,9 +120,9 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
         	return fgUpdatePolicyAdapter;
         }
         
-        if (adapterType.equals(ISourceLookupContext.class)) {
+        if (adapterType.equals(ISourceDisplayAdapter.class)) {
         	if (adaptableObject instanceof IStackFrame) {
-        		return new StackFrameSourceLookupAdapter((IStackFrame)adaptableObject);
+        		return fgStackFrameSourceDisplayAdapter;
         	}
         }
         return null;
@@ -132,7 +133,7 @@ public class DebugElementAdapterFactory implements IAdapterFactory {
      */
     public Class[] getAdapterList() {
         return new Class[] {IWorkbenchAdapter.class, IWorkbenchAdapter2.class, IDeferredWorkbenchAdapter.class, IAsynchronousLabelAdapter.class, IAsynchronousTreeContentAdapter.class,
-        		IUpdatePolicyFactory.class, ISourceLookupContext.class};
+        		IUpdatePolicyFactory.class, ISourceDisplayAdapter.class};
     }
 
 }

@@ -10,18 +10,22 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.ui.IWorkbenchPage;
+
 /**
+ * An adpater that is capable of displaying source for an object.
+ * The adapter is obtained from an object in a debug context.
+ * 
  * @since 3.2
  */
-public interface ISourceLookupContextListener {
+public interface ISourceDisplayAdapter {
 	
 	/**
-	 * Notification the given context no longer exists. The
-	 * context may have resumed, terminated, or moved to a
-	 * different location.
-	 *  
-	 * @param context
+	 * Displays source for the given context in the specified page.
+	 * 
+	 * @param context debug context to display source for
+	 * @param page the page in which to display source
 	 */
-	public void contextInvalid(ISourceLookupContext context);
-
+	public void displaySource(Object context, IWorkbenchPage page);
+	
 }
