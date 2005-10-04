@@ -44,14 +44,14 @@ public class DebugContextManager implements IDebugContextManager {
 	public void addDebugContextProvider(IDebugContextProvider provider) {
 		IWorkbenchPart part = provider.getPart();
 		IWorkbenchWindow window = part.getSite().getWorkbenchWindow();
-		ContextService service = createService(window);
+		DebugWindowContextService service = createService(window);
 		service.addProvider(provider);
 	}
 	
-	protected ContextService createService(IWorkbenchWindow window) {
-		ContextService service = (ContextService) fServices.get(window);
+	protected DebugWindowContextService createService(IWorkbenchWindow window) {
+		DebugWindowContextService service = (DebugWindowContextService) fServices.get(window);
 		if (service == null) {
-			service = new ContextService(window);
+			service = new DebugWindowContextService(window);
 			fServices.put(window, service);
 			// TODO: register 'null' provider (global)
 		}
@@ -59,7 +59,7 @@ public class DebugContextManager implements IDebugContextManager {
 	}
 	
 	protected IDebugContextService getService(IWorkbenchWindow window) {
-		return (ContextService) fServices.get(window);
+		return (DebugWindowContextService) fServices.get(window);
 	}	
 
 	/* (non-Javadoc)
@@ -68,7 +68,7 @@ public class DebugContextManager implements IDebugContextManager {
 	public void removeDebugContextProvider(IDebugContextProvider provider) {
 		IWorkbenchPart part = provider.getPart();
 		IWorkbenchWindow window = part.getSite().getWorkbenchWindow();
-		ContextService service = (ContextService) fServices.get(window);
+		DebugWindowContextService service = (DebugWindowContextService) fServices.get(window);
 		if (service != null) {
 			service.removeProvider(provider);
 		}
@@ -96,7 +96,7 @@ public class DebugContextManager implements IDebugContextManager {
 	 * @see org.eclipse.debug.ui.contexts.IDebugContextManager#addDebugContextListener(org.eclipse.debug.ui.contexts.IDebugContextListener, org.eclipse.ui.IWorkbenchWindow, java.lang.String)
 	 */
 	public void addDebugContextListener(IDebugContextListener listener, IWorkbenchWindow window, String partId) {
-		ContextService service = createService(window);
+		DebugWindowContextService service = createService(window);
 		service.addDebugContextListener(listener, partId);
 	}
 

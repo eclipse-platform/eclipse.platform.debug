@@ -29,9 +29,11 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**
+ * Context service for a specific window.
+ * 
  * @since 3.2
  */
-public class ContextService implements IDebugContextService, IPartListener2, IDebugContextListener {
+public class DebugWindowContextService implements IDebugContextService, IPartListener2, IDebugContextListener {
 	
 	private Map fListenersByPartId = new HashMap();
 	private Map fProvidersByPartId = new HashMap();
@@ -39,7 +41,7 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 	private IWorkbenchWindow fWindow;
 	private List fProviders = new ArrayList();
 
-	public ContextService(IWorkbenchWindow window) {
+	public DebugWindowContextService(IWorkbenchWindow window) {
 		fWindow = window;
 		fWindow.getPartService().addPartListener(this);
 	}
@@ -109,11 +111,6 @@ public class ContextService implements IDebugContextService, IPartListener2, IDe
 	}
 	
 	protected void notifyActivated(ISelection context, IWorkbenchPart part) {
-		if (context == null) {
-			System.out.println("CONTEXT ACTIVATED: NULL");
-		} else {
-			System.out.println("CONTEXT ACTIVATED: " + context.toString());
-		}
 		notifyActivated(getListeners(null), context, part);
 		if (part != null) {
 			notifyActivated(getListeners(part), context, part);
