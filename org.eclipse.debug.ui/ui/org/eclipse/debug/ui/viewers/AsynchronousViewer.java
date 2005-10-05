@@ -381,8 +381,8 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 	protected void remap(Object element, Widget item) {
 		item.setData(element);
 		fWidgetsToElements.put(item, element);
-		Object object = fElementsToWidgets.remove(element);
-		fElementsToWidgets.put(element, object);
+		Object widgets = fElementsToWidgets.remove(element);
+		fElementsToWidgets.put(element, widgets);
 	}
 
 	/**
