@@ -10,20 +10,33 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.contexts.actions;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.ui.IDebugView;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 public class SelectAllVariablesAction extends SelectAllAction {
 
 	protected void update() {
-		if (!(getView() instanceof IDebugView)) {
-			return;
-		}
-		Viewer viewer = ((IDebugView) getView()).getViewer();
-		Tree tree = (Tree) viewer.getControl();
-		getAction().setEnabled(tree.getItemCount() != 0);
-		return;
+		WorkbenchJob job = new WorkbenchJob("update select all variables action") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				if (!(getView() instanceof IDebugView)) {
+					return Status.OK_STATUS;
+				}
+				Viewer viewer = ((IDebugView) getView()).getViewer();
+				if (viewer != null) {
+					Tree tree = (Tree) viewer.getControl();
+					getAction().setEnabled(tree.getItemCount() != 0);
+				}
+				return Status.OK_STATUS;
+			}
+		};
+
+		job.setSystem(true);
+		job.schedule();
 	}
 
 	protected String getActionId() {

@@ -8,6 +8,8 @@ Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Export-Package: org.eclipse.debug.internal.ui;x-internal:=true,
  org.eclipse.debug.internal.ui.actions;x-internal:=true,
+ org.eclipse.debug.internal.ui.contexts.actions;x-internal:=true,
+ org.eclipse.debug.internal.ui.contexts;x-internal:=true,
  org.eclipse.debug.internal.ui.actions.breakpointGroups;x-internal:=true,
  org.eclipse.debug.internal.ui.elements.adapters;x-internal:=true,
  org.eclipse.debug.internal.ui.launchConfigurations;x-internal:=true,
