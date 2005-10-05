@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
 import java.util.Iterator;
@@ -17,6 +17,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.ISuspendResume;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
 public class ResumeActionDelegate extends AbstractListenerActionDelegate {
@@ -52,12 +53,6 @@ public class ResumeActionDelegate extends AbstractListenerActionDelegate {
 	    }
 	}
 	
-	/**
-	 * @see AbstractDebugActionDelegate#isRunInBackground()
-	 */
-	protected boolean isRunInBackground() {
-		return true;
-	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#isEnabledFor(Object)
@@ -105,14 +100,14 @@ public class ResumeActionDelegate extends AbstractListenerActionDelegate {
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.ResumeActionDelegate_Exceptions_occurred_attempting_to_resume__2; //$NON-NLS-1$
+		return ActionMessages.ResumeActionDelegate_Exceptions_occurred_attempting_to_resume__2; 
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.ResumeActionDelegate_Resume_failed__1; //$NON-NLS-1$
+		return ActionMessages.ResumeActionDelegate_Resume_failed__1; 
 	}
 
 }

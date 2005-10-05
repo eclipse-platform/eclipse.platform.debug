@@ -8,24 +8,17 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
- 
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.ui.IDebugView;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.widgets.Tree;
- 
-public class SelectAllVariablesAction extends SelectAllAction {
+
+public class SelectAllExpressionsAction extends SelectAllAction {
 
 	protected void update() {
-		if (!(getView() instanceof IDebugView)) {
-			return;
-		}
-		Viewer viewer= ((IDebugView)getView()).getViewer();
-		Tree tree = (Tree) viewer.getControl();
-		getAction().setEnabled(tree.getItemCount() != 0);
+		getAction().setEnabled(DebugPlugin.getDefault().getExpressionManager().hasExpressions());
 	}
-	
+
 	protected String getActionId() {
 		return IDebugView.SELECT_ALL_ACTION + ".Variables"; //$NON-NLS-1$
 	}

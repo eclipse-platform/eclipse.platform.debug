@@ -8,9 +8,12 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IExpression;
@@ -19,15 +22,23 @@ import org.eclipse.debug.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.ui.viewers.TreePath;
 import org.eclipse.debug.ui.viewers.TreeSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 public class RemoveExpressionAction extends AbstractRemoveActionDelegate {
 
 	protected void doAction(Object element) {
-		IExpressionManager manager = DebugPlugin.getDefault().getExpressionManager();
-		IExpression exp = getExpression(element);
-		if (exp != null) {
-			manager.removeExpression(exp);
-		}
+		WorkbenchJob job = new WorkbenchJob("remove expression") { //$NON-NLS-1$
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				IExpressionManager manager = DebugPlugin.getDefault().getExpressionManager();
+				IExpression exp = getExpression();
+				if (exp != null) {
+					manager.removeExpression(exp);
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
 	}
 	
 	/**
@@ -38,7 +49,7 @@ public class RemoveExpressionAction extends AbstractRemoveActionDelegate {
 	 *  the expression view.
 	 * @return associated expression
 	 */
-	protected IExpression getExpression(Object obj) {
+	protected IExpression getExpression() {
 		if (getView() == null) {
 			return null;
 		}

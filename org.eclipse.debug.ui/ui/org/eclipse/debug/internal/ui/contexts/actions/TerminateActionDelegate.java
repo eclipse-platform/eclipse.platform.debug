@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
 import org.eclipse.debug.core.DebugEvent;
@@ -19,6 +19,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.ITerminate;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -78,14 +79,14 @@ public class TerminateActionDelegate extends AbstractListenerActionDelegate {
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.TerminateActionDelegate_Exceptions_occurred_attempting_to_terminate__2; //$NON-NLS-1$
+		return ActionMessages.TerminateActionDelegate_Exceptions_occurred_attempting_to_terminate__2; 
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.TerminateActionDelegate_Terminate_failed__1; //$NON-NLS-1$
+		return ActionMessages.TerminateActionDelegate_Terminate_failed__1; 
 	}
 	
 	/**
@@ -93,7 +94,7 @@ public class TerminateActionDelegate extends AbstractListenerActionDelegate {
 	 */
 	protected void doHandleDebugEvent(DebugEvent event) {	
 		if (event.getKind() == DebugEvent.TERMINATE || event.getKind() == DebugEvent.CREATE) {
-			update(getAction(), getSelection());
+			update(getAction(), getContext());
 		}
 	}
 

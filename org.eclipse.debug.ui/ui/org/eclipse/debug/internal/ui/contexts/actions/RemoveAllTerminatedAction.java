@@ -8,19 +8,16 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.ILaunchesListener;
-import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.ILaunchesListener2;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.ui.IViewPart;
  
@@ -28,19 +25,7 @@ import org.eclipse.ui.IViewPart;
  * Removes all terminated/detached launches from the
  * active debug view.
  */
-public class RemoveAllTerminatedAction extends AbstractRemoveAllActionDelegate implements ILaunchesListener {
-
-	/**
-	 * @see ListenerActionDelegate#doHandleDebugEvent(DebugEvent)
-	 */	
-	protected void doHandleDebugEvent(DebugEvent event) {	
-		if (event.getKind() == DebugEvent.TERMINATE) {
-			Object source = event.getSource();
-			if (event.getKind() == DebugEvent.TERMINATE && (source instanceof IDebugTarget || source instanceof IProcess)) {
-				update();
-			}
-		}
-	}
+public class RemoveAllTerminatedAction extends AbstractRemoveAllActionDelegate implements ILaunchesListener2 {
 
 	/** 
 	 * Updates the enabled state of this action to enabled if at
@@ -84,7 +69,6 @@ public class RemoveAllTerminatedAction extends AbstractRemoveAllActionDelegate i
 	public void init(IViewPart view) {
 		super.init(view);
 		DebugPlugin.getDefault().getLaunchManager().addLaunchListener(this);
-		DebugPlugin.getDefault().addDebugEventListener(this);
 	}
 		
 	/**
@@ -99,26 +83,21 @@ public class RemoveAllTerminatedAction extends AbstractRemoveAllActionDelegate i
             view.getSite().getSelectionProvider().removeSelectionChangedListener((ISelectionChangedListener) getAction());
         }
 	}
-	
-	/**
-	 * @see ILaunchesListener#launchesAdded(ILaunch[])
-	 */
+
 	public void launchesAdded(ILaunch[] launches) {
 	}
 
-	/**
-	 * @see ILaunchesListener#launchesChanged(ILaunch[])
-	 */
 	public void launchesChanged(ILaunch[] launches) {
 	}
 
-	/**
-	 * @see ILaunchesListener#launchesRemoved(ILaunch[])
-	 */
 	public void launchesRemoved(ILaunch[] launches) {
 		if (getAction().isEnabled()) {
 			update();
 		}
+	}
+
+	public void launchesTerminated(ILaunch[] launches) {
+		update();
 	}
 }
 

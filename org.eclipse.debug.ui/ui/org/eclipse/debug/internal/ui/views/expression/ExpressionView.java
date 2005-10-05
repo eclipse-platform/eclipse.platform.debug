@@ -136,7 +136,7 @@ public class ExpressionView extends VariablesView {
 	 * 
 	 * @see VariablesView#setViewerInput(IStructuredSelection)
 	 */
-	protected void setViewerInput(IStructuredSelection ssel) {
+	protected void setViewerInput(Object obj) {
 	}
 
 	/* (non-Javadoc)

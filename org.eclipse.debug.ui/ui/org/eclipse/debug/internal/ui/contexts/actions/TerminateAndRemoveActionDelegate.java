@@ -8,14 +8,15 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.ITerminate;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.debug.internal.ui.views.launch.LaunchView;
 
-public class TerminateAndRemoveActionDelegate extends AbstractDebugActionDelegate {
+public class TerminateAndRemoveActionDelegate extends AbstractContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)
@@ -48,14 +49,14 @@ public class TerminateAndRemoveActionDelegate extends AbstractDebugActionDelegat
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.TerminateAndRemoveActionDelegate_Exceptions_occurred_attempting_to_terminate_and_remove_2; //$NON-NLS-1$
+		return ActionMessages.TerminateAndRemoveActionDelegate_Exceptions_occurred_attempting_to_terminate_and_remove_2; 
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.TerminateAndRemoveActionDelegate_Terminate_and_remove_failed_1; //$NON-NLS-1$
+		return ActionMessages.TerminateAndRemoveActionDelegate_Terminate_and_remove_failed_1; 
 	}
 
 }

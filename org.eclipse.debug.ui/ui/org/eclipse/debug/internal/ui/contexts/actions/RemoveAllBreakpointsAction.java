@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
  
 import org.eclipse.core.resources.IMarkerDelta;
@@ -22,6 +22,7 @@ import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.IBreakpointsListener;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -45,9 +46,9 @@ public class RemoveAllBreakpointsAction extends AbstractRemoveAllActionDelegate 
 		if (window == null) {
 			return;
 		}
-		boolean proceed = MessageDialog.openQuestion(window.getShell(), ActionMessages.RemoveAllBreakpointsAction_0, ActionMessages.RemoveAllBreakpointsAction_1); //$NON-NLS-1$ //$NON-NLS-2$
+		boolean proceed = MessageDialog.openQuestion(window.getShell(), ActionMessages.RemoveAllBreakpointsAction_0, ActionMessages.RemoveAllBreakpointsAction_1);  
 		if (proceed) {
-            new Job(ActionMessages.RemoveAllBreakpointsAction_2) { //$NON-NLS-1$
+            new Job(ActionMessages.RemoveAllBreakpointsAction_2) { 
                 protected IStatus run(IProgressMonitor monitor) {
                     try {
                         breakpointManager.removeBreakpoints(breakpoints, true);

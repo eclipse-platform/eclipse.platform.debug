@@ -8,12 +8,12 @@
  * Contributors:
  *     IBM Corporation - initial implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.internal.ui.IDebugHelpContextIds;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.debug.internal.ui.views.variables.VariablesView;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -25,53 +25,49 @@ import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 
 /**
- * Action which prompts the user to help them find a variable in
- * the variables view.
+ * Action which prompts the user to help them find a variable in the variables
+ * view.
  */
 public class FindVariableAction extends Action implements IUpdate {
-	
+
 	private class FindVariableDelegate extends AbstractListenerActionDelegate {
 
-	    protected void doAction(Object element) {
-	        VariablesView view= (VariablesView) getView();
-	        Shell shell = view.getSite().getShell();
-	        FindVariableDialog dialog= new FindVariableDialog(shell, view);
-	        dialog.open();
-	    }
+		protected void doAction(Object element) {
+			VariablesView view = (VariablesView) getView();
+			Shell shell = view.getSite().getShell();
+			FindVariableDialog dialog = new FindVariableDialog(shell, view);
+			dialog.open();
+		}
 
-	    protected void update(IAction action, ISelection s) {
-	    	if (action != null) {
-	    		((IUpdate) action).update();
-	    	}
-	    }
-
-	    protected void doHandleDebugEvent(DebugEvent event) {
-	        update(getAction(), null);
-	    }
+		protected void update(IAction action, ISelection s) {
+			if (action != null) {
+				((IUpdate) action).update();
+			}
+		}
 
 		public void run(IAction action) {
 			doAction(null);
 		}
 	}
-	
+
 	private AbstractListenerActionDelegate fDelegate;
 
-    public FindVariableAction(VariablesView view) {
-        setText(ActionMessages.FindVariableAction_0); //$NON-NLS-1$
+	public FindVariableAction(VariablesView view) {
+		setText(ActionMessages.FindVariableAction_0);
 		setId(DebugUIPlugin.getUniqueIdentifier() + ".FindVariableAction"); //$NON-NLS-1$
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IDebugHelpContextIds.FIND_VARIABLE_ACTION);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IDebugHelpContextIds.FIND_VARIABLE_ACTION);
 		setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_REPLACE);
-        fDelegate= new FindVariableDelegate();
-        fDelegate.init(view);
-        fDelegate.setAction(this);
-    }
-    
-    public void run() {
-    	fDelegate.run(this);
-    }
+		fDelegate = new FindVariableDelegate();
+		fDelegate.init(view);
+		fDelegate.setAction(this);
+	}
+
+	public void run() {
+		fDelegate.run(this);
+	}
 
 	public void update() {
-		VariablesView view= (VariablesView) fDelegate.getView();
+		VariablesView view = (VariablesView) fDelegate.getView();
 		if (view != null) {
 			Viewer viewer = view.getViewer();
 			if (viewer != null) {
@@ -82,7 +78,7 @@ public class FindVariableAction extends Action implements IUpdate {
 		setEnabled(false);
 	}
 
-    public void dispose() {
-        fDelegate.dispose();
-    }
+	public void dispose() {
+		fDelegate.dispose();
+	}
 }

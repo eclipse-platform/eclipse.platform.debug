@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -64,13 +64,6 @@ public class DropToFrameActionDelegate extends AbstractListenerActionDelegate {
                 dropToFrame.dropToFrame();
             }
         }
-    }
-
-    /**
-     * @see AbstractDebugActionDelegate#isRunInBackground()
-     */
-    protected boolean isRunInBackground() {
-        return true;
     }
 
     /**

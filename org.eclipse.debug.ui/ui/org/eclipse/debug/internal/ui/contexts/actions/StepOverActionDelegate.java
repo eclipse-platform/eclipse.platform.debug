@@ -8,11 +8,13 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+
+package org.eclipse.debug.internal.ui.contexts.actions;
 
  
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStep;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
 public class StepOverActionDelegate extends StepActionDelegate {
 
@@ -34,14 +36,14 @@ public class StepOverActionDelegate extends StepActionDelegate {
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.StepOverActionDelegate_Exceptions_occurred_attempting_to_step_over_the_frame_2; //$NON-NLS-1$
+		return ActionMessages.StepOverActionDelegate_Exceptions_occurred_attempting_to_step_over_the_frame_2; 
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.StepOverActionDelegate_Step_over_failed_1; //$NON-NLS-1$
+		return ActionMessages.StepOverActionDelegate_Step_over_failed_1; 
 	}
 
 	/**
@@ -51,3 +53,4 @@ public class StepOverActionDelegate extends StepActionDelegate {
 		return "org.eclipse.debug.internal.ui.actions.StepOverActionDelegate"; //$NON-NLS-1$
 	}
 }
+

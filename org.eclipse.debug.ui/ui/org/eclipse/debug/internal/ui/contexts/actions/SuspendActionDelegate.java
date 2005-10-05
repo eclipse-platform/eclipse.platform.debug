@@ -8,59 +8,43 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IDisconnect;
+import org.eclipse.debug.core.model.ISuspendResume;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
-public class DisconnectActionDelegate extends AbstractListenerActionDelegate {
+public class SuspendActionDelegate extends AbstractListenerActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)
 	 */
 	protected void doAction(Object element) throws DebugException {
-		if (element instanceof IDisconnect) {
-			 ((IDisconnect) element).disconnect();
+		if (element instanceof ISuspendResume) {
+			 ((ISuspendResume) element).suspend();
 		}
 	}
 	
 	/**
-	 * @see AbstractDebugActionDelegate#isRunInBackground()
-	 */
-	protected boolean isRunInBackground() {
-		return true;
-	}
-
-	/**
 	 * @see AbstractDebugActionDelegate#isEnabledFor(Object)
 	 */
 	protected boolean isEnabledFor(Object element) {
-		return element instanceof IDisconnect && ((IDisconnect) element).canDisconnect();
+		return element instanceof ISuspendResume && ((ISuspendResume)element).canSuspend();
 	}
-		
+
 	/**
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.DisconnectActionDelegate_Exceptions_occurred_attempting_to_disconnect__2; //$NON-NLS-1$
+		return ActionMessages.SuspendActionDelegate_Exceptions_occurred_attempting_to_suspend__2; 
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.DisconnectActionDelegate_Disconnect_failed_1; //$NON-NLS-1$
+		return ActionMessages.SuspendActionDelegate_Suspend_failed_1; 
 	}
-	
-	/**
-	 * @see ListenerActionDelegate#doHandleDebugEvent(DebugEvent)
-	 */
-	protected void doHandleDebugEvent(DebugEvent event) {	
-		if (event.getKind() == DebugEvent.TERMINATE && event.getSource() instanceof IDebugTarget) {
-			update(getAction(), getSelection());
-		}
-	}
+
 }

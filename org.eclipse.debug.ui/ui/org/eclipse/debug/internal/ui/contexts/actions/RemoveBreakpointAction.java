@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.debug.internal.ui.views.breakpoints.BreakpointContainer;
 import org.eclipse.debug.internal.ui.views.breakpoints.BreakpointsView;
 import org.eclipse.jface.action.IAction;
@@ -38,7 +39,7 @@ public class RemoveBreakpointAction extends AbstractRemoveActionDelegate {
 	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
 	 */
 	public void run(IAction action) {
-		IStructuredSelection selection= getSelection();
+		IStructuredSelection selection= getContext();
 		if (selection.isEmpty()) {
 			return;
 		}
@@ -56,7 +57,7 @@ public class RemoveBreakpointAction extends AbstractRemoveActionDelegate {
 						} else if (next instanceof BreakpointContainer) {
 						    if (!deleteContainers) {
 						        // Prompt the user to delete containers only once.
-						        deleteContainers = MessageDialog.openConfirm(getView().getSite().getShell(), ActionMessages.RemoveBreakpointAction_0, ActionMessages.RemoveBreakpointAction_1); //$NON-NLS-1$ //$NON-NLS-2$
+						        deleteContainers = MessageDialog.openConfirm(getView().getSite().getShell(), ActionMessages.RemoveBreakpointAction_0, ActionMessages.RemoveBreakpointAction_1);  
 						        if (!deleteContainers) {
 						            // User cancelled. Do nothing
 						            return;
@@ -70,7 +71,7 @@ public class RemoveBreakpointAction extends AbstractRemoveActionDelegate {
 						}
 				}
 				final IBreakpoint[] breakpoints= (IBreakpoint[]) breakpointsToDelete.toArray(new IBreakpoint[0]);
-				new Job(ActionMessages.RemoveBreakpointAction_2) { //$NON-NLS-1$
+				new Job(ActionMessages.RemoveBreakpointAction_2) { 
                     protected IStatus run(IProgressMonitor pmonitor) {
                         try {
                             DebugPlugin.getDefault().getBreakpointManager().removeBreakpoints(breakpoints, true);
@@ -100,7 +101,7 @@ public class RemoveBreakpointAction extends AbstractRemoveActionDelegate {
 		if (exception[0] != null) {
 			IWorkbenchWindow window= DebugUIPlugin.getActiveWorkbenchWindow();
 			if (window != null) {
-				DebugUIPlugin.errorDialog(window.getShell(), ActionMessages.RemoveBreakpointAction_Removing_a_breakpoint_4,ActionMessages.RemoveBreakpointAction_Exceptions_occurred_attempting_to_remove_a_breakpoint__5 , exception[0]); //$NON-NLS-1$ //$NON-NLS-2$
+				DebugUIPlugin.errorDialog(window.getShell(), ActionMessages.RemoveBreakpointAction_Removing_a_breakpoint_4,ActionMessages.RemoveBreakpointAction_Exceptions_occurred_attempting_to_remove_a_breakpoint__5 , exception[0]);  
 			} else {
 				DebugUIPlugin.log(exception[0]);
 			}

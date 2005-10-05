@@ -42,11 +42,10 @@ import org.eclipse.debug.internal.ui.VariablesViewModelPresentation;
 import org.eclipse.debug.internal.ui.actions.AssignValueAction;
 import org.eclipse.debug.internal.ui.actions.ChangeVariableValueAction;
 import org.eclipse.debug.internal.ui.actions.CollapseAllAction;
-import org.eclipse.debug.internal.ui.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.actions.ShowTypesAction;
 import org.eclipse.debug.internal.ui.actions.ToggleDetailPaneAction;
 import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
-import org.eclipse.debug.internal.ui.contexts.IDebugContextService;
+import org.eclipse.debug.internal.ui.contexts.actions.FindVariableAction;
 import org.eclipse.debug.internal.ui.preferences.IDebugPreferenceConstants;
 import org.eclipse.debug.internal.ui.views.AbstractDebugEventHandlerView;
 import org.eclipse.debug.internal.ui.views.AbstractViewerState;
@@ -356,7 +355,7 @@ public class VariablesView extends AbstractDebugEventHandlerView implements IDeb
 		if (current != null && current.equals(context)) {
 			return;
 		}
-
+		
 		if (current != null) {
 			// save state
 			fLastState = getViewerState();

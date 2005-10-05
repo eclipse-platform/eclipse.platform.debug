@@ -8,47 +8,46 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
-
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStep;
+import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
-public class StepReturnActionDelegate extends StepActionDelegate {
-
+public class StepIntoActionDelegate extends StepActionDelegate {
+	
 	/**
 	 * @see StepActionDelegate#checkCapability(IStep)
 	 */
 	protected boolean checkCapability(IStep element) {
-		return element.canStepReturn();
+		return element.canStepInto();
 	}
 
 	/**
 	 * @see StepActionDelegate#stepAction(IStep)
 	 */
 	protected void stepAction(IStep element) throws DebugException {
-		element.stepReturn();
+		element.stepInto();
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getStatusMessage()
 	 */
 	protected String getStatusMessage() {
-		return ActionMessages.StepReturnActionDelegate_Exceptions_occurred_attempting_to_run_to_return_of_the_frame__2; //$NON-NLS-1$
+		return ActionMessages.StepIntoActionDelegate_Exceptions_occurred_attempting_to_step_into_the_frame_2;
 	}
 
 	/**
 	 * @see AbstractDebugActionDelegate#getErrorDialogMessage()
 	 */
 	protected String getErrorDialogMessage() {
-		return ActionMessages.StepReturnActionDelegate_Run_to_return_failed__1; //$NON-NLS-1$
+		return ActionMessages.StepIntoActionDelegate_Step_into_failed_1; 
 	}
 
 	/**
-	 * @see org.eclipse.debug.internal.ui.actions.
-	 * StepActionDelegate#getActionDefinitionId()
+	 * @see org.eclipse.debug.internal.ui.actions.StepActionDelegate#getActionDefinitionId()
 	 */
 	protected String getActionDefinitionId() {
-		return "org.eclipse.debug.internal.ui.actions.StepReturnActionDelegate"; //$NON-NLS-1$
+		return "org.eclipse.debug.internal.ui.actions.StepIntoActionDelegate"; //$NON-NLS-1$
 	}
 }

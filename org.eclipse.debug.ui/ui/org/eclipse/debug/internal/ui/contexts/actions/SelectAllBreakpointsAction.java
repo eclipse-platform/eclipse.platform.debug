@@ -8,8 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.debug.internal.ui.actions;
-
+package org.eclipse.debug.internal.ui.contexts.actions;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.debug.core.DebugPlugin;
@@ -23,8 +22,7 @@ import org.eclipse.ui.IViewPart;
 public class SelectAllBreakpointsAction extends SelectAllAction implements IBreakpointsListener {
 
 	protected void update() {
-		getAction().setEnabled(
-			DebugPlugin.getDefault().getBreakpointManager().hasBreakpoints());
+		getAction().setEnabled(DebugPlugin.getDefault().getBreakpointManager().hasBreakpoints());
 	}
 
 	/**
@@ -36,7 +34,7 @@ public class SelectAllBreakpointsAction extends SelectAllAction implements IBrea
 		}
 		CheckboxTreeViewer viewer = ((BreakpointsView) getView()).getCheckboxViewer();
 		viewer.getTree().selectAll();
-		//ensure that the selection change callback is fired
+		// ensure that the selection change callback is fired
 		viewer.setSelection(viewer.getSelection());
 	}
 
@@ -50,20 +48,22 @@ public class SelectAllBreakpointsAction extends SelectAllAction implements IBrea
 	}
 
 	/**
-	 * @see IBreakpointsListener#breakpointsChanged(IBreakpoint[], IMarkerDelta[])breakpointChanged(IBreakpoint, IMarkerDelta)
+	 * @see IBreakpointsListener#breakpointsChanged(IBreakpoint[],
+	 *      IMarkerDelta[])breakpointChanged(IBreakpoint, IMarkerDelta)
 	 */
 	public void breakpointsChanged(IBreakpoint[] breakpoints, IMarkerDelta[] deltas) {
 	}
 
 	/**
-     * @see IBreakpointsListener#breakpointsRemoved(IBreakpoint[], IMarkerDelta[])
+	 * @see IBreakpointsListener#breakpointsRemoved(IBreakpoint[],
+	 *      IMarkerDelta[])
 	 */
 	public void breakpointsRemoved(IBreakpoint[] breakpoints, IMarkerDelta[] deltas) {
 		if (getAction() != null) {
 			update();
 		}
 	}
-	
+
 	/**
 	 * @see IViewActionDelegate#init(IViewPart)
 	 */
@@ -71,12 +71,12 @@ public class SelectAllBreakpointsAction extends SelectAllAction implements IBrea
 		super.init(view);
 		DebugPlugin.getDefault().getBreakpointManager().addBreakpointListener(this);
 	}
-	
+
 	public void dispose() {
-		DebugPlugin.getDefault().getBreakpointManager().removeBreakpointListener(this);	
+		DebugPlugin.getDefault().getBreakpointManager().removeBreakpointListener(this);
 		super.dispose();
 	}
-	
+
 	protected String getActionId() {
 		return IDebugView.SELECT_ALL_ACTION;
 	}
