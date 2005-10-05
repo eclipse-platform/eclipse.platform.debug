@@ -68,16 +68,18 @@ public class LaunchViewer extends AsynchronousTreeViewer {
 				// if client contributed, use it
 				return new WrappedDeferredWorkbenchTreeAdapter(deferred, element);
 			}
-
-			// if the client provided an IWorkbenchAdapter, use it
-			IWorkbenchAdapter nonDeferred = (IWorkbenchAdapter) adaptable.getAdapter(IWorkbenchAdapter.class);
-			if (nonDeferred != null) {
-				bundle = plugin.getBundle(nonDeferred.getClass());
-				if (!debugBundle.equals(bundle)) {
-					return new WrappedWorkbenchTreeAdapter(nonDeferred);
-				}
-			}
 		}
+		// if the client provided an IWorkbenchAdapter, use it
+		IWorkbenchAdapter nonDeferred = (IWorkbenchAdapter) adaptable.getAdapter(IWorkbenchAdapter.class);
+		if (nonDeferred != null) {
+			DebugUIPlugin plugin = DebugUIPlugin.getDefault();
+			Bundle bundle = plugin.getBundle(nonDeferred.getClass());
+			Bundle debugBundle = plugin.getBundle();
+			bundle = plugin.getBundle(nonDeferred.getClass());
+			if (!debugBundle.equals(bundle)) {
+				return new WrappedWorkbenchTreeAdapter(nonDeferred);
+			}
+		}		
 		return null;
 	}
 
