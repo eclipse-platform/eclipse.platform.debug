@@ -15,7 +15,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IViewPart;
 
-public abstract class AbstractRemoveAllActionDelegate extends AbstractListenerActionDelegate {
+public abstract class AbstractRemoveAllActionDelegate extends AbstractDebugContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)

@@ -38,7 +38,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
-public abstract class AbstractContextActionDelegate implements IWorkbenchWindowActionDelegate, IViewActionDelegate, IActionDelegate2, IDebugContextListener {
+public abstract class AbstractDebugContextActionDelegate implements IWorkbenchWindowActionDelegate, IViewActionDelegate, IActionDelegate2, IDebugContextListener {
 
 	/**
 	 * The underlying action for this delegate
@@ -172,7 +172,7 @@ public abstract class AbstractContextActionDelegate implements IWorkbenchWindowA
 	 * they can be reflected into existence when referenced in an action set in
 	 * the plugin's plugin.xml file.
 	 */
-	public AbstractContextActionDelegate() {
+	public AbstractDebugContextActionDelegate() {
 	}
 
 	/*

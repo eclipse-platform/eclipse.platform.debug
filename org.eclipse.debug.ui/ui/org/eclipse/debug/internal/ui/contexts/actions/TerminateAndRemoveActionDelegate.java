@@ -16,7 +16,7 @@ import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.debug.internal.ui.views.launch.LaunchView;
 
-public class TerminateAndRemoveActionDelegate extends AbstractContextActionDelegate {
+public class TerminateAndRemoveActionDelegate extends AbstractDebugContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)

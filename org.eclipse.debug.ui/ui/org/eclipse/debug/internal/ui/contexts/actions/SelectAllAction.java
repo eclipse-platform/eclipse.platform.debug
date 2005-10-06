@@ -16,7 +16,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 
-public abstract class SelectAllAction extends AbstractListenerActionDelegate {
+public abstract class SelectAllAction extends AbstractDebugContextActionDelegate {
 
 
 	protected boolean initialize(IAction action, ISelection selection) {

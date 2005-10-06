@@ -15,7 +15,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.ISuspendResume;
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
-public class SuspendActionDelegate extends AbstractListenerActionDelegate {
+public class SuspendActionDelegate extends AbstractDebugContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)

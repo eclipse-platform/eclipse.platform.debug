@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 /**
  * Action delegate which performs a drop to frame.
  */
-public class DropToFrameActionDelegate extends AbstractListenerActionDelegate {
+public class DropToFrameActionDelegate extends AbstractDebugContextActionDelegate {
 
     class UpdateJob extends Job {
         IAction fAction;

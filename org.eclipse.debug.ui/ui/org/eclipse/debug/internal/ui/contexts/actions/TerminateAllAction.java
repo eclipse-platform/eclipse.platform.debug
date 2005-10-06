@@ -24,7 +24,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 /**
  * Terminates all launches.
  */
-public class TerminateAllAction extends AbstractListenerActionDelegate {
+public class TerminateAllAction extends AbstractDebugContextActionDelegate {
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.internal.ui.actions.AbstractDebugActionDelegate#doAction(java.lang.Object)

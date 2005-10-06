@@ -30,7 +30,7 @@ import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
  */
 public class FindVariableAction extends Action implements IUpdate {
 
-	private class FindVariableDelegate extends AbstractListenerActionDelegate {
+	private class FindVariableDelegate extends AbstractDebugContextActionDelegate {
 
 		protected void doAction(Object element) {
 			VariablesView view = (VariablesView) getView();
@@ -50,7 +50,7 @@ public class FindVariableAction extends Action implements IUpdate {
 		}
 	}
 
-	private AbstractListenerActionDelegate fDelegate;
+	private AbstractDebugContextActionDelegate fDelegate;
 
 	public FindVariableAction(VariablesView view) {
 		setText(ActionMessages.FindVariableAction_0);

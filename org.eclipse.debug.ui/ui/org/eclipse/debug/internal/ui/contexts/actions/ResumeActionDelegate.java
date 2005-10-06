@@ -20,7 +20,7 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-public class ResumeActionDelegate extends AbstractListenerActionDelegate {
+public class ResumeActionDelegate extends AbstractDebugContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)

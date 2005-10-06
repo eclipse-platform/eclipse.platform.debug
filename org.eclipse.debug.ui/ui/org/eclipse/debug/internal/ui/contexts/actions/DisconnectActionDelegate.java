@@ -16,7 +16,7 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IDisconnect;
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
-public class DisconnectActionDelegate extends AbstractListenerActionDelegate {
+public class DisconnectActionDelegate extends AbstractDebugContextActionDelegate {
 
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)

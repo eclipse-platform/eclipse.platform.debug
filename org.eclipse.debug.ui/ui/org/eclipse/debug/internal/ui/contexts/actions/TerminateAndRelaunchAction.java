@@ -21,7 +21,7 @@ import org.eclipse.debug.internal.ui.actions.RelaunchActionDelegate;
  * This is equivalent to the Terminate action followed by
  * Relaunch, but is provided to the user as a convenience.
  */
-public class TerminateAndRelaunchAction extends AbstractListenerActionDelegate {
+public class TerminateAndRelaunchAction extends AbstractDebugContextActionDelegate {
 
     protected void doAction(Object element) throws DebugException {
         final ILaunch launch= RelaunchActionDelegate.getLaunch(element);

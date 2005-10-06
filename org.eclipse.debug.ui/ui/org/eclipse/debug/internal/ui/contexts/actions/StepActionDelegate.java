@@ -14,7 +14,7 @@ package org.eclipse.debug.internal.ui.contexts.actions;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStep;
 
-public abstract class StepActionDelegate extends AbstractListenerActionDelegate {
+public abstract class StepActionDelegate extends AbstractDebugContextActionDelegate {
 	
 	/**
 	 * @see AbstractDebugActionDelegate#doAction(Object)
