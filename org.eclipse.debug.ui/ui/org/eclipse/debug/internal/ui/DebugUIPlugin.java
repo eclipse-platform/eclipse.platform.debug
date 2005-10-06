@@ -60,6 +60,7 @@ import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.debug.internal.ui.contexts.SuspendTriggerAdapterFactory;
 import org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager;
 import org.eclipse.debug.internal.ui.launchConfigurations.PerspectiveManager;
 import org.eclipse.debug.internal.ui.sourcelookup.SourceLookupFacility;
@@ -421,6 +422,8 @@ public class DebugUIPlugin extends AbstractUIPlugin implements ILaunchListener {
 		DebugUIAdapterFactory uiFactory = new DebugUIAdapterFactory();
 		manager.registerAdapters(uiFactory, ILaunchConfiguration.class);
 		manager.registerAdapters(uiFactory, ILaunchConfigurationType.class);
+		SuspendTriggerAdapterFactory factory = new SuspendTriggerAdapterFactory();
+		manager.registerAdapters(factory, ILaunch.class);
 		getStandardDisplay().asyncExec(
 			new Runnable() {
 				public void run() {

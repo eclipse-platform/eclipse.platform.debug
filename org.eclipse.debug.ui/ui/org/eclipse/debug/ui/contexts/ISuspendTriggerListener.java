@@ -10,17 +10,20 @@
  *******************************************************************************/
 package org.eclipse.debug.ui.contexts;
 
+import org.eclipse.debug.core.ILaunch;
+
 /**
- * Maintains the active context for a debug model. Should not
- * register with the debug context manager explicitly. The
- * context policy manager multiplexes these.
- * 
  * @since 3.2
  */
-public interface IDebugContextPolicy extends IDebugContextProvider {
+public interface ISuspendTriggerListener {
 	
-	public void init();
-	
-	public void dispose();
+	/**
+	 * Notification the given launch has suspended at the
+	 * specified context.
+	 * 
+	 * @param launch
+	 * @param context
+	 */
+	public void suspended(ILaunch launch, Object context);
 
 }
