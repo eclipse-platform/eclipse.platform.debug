@@ -11,6 +11,7 @@
 package org.eclipse.debug.internal.ui.contexts.actions;
 
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.ISuspendResume;
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
@@ -47,4 +48,16 @@ public class SuspendActionDelegate extends AbstractDebugContextActionDelegate {
 		return ActionMessages.SuspendActionDelegate_Suspend_failed_1; 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.contexts.actions.AbstractDebugContextActionDelegate#getTarget(java.lang.Object)
+	 */
+	protected Object getTarget(Object selectee) {
+		if (selectee instanceof ISuspendResume) {
+			return selectee;
+		}
+		if (selectee instanceof IAdaptable) {
+			return ((IAdaptable)selectee).getAdapter(ISuspendResume.class);
+		}
+		return null;
+	}	
 }

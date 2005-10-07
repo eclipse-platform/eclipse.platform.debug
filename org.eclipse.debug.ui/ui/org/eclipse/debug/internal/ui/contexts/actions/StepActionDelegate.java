@@ -11,6 +11,7 @@
 
 package org.eclipse.debug.internal.ui.contexts.actions;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStep;
 
@@ -54,4 +55,19 @@ public abstract class StepActionDelegate extends AbstractDebugContextActionDeleg
 	 * @exception DebugException if the action fails
 	 */
 	protected abstract void stepAction(IStep element) throws DebugException;
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.contexts.actions.AbstractDebugContextActionDelegate#getTarget(java.lang.Object)
+	 */
+	protected Object getTarget(Object selectee) {
+		if (selectee instanceof IStep) {
+			return selectee;
+		}
+		if (selectee instanceof IAdaptable) {
+			return ((IAdaptable)selectee).getAdapter(IStep.class);
+		}
+		return null;
+	}
+	
+	
 }

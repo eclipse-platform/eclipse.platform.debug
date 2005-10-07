@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.contexts.actions;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -79,4 +80,17 @@ public class DropToFrameActionDelegate extends AbstractDebugContextActionDelegat
         fUpdateJob.setSelection(selection);
         fUpdateJob.schedule();
     }
+    
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.contexts.actions.AbstractDebugContextActionDelegate#getTarget(java.lang.Object)
+	 */
+	protected Object getTarget(Object selectee) {
+		if (selectee instanceof IDropToFrame) {
+			return selectee;
+		}
+		if (selectee instanceof IAdaptable) {
+			return ((IAdaptable)selectee).getAdapter(IDropToFrame.class);
+		}
+		return null;
+	}	    
 }

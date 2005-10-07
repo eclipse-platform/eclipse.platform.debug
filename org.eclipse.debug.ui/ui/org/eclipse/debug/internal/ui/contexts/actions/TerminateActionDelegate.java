@@ -11,6 +11,7 @@
 package org.eclipse.debug.internal.ui.contexts.actions;
 
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -107,6 +108,20 @@ public class TerminateActionDelegate extends AbstractDebugContextActionDelegate 
 			super.update(action, s);
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.debug.internal.ui.contexts.actions.AbstractDebugContextActionDelegate#getTarget(java.lang.Object)
+	 */
+	protected Object getTarget(Object selectee) {
+		if (selectee instanceof ITerminate) {
+			return selectee;
+		}
+		if (selectee instanceof IAdaptable) {
+			return ((IAdaptable)selectee).getAdapter(ITerminate.class);
+		}
+		return null;
+	}
+	
 	
 	
 }

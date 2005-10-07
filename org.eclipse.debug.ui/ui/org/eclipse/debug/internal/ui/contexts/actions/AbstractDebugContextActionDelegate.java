@@ -143,12 +143,13 @@ public abstract class AbstractDebugContextActionDelegate implements IWorkbenchWi
 			}
 			for (int i = 0; i < targets.length; i++) {
 				Object element = targets[i];
+				Object target = getTarget(element);
 				try {
 					// Action's enablement could have been changed since
 					// it was last enabled. Check that the action is still
 					// enabled before running the action.
-					if (isEnabledFor(element))
-						doAction(element);
+					if (target != null && isEnabledFor(target))
+						doAction(target);
 				} catch (DebugException e) {
 					status.merge(e.getStatus());
 				}
@@ -405,11 +406,23 @@ public abstract class AbstractDebugContextActionDelegate implements IWorkbenchWi
 		Iterator itr = selection.iterator();
 		while (itr.hasNext()) {
 			Object element = itr.next();
-			if (!isEnabledFor(element)) {
+			Object target = getTarget(element);
+			if (target == null || !isEnabledFor(target)) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Translates the selected object to the target to operate
+	 * on as required. For example, an adpater on the selection.
+	 *  
+	 * @param selectee
+	 * @return target to operate/enable action on
+	 */
+	protected Object getTarget(Object selectee) {
+		return selectee;
 	}
 
 	protected boolean isEnabledFor(Object element) {
