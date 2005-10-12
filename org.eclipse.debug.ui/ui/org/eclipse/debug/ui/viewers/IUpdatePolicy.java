@@ -31,13 +31,5 @@ public interface IUpdatePolicy {
 	 * Disposes this update policy.
 	 */
 	public void dispose();
-	
-	/**
-	 * Enables or disables this update policy. For example, when the presentation
-	 * this update policy is acting is not visible, the update policy may be disabled.
-	 * 
-	 * @param enabled whether this policy is enabled
-	 */
-	public void setEnabled(boolean enabled);
 
 }

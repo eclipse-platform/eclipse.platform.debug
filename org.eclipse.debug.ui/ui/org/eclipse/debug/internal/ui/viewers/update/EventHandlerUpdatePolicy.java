@@ -19,12 +19,11 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.ui.viewers.AsynchronousViewer;
-import org.eclipse.debug.ui.viewers.IUpdatePolicy;
 
 /**
  * @since 3.2
  */
-public abstract class EventHandlerUpdatePolicy extends AbstractUpdatePolicy implements IUpdatePolicy, IDebugEventSetListener {
+public abstract class EventHandlerUpdatePolicy extends AbstractUpdatePolicy implements IDebugEventSetListener {
 	
 	/**
 	 * Map of elements to timer tasks
@@ -101,18 +100,6 @@ public abstract class EventHandlerUpdatePolicy extends AbstractUpdatePolicy impl
 		for (int i = 0; i < fHandlers.length; i++) {
 			DebugEventHandler handler = fHandlers[i];
 			handler.dispose();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.viewers.update.IUpdatePolicy#setEnabled(boolean)
-	 */
-	public void setEnabled(boolean enabled) {
-		if (enabled) {
-			// TODO: referesh root element
-			DebugPlugin.getDefault().addDebugEventListener(this);
-		} else {
-			DebugPlugin.getDefault().removeDebugEventListener(this);
 		}
 	}
 	

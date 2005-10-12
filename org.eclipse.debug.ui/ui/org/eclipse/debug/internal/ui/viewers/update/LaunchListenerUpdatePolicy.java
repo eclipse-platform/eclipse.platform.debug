@@ -38,16 +38,4 @@ public abstract class LaunchListenerUpdatePolicy extends AbstractUpdatePolicy im
 		DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.viewers.IUpdatePolicy#setEnabled(boolean)
-	 */
-	public void setEnabled(boolean enabled) {
-		if (enabled) {
-			// TODO: referesh root
-			DebugPlugin.getDefault().getLaunchManager().addLaunchListener(this);
-		} else {
-			DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(this);
-		}
-	}
-
 }
