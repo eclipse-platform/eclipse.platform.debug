@@ -35,9 +35,10 @@ public interface IModelSelectionPolicy {
 	 * this model.
 	 * 
 	 * @param selection
+	 * @param context
 	 * @return
 	 */
-	public boolean contains(ISelection selection);
+	public boolean contains(ISelection selection, IPresentationContext context);
 	
 	/**
 	 * Returns whether the candidate selection overrides the
@@ -46,17 +47,19 @@ public interface IModelSelectionPolicy {
 	 * 
 	 * @param existing
 	 * @param candidate
+	 * @param context
 	 * @return
 	 */
-	public boolean overrides(ISelection existing, ISelection candidate);
+	public boolean overrides(ISelection existing, ISelection candidate, IPresentationContext context);
 
 	/**
 	 * Returns whether the given selection should be maintained in the
 	 * face of a selection attempt from a different model.
 	 *  
 	 * @param selection
+	 * @param context
 	 * @return
 	 */
-	public boolean isSticky(ISelection selection);
+	public boolean isSticky(ISelection selection, IPresentationContext context);
 	
 }

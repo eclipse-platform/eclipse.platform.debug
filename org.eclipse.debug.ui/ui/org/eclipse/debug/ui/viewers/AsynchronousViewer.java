@@ -24,6 +24,7 @@ import org.eclipse.debug.internal.ui.elements.adapters.AsynchronousDebugLabelAda
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Color;
@@ -585,6 +586,9 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 		if (!acceptsSelection(selection)) {
 			selection = getEmptySelection();
 		}
+		if (!overrideSelection(fCurrentSelection, selection)) {
+			return;
+		}
 		fPendingSelection = selection;
 		if (getControl().getDisplay().getThread() == Thread.currentThread()) {
 			attemptSelection(reveal);
@@ -599,6 +603,44 @@ public abstract class AsynchronousViewer extends StructuredViewer {
 			job.setSystem(true);
 			job.schedule();
 		}		
+	}
+	
+	/**
+	 * Returns whether the candidate selection should override the current
+	 * selection.
+	 * 
+	 * @param current
+	 * @param curr
+	 * @return
+	 */
+	protected boolean overrideSelection(ISelection current, ISelection candidate) {
+		IModelSelectionPolicy selectionPolicy = getSelectionPolicy(current);
+		if (selectionPolicy == null) {
+			return true;
+		}
+		if (selectionPolicy.contains(candidate, getPresentationContext())) {
+			return selectionPolicy.overrides(current, candidate, getPresentationContext());
+		}
+		return !selectionPolicy.isSticky(current, getPresentationContext());
+	}
+	
+	/**
+	 * Returns the selection policy associated with the given selection
+	 * or <code>null</code> if none.
+	 * 
+	 * @param selection or <code>null</code>
+	 * @return selection policy or <code>null</code>
+	 */
+	protected IModelSelectionPolicy getSelectionPolicy(ISelection selection) {
+		if (selection instanceof IStructuredSelection) {
+			IStructuredSelection ss = (IStructuredSelection) selection;
+			Object element = ss.getFirstElement();
+			if (element instanceof IAdaptable) {
+				IAdaptable adaptable = (IAdaptable) element;
+				return (IModelSelectionPolicy) adaptable.getAdapter(IModelSelectionPolicy.class);
+			}
+		}
+		return null;
 	}
 
 	/* (non-Javadoc)
