@@ -74,17 +74,19 @@ public class RegistersViewerState extends AbstractViewerState {
                 children = contentProvider.getChildren(parent);
             }
 			String name = names[i];
-			for( int j = 0; j < children.length; j++ ) {
-				if ( children[j] instanceof IRegisterGroup ) {	
-					if ( name.equals( ((IRegisterGroup)children[j]).getName() ) ) {
-						element = children[j];
-						break;
+			if (children != null) {
+				for( int j = 0; j < children.length; j++ ) {
+					if ( children[j] instanceof IRegisterGroup ) {	
+						if ( name.equals( ((IRegisterGroup)children[j]).getName() ) ) {
+							element = children[j];
+							break;
+						}
 					}
-				}
-				else if ( children[j] instanceof IVariable ) {	
-					if ( name.equals( ((IVariable)children[j]).getName() ) ) {
-						element = children[j];
-						break;
+					else if ( children[j] instanceof IVariable ) {	
+						if ( name.equals( ((IVariable)children[j]).getName() ) ) {
+							element = children[j];
+							break;
+						}
 					}
 				}
 			}
