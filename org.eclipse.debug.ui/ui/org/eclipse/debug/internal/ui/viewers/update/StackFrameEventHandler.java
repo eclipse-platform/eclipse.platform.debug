@@ -19,7 +19,7 @@ import org.eclipse.debug.internal.ui.viewers.provisional.ModelDelta;
 /**
  * Default stack frame event handler for the debug view.
  * 
- * @since 3.3
+ * @since 3.2.1
  */
 public class StackFrameEventHandler extends DebugEventHandler {
 	

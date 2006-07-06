@@ -104,7 +104,7 @@ public class AsynchronousTreeModel extends AsynchronousModel {
             // to avoid a pending add in the subtree adding something
             // that has been removed
             int index = treePath.getSegmentCount() - 2;
-            while (index > 0) {
+            while (index >= 0) {
 	            element = treePath.getSegment(index);
 	            nodes  = getNodes(element);
 	            if (nodes != null) {
@@ -291,7 +291,6 @@ public class AsynchronousTreeModel extends AsynchronousModel {
 					}
 				}
 		    	getTreeViewer().nodeContainerChanged(node);
-		    	getViewer().nodeChildrenChanged(node);
 			}
 		});
     	

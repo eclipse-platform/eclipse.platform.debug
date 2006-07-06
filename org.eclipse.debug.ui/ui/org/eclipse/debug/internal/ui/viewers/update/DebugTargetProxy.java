@@ -60,7 +60,9 @@ public class DebugTargetProxy extends EventHandlerModelProxy {
      * @see org.eclipse.debug.internal.ui.viewers.update.EventHandlerModelProxy#createEventHandlers()
      */
     protected DebugEventHandler[] createEventHandlers() {
-        return new DebugEventHandler[] { new DebugTargetEventHandler(this), new ThreadEventHandler(this) };
+        ThreadEventHandler threadEventHandler = new ThreadEventHandler(this);
+		return new DebugEventHandler[] { new DebugTargetEventHandler(this), threadEventHandler,
+				new StackFrameEventHandler(this, threadEventHandler) };
     }
 
 	/* (non-Javadoc)
@@ -90,7 +92,7 @@ public class DebugTargetProxy extends EventHandlerModelProxy {
 				// expand the target if no suspended thread
 				ModelDelta delta = new ModelDelta(DebugPlugin.getDefault().getLaunchManager(), IModelDelta.NO_CHANGE);
 				ModelDelta node = delta.addNode(target.getLaunch(), IModelDelta.NO_CHANGE);
-				node = node.addNode(target, IModelDelta.EXPAND);
+				node = node.addNode(target, IModelDelta.EXPAND | IModelDelta.SELECT);
 				fireModelChanged(delta);
 			} catch (DebugException e) {
 			}
