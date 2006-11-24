@@ -20,6 +20,7 @@ import org.eclipse.debug.internal.ui.actions.ActionMessages;
 import org.eclipse.debug.internal.ui.actions.RelaunchActionDelegate;
 import org.eclipse.debug.internal.ui.actions.provisional.IAsynchronousTerminateAdapter;
 import org.eclipse.debug.internal.ui.actions.provisional.IBooleanRequestMonitor;
+import org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 /**
@@ -67,12 +68,14 @@ public class TerminateAndRelaunchAction extends AbstractDebugContextAction {
         if (element instanceof IAdaptable) {
             IAsynchronousTerminateAdapter adapter = (IAsynchronousTerminateAdapter) ((IAdaptable)element).getAdapter(IAsynchronousTerminateAdapter.class);
             if (adapter != null) {
-                adapter.canTerminate(element, monitor);
-            } else {
-            	notSupported(monitor);
+            	ILaunch launch = RelaunchActionDelegate.getLaunch(element);
+            	if(launch != null && LaunchConfigurationManager.isVisible(launch.getLaunchConfiguration())) {
+            		adapter.canTerminate(element, monitor);
+            		return;
+            	}
             }
         }
-        
+     	notSupported(monitor);
     }
 
 
