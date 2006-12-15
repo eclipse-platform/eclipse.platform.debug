@@ -82,7 +82,7 @@ public class ThreadEventHandler extends DebugEventHandler {
             if (event.getDetail() == DebugEvent.BREAKPOINT | event.getDetail() == DebugEvent.CLIENT_REQUEST) {
                 extras = IModelDelta.EXPAND;
             }
-        	fireDeltaUpdatingTopFrame(thread, IModelDelta.NO_CHANGE | extras);
+        	fireDeltaUpdatingTopFrame(thread, IModelDelta.NO_CHANGE | extras, event);
         }
 	}
 	
@@ -101,7 +101,7 @@ public class ThreadEventHandler extends DebugEventHandler {
 		fireDeltaAndClearTopFrame(thread, IModelDelta.STATE | IModelDelta.CONTENT | IModelDelta.SELECT);
 		thread = getNextSuspendedThread();
 		if (thread != null) {
-			fireDeltaUpdatingTopFrame(thread, IModelDelta.NO_CHANGE);
+			fireDeltaUpdatingTopFrame(thread, IModelDelta.NO_CHANGE, event);
 		}
 	}
 
@@ -142,7 +142,7 @@ public class ThreadEventHandler extends DebugEventHandler {
 			} catch (DebugException e) {
 			}
         } else {	
-        	fireDeltaUpdatingTopFrame(thread, IModelDelta.CONTENT | IModelDelta.EXPAND);
+        	fireDeltaUpdatingTopFrame(thread, IModelDelta.CONTENT | IModelDelta.EXPAND, resume);
         }
 	}
 
@@ -175,7 +175,7 @@ public class ThreadEventHandler extends DebugEventHandler {
 		fireDelta(delta);
 	}
 	
-	private void fireDeltaUpdatingTopFrame(IThread thread, int flags) {
+	private void fireDeltaUpdatingTopFrame(IThread thread, int flags, DebugEvent event) {
 		ModelDelta delta = buildRootDelta();
 		ModelDelta node = addPathToThread(delta, thread);
     	IStackFrame prev = null;
@@ -197,6 +197,10 @@ public class ThreadEventHandler extends DebugEventHandler {
     			node = node.addNode(thread, flags);
     		}
     	} else {
+    		if (prev == null && event.getDetail() == DebugEvent.STEP_END) {
+    			// see bug 166602 - expand the thread if this is a step end with no previous top frame
+    			flags = flags | IModelDelta.EXPAND;
+    		}
 			node = node.addNode(thread, flags | IModelDelta.CONTENT);
     	}
     	if (frame != null) {
