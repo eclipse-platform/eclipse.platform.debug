@@ -17,6 +17,7 @@ import org.eclipse.debug.core.model.IMemoryBlockRetrieval;
 import org.eclipse.debug.internal.ui.viewers.AbstractUpdatePolicy;
 import org.eclipse.debug.internal.ui.viewers.AsynchronousTreeViewer;
 import org.eclipse.debug.internal.ui.viewers.TreeUpdatePolicy;
+import org.eclipse.debug.internal.ui.viewers.provisional.IAsynchronousRequestMonitor;
 import org.eclipse.debug.internal.ui.viewers.provisional.IModelDelta;
 import org.eclipse.debug.internal.ui.viewers.provisional.IPresentationContext;
 import org.eclipse.swt.widgets.Composite;
@@ -34,6 +35,14 @@ import org.eclipse.swt.widgets.Composite;
  *
  */
 public class MemoryViewTreeViewer extends AsynchronousTreeViewer {
+	
+	private MemoryBlocksTreeViewPane fPane;
+	
+	public MemoryViewTreeViewer(Composite parent, MemoryBlocksTreeViewPane pane)
+	{
+		super(parent);
+		fPane = pane;
+	}
 	
 	private class MemoryViewTreeUpdatePolicy extends TreeUpdatePolicy
 	{
@@ -119,6 +128,12 @@ public class MemoryViewTreeViewer extends AsynchronousTreeViewer {
 				return true;
 		}
 		return false;
+	}
+	
+	protected void updateComplete(IAsynchronousRequestMonitor monitor) {
+		if (fPane != null)
+			fPane.restoreViewerState();
+		super.updateComplete(monitor);
 	}
 
 }

@@ -20,7 +20,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -73,7 +72,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
@@ -156,44 +154,6 @@ public class VariablesView extends AbstractDebugView implements IDebugContextLis
 	interface ICursorListener extends MouseListener, KeyListener {
 	}
 		
-	/**
-	 * Most recently used variant with capped size that only counts
-	 * {@linkplain #put(Object, Object) put} as access. This is implemented by always removing an
-	 * element before it gets put back.
-	 * 
-	 * @since 3.2
-	 */
-	private static final class MRUMap extends LinkedHashMap {
-		private static final long serialVersionUID= 1L;
-		private final int fMaxSize;
-		
-		/**
-		 * Creates a new <code>MRUMap</code> with the given size.
-		 * 
-		 * @param maxSize the maximum size of the cache, must be &gt; 0
-		 */
-		public MRUMap(int maxSize) {
-			Assert.isLegal(maxSize > 0);
-			fMaxSize= maxSize;
-		}
-		
-		/*
-		 * @see java.util.HashMap#put(java.lang.Object, java.lang.Object)
-		 */
-		public Object put(Object key, Object value) {
-			Object object= remove(key);
-			super.put(key, value);
-			return object;
-		}
-		
-		/*
-		 * @see java.util.LinkedHashMap#removeEldestEntry(java.util.Map.Entry)
-		 */
-		protected boolean removeEldestEntry(java.util.Map.Entry eldest) {
-			return size() > fMaxSize;
-		}
-	}
-	
 	/**
 	 * The selection provider for the variables view changes depending on whether
 	 * the variables viewer or detail pane source viewer have focus. This "super" 

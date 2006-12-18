@@ -12,15 +12,12 @@
 package org.eclipse.debug.internal.ui.views.memory;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugEvent;
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IMemoryBlockListener;
@@ -36,6 +33,7 @@ import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
 import org.eclipse.debug.internal.ui.contexts.provisional.IDebugContextListener;
 import org.eclipse.debug.internal.ui.memory.provisional.MemoryViewPresentationContext;
 import org.eclipse.debug.internal.ui.viewers.AsynchronousTreeViewer;
+import org.eclipse.debug.internal.ui.views.variables.MRUMap;
 import org.eclipse.debug.internal.ui.views.variables.ViewerState;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugUIConstants;
@@ -61,7 +59,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -89,7 +86,7 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 	private boolean fVisible = true;
 	private TreeViewPaneContextListener fDebugContextListener;
 	private ViewPaneEventHandler fEvtHandler;
-	private Hashtable fViewerState = new Hashtable();			// for saving and restoring expansion and selection
+	private MRUMap fViewerState = new MRUMap(20);			// for saving and restoring expansion and selection
 	private String fLabel;
 	
 	class TreeViewerRemoveMemoryBlocksAction extends Action
@@ -230,10 +227,6 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 						job.setSystem(true);
 						job.schedule();
 					}
-					
-					IMemoryBlockRetrieval retrieval = getMemoryBlockRetrieval(event.getSource());
-					if (retrieval != null)
-						fViewerState.remove(retrieval);
 				}
 			}
 		}
@@ -244,47 +237,8 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 				doHandleDebugEvent(events[i]);
 			}
 		}
-	}
-	
-	class MemoryViewerState extends ViewerState implements Cloneable
-	{
-		private Hashtable fPathMap = new Hashtable(); 
-		private AsynchronousTreeViewer fViewer;
 		
-		public MemoryViewerState() {}
-		public MemoryViewerState(AsynchronousTreeViewer viewer) {
-			super(viewer);
-			fViewer = viewer;
-		}
 
-		protected IPath encodeElement(TreeItem item) throws DebugException {
-			if (fViewer != null)
-			{
-				IPath path = super.encodeElement(item);
-				TreePath[] paths = fViewer.getTreePaths(item.getData());
-				if (paths.length > 0)
-				{
-					fPathMap.put(path, paths[0]);
-				}
-				return path;
-			}
-			
-			return null;
-		}
-
-		protected TreePath decodePath(IPath path, AsynchronousTreeViewer viewer) throws DebugException {
-			return (TreePath)fPathMap.get(path);
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.eclipse.debug.internal.ui.views.AbstractViewerState#clone()
-		 */
-		public Object clone() {
-			MemoryViewerState clone = (MemoryViewerState) super.clone();
-			clone.fViewer = fViewer;
-			clone.fPathMap = fPathMap;
-			return clone;
-		}
 	}
 	
 	class TreeViewPaneContextListener implements IDebugContextListener
@@ -317,7 +271,7 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 						fRetrieval = retrieval;
 						fTreeViewer.setInput(fRetrieval);
 						
-						MemoryViewerState newState = (MemoryViewerState)fViewerState.get(fRetrieval);
+						ViewerState newState = (ViewerState)fViewerState.get(getId(fRetrieval));
 						if (newState != null)
 						{
 							newState.restoreState(fTreeViewer);
@@ -334,11 +288,11 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 		private void saveViewerState() {
 			if (fRetrieval != null && fTreeViewer != null)
 			{
-				MemoryViewerState state = (MemoryViewerState)fViewerState.get(fRetrieval);
+				ViewerState state = (ViewerState)fViewerState.get(getId(fRetrieval));
 				if (state == null)
-					state = new MemoryViewerState(fTreeViewer);
+					state = new ViewerState(fTreeViewer);
 				state.saveState(fTreeViewer);
-				fViewerState.put(fRetrieval, state);
+				fViewerState.put(getId(fRetrieval), state);
 			}
 		}
 
@@ -356,7 +310,7 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 	public Control createViewPane(Composite parent, String paneId, String label)
 	{
 		fPaneId = paneId;
-		fTreeViewer = new MemoryViewTreeViewer(parent);
+		fTreeViewer = new MemoryViewTreeViewer(parent, this);
 		fLabel = label;
 		
 		IMemoryRenderingSite site = getMemoryRenderingSite();
@@ -714,5 +668,29 @@ public class MemoryBlocksTreeViewPane implements ISelectionListener, ISelectionC
 
 	public String getLabel() {
 		return fLabel;
+	}
+
+	private Object getId(Object obj)
+	{
+		return new Integer(obj.hashCode());
+	}
+	
+	void restoreViewerState()
+	{
+		UIJob job = new UIJob("restore viewer state"){ //$NON-NLS-1$
+
+			public IStatus runInUIThread(IProgressMonitor monitor) {
+				if (fRetrieval != null)
+				{
+					ViewerState newState = (ViewerState)fViewerState.get(getId(fRetrieval));
+					if (newState != null)
+					{
+						newState.restoreState(fTreeViewer);
+					}			
+				}
+				return Status.OK_STATUS;
+			}};
+		job.setSystem(true);
+		job.schedule();
 	}
 }
