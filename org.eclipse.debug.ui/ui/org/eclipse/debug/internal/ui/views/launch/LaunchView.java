@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,6 +46,7 @@ import org.eclipse.debug.internal.ui.actions.context.TerminateAllAction;
 import org.eclipse.debug.internal.ui.actions.context.TerminateAndRelaunchAction;
 import org.eclipse.debug.internal.ui.actions.context.TerminateAndRemoveAction;
 import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
+import org.eclipse.debug.internal.ui.contexts.IDebugContextListenerExtension;
 import org.eclipse.debug.internal.ui.contexts.provisional.IDebugContextListener;
 import org.eclipse.debug.internal.ui.contexts.provisional.IDebugContextProvider;
 import org.eclipse.debug.internal.ui.sourcelookup.EditSourceLookupPathAction;
@@ -220,6 +221,35 @@ public class LaunchView extends AbstractDebugView implements ISelectionChangedLi
 				
 			}					
 		}
+		
+		protected void possibleImplicitEvaluationComplete(Object element) {
+			synchronized (this) {
+				if (fContext instanceof IStructuredSelection) {
+					IStructuredSelection ss = (IStructuredSelection) fContext;
+					if (!(ss.size() == 1 && ss.getFirstElement().equals(element))) {
+						return;
+					}
+				} else {
+					return;
+				}
+			}
+			Object[] listeners = fListeners.getListeners();
+			final IStructuredSelection context = new StructuredSelection(element);
+			for (int i = 0; i < listeners.length; i++) {
+				final IDebugContextListener listener = (IDebugContextListener) listeners[i];
+				if (listener instanceof IDebugContextListenerExtension) {
+	                SafeRunner.run(new ISafeRunnable() {
+						public void run() throws Exception {
+							((IDebugContextListenerExtension)listener).contextImplicitEvaluationComplete(context, ContextProvider.this.getPart());
+						}
+						public void handleException(Throwable exception) {
+							DebugUIPlugin.log(exception);
+						}
+					});
+				}
+				
+			}					
+		}		
 		
 	}
 	
@@ -779,6 +809,10 @@ public class LaunchView extends AbstractDebugView implements ISelectionChangedLi
 	protected void becomesVisible() {
 		super.becomesVisible();
 		getViewer().refresh();
+	}
+
+	protected void possibleImplicitEvaluationComplete(Object element) {
+		fProvider.possibleImplicitEvaluationComplete(element);
 	}
 	
 	

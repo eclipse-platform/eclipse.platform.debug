@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,6 +73,11 @@ public interface IModelDelta {
 	 * Indicates an elements state has changed (i.e. label)
 	 */
 	public static int STATE = 1 << 11;
+	
+	/**
+	 * @since 3.2.2 - Fix for bug 170519
+	 */
+	public static int IMPLICIT_EVALUATION_COMPLETE = 1 << 12;
 	
 	// Suggested actions
 	

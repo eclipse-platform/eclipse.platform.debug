@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,12 +68,18 @@ public class TreeUpdatePolicy extends AbstractUpdatePolicy implements IModelChan
             if ((flags & IModelDelta.REPLACED) != 0) {
                 // TODO
             }
-
+            if ((flags & IModelDelta.IMPLICIT_EVALUATION_COMPLETE) != 0) {
+                handleImplicitEvaluationComplete(viewer, node);
+            }
             updateNodes(node.getNodes());
         }
     }
 
-    protected void handleState(AsynchronousTreeViewer viewer, IModelDelta delta) {
+    protected void handleImplicitEvaluationComplete(AsynchronousTreeViewer viewer, IModelDelta node) {
+    	// do nothing by default
+	}
+
+	protected void handleState(AsynchronousTreeViewer viewer, IModelDelta delta) {
         viewer.update(delta.getElement());
     }
 

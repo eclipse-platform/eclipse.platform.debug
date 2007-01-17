@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2005, 2006 IBM Corporation and others.
+ * Copyright (c) 2005, 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,8 @@ import org.eclipse.ui.IWorkbenchWindow;
  * 
  * @since 3.2
  */
-public class DebugWindowContextService implements IDebugContextService, IPartListener2, IDebugContextListener {
+public class DebugWindowContextService implements IDebugContextService, IPartListener2, IDebugContextListener,
+	IDebugContextListenerExtension {
 	
 	private Map fListenersByPartId = new HashMap();
 	private Map fProvidersByPartId = new HashMap();
@@ -44,6 +45,7 @@ public class DebugWindowContextService implements IDebugContextService, IPartLis
 	
 	private static final int ACTIVATED = 1;
 	private static final int CHANGED = 2;
+	private static final int IMPLICIT_EVALUATION = 3;
 
 	public DebugWindowContextService(IWorkbenchWindow window) {
 		fWindow = window;
@@ -127,10 +129,19 @@ public class DebugWindowContextService implements IDebugContextService, IPartLis
 				final IDebugContextListener listener = (IDebugContextListener) listeners[i];
 				SafeRunner.run(new ISafeRunnable() {
 					public void run() throws Exception {
-						if (type == ACTIVATED) {
-							listener.contextActivated(context, part);
-						} else {
-							listener.contextChanged(context, part);
+						switch (type) {
+							case ACTIVATED:
+								listener.contextActivated(context, part);
+								break;
+							case CHANGED:
+								listener.contextChanged(context, part);
+								break;
+							case IMPLICIT_EVALUATION:
+								if (listener instanceof IDebugContextListenerExtension) {
+									((IDebugContextListenerExtension) listener)
+										.contextImplicitEvaluationComplete(context, part);
+								}
+								break;
 						}
 					}
 					public void handleException(Throwable exception) {
@@ -272,6 +283,15 @@ public class DebugWindowContextService implements IDebugContextService, IPartLis
 				notify(CHANGED);
 			}
 		}		
+	}
+
+	public void contextImplicitEvaluationComplete(ISelection selection, IWorkbenchPart part) {
+		if (!fProviders.isEmpty()) {
+			IDebugContextProvider provider = (IDebugContextProvider) fProviders.get(0);
+			if (provider.getPart() == part) {
+				notify(IMPLICIT_EVALUATION);
+			}
+		}	
 	}
 	
 	

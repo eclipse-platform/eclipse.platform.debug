@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
+ * Copyright (c) 2007 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import org.eclipse.debug.internal.ui.actions.provisional.IBooleanRequestMonitor;
 import org.eclipse.debug.internal.ui.contexts.DebugContextManager;
+import org.eclipse.debug.internal.ui.contexts.IDebugContextListenerExtension;
 import org.eclipse.debug.internal.ui.contexts.provisional.IDebugContextListener;
 import org.eclipse.debug.internal.ui.contexts.provisional.IDebugContextManager;
 import org.eclipse.jface.action.Action;
@@ -27,7 +28,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public abstract class AbstractDebugContextAction extends Action implements IDebugContextListener {
+public abstract class AbstractDebugContextAction extends Action implements IDebugContextListener, IDebugContextListenerExtension {
 
     private IStructuredSelection fActiveContext;
 
@@ -68,6 +69,10 @@ public abstract class AbstractDebugContextAction extends Action implements IDebu
     public void contextActivated(ISelection context, IWorkbenchPart part) {
         fActiveContext = null;
         update(context);
+    }
+    
+    public void contextImplicitEvaluationComplete(ISelection context, IWorkbenchPart part) {
+    	contextActivated(context, part);
     }
 
     /*
