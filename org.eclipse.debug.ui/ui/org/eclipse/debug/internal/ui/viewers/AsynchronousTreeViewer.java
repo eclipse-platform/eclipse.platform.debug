@@ -468,6 +468,9 @@ public class AsynchronousTreeViewer extends AsynchronousViewer {
                                         return true;
                                     }
                                     return false;
+                                } else {
+                                	updateHasChildren(node);
+                                	return false;
                                 }
                             }
                         }
