@@ -390,8 +390,8 @@ public class LaunchConfigurationManager implements ILaunchListener, ISavePartici
 			Element favs = doc.createElement(IConfigurationElementConstants.FAVORITES);
 			groupElement.appendChild(favs);
 			createEntry(doc, favs, history.getFavorites());
+			history.setSaved(true);
 		}
-		
 		return DebugUIPlugin.serializeDocument(doc);
 	}
 
@@ -432,15 +432,21 @@ public class LaunchConfigurationManager implements ILaunchListener, ISavePartici
 				return;
 			}			
 		}
-		IPath historyPath = getHistoryFilePath();
-		String osHistoryPath = historyPath.toOSString();
-		String xml = getHistoryAsXML();
-		File file = new File(osHistoryPath);
-		file.createNewFile();
-		
-		FileOutputStream stream = new FileOutputStream(file);
-		stream.write(xml.getBytes("UTF8")); //$NON-NLS-1$
-		stream.close();
+		boolean shouldsave = false;
+		for(Iterator iter = fLaunchHistories.values().iterator(); iter.hasNext();) {
+			shouldsave |= ((LaunchHistory)iter.next()).needsSaving();
+		}
+		if(shouldsave) {
+			IPath historyPath = getHistoryFilePath();
+			String osHistoryPath = historyPath.toOSString();
+			String xml = getHistoryAsXML();
+			File file = new File(osHistoryPath);
+			file.createNewFile();
+			
+			FileOutputStream stream = new FileOutputStream(file);
+			stream.write(xml.getBytes("UTF8")); //$NON-NLS-1$
+			stream.close();
+		}
 	}
 	
 	/**
