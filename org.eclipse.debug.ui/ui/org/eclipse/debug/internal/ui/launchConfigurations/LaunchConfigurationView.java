@@ -253,31 +253,31 @@ public class LaunchConfigurationView extends AbstractDebugView implements ILaunc
 			DebugUIPlugin.log(e);
 			return;
 		}
+		//due to notification and async messages we need to collect the moved from config 
+		//now, else it is null'd out before the following async job runs
+		//@see bug 211235 - making local config shared creates "non-existant dup" in LCD
+		final ILaunchConfiguration from  = getLaunchManager().getMovedFrom(configuration);
+		// handle asynchronously: @see bug 198428 - Deadlock deleting launch configuration
 		Display display = DebugUIPlugin.getStandardDisplay();
-		if (display.getThread() == Thread.currentThread()) {
-		    // If we're already in the UI thread (user pressing New in the
-		    // dialog), update the tree immediately.
-		    handleConfigurationAdded(configuration);
-		} else {
-	        display.asyncExec(new Runnable() {
-	            public void run() {
-	                handleConfigurationAdded(configuration);
-	            }
-	        });
-		}
+        display.asyncExec(new Runnable() {
+            public void run() {
+            	if(!fTree.isDisposed()) {
+            		handleConfigurationAdded(configuration, from);
+            	}
+            }
+        });
 	}
 
     /**
      * The given launch configuration has been added. Add it to the tree.
      * @param configuration the added configuration
      */
-    private void handleConfigurationAdded(final ILaunchConfiguration configuration) {
+    private void handleConfigurationAdded(ILaunchConfiguration configuration, ILaunchConfiguration from) {
         TreeViewer viewer = getTreeViewer();
         if (viewer != null) {
 			try {
                 viewer.add(configuration.getType(), configuration);
                 // if moved, remove original now
-                ILaunchConfiguration from = getLaunchManager().getMovedFrom(configuration);
                 if (from != null) {
                     viewer.remove(from);
                 }
@@ -304,18 +304,15 @@ public class LaunchConfigurationView extends AbstractDebugView implements ILaunc
 		if (to != null) {
 			return;
 		}
+		// handle asynchronously: @see bug 198428 - Deadlock deleting launch configuration
 		Display display = DebugUIPlugin.getStandardDisplay();
-		if (display.getThread() == Thread.currentThread()) {
-		    // If we're already in the UI thread (user pressing Delete in the
-		    // dialog), update the tree immediately.
-            handleConfigurationRemoved(configuration);
-		} else {
-			display.asyncExec(new Runnable() {
-		        public void run() {
-		            handleConfigurationRemoved(configuration);
-		        }
-			});
-		}
+		display.asyncExec(new Runnable() {
+	        public void run() {
+	        	if(!fTree.isDisposed()) {
+	        		handleConfigurationRemoved(configuration);
+	        	}
+	        }
+		});
 	}
 
 	/**
