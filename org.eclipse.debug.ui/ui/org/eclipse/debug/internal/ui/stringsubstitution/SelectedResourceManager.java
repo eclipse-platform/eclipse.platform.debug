@@ -163,10 +163,7 @@ public class SelectedResourceManager implements IWindowListener, ISelectionListe
 	 * @return the current text selection as a <code>String</code> or <code>null</code>
 	 */
 	public String getSelectedText() {
-		if(fSelectedText != null) {
-			return fSelectedText.getText();
-		}
-		return null;
+		return fSelectedText.getText();
 	}
 	
 	/**
