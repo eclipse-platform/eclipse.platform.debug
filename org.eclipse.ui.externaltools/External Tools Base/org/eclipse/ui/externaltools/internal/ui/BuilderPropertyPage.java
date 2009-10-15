@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.externaltools.internal.IExternalToolConstants;
+import org.eclipse.core.externaltools.internal.model.BuilderCoreUtils;
+import org.eclipse.core.externaltools.internal.model.ExternalToolBuilder;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -78,9 +81,7 @@ import org.eclipse.ui.externaltools.internal.launchConfigurations.ExternalToolsM
 import org.eclipse.ui.externaltools.internal.launchConfigurations.ExternalToolsUtil;
 import org.eclipse.ui.externaltools.internal.launchConfigurations.IgnoreWhiteSpaceComparator;
 import org.eclipse.ui.externaltools.internal.model.BuilderUtils;
-import org.eclipse.ui.externaltools.internal.model.ExternalToolBuilder;
 import org.eclipse.ui.externaltools.internal.model.ExternalToolsPlugin;
-import org.eclipse.ui.externaltools.internal.model.IExternalToolConstants;
 import org.eclipse.ui.externaltools.internal.model.IExternalToolsHelpContextIds;
 import org.eclipse.ui.externaltools.internal.model.IPreferenceConstants;
 import org.eclipse.ui.progress.IProgressService;
@@ -101,6 +102,8 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 	private List commandsToBeDeleted= null;
 	
 	private CheckboxTableViewer viewer= null;
+	
+	private boolean fWarned = false;
 	
 	private ILabelProvider labelProvider= new BuilderLabelProvider();
 	
@@ -208,7 +211,7 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 		for (int i = 0; i < commands.length; i++) {
 			String[] version= new String[] {""}; //$NON-NLS-1$
 			ILaunchConfiguration config = BuilderUtils.configFromBuildCommandArgs(project, commands[i].getArguments(), version);
-			if (BuilderUtils.VERSION_2_1.equals(version[0])) {
+			if (BuilderCoreUtils.VERSION_2_1.equals(version[0])) {
 				// Storing the .project file of a project with 2.1 configs, will
 				// edit the file in a way that isn't backwards compatible.
 				projectNeedsMigration= true;
@@ -220,7 +223,7 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
                     if (shell == null) {
                         return;
                     }
-					IStatus status = new Status(IStatus.ERROR, IExternalToolConstants.PLUGIN_ID, 0, NLS.bind(ExternalToolsUIMessages.BuilderPropertyPage_Exists, new String[]{config.getLocation().toOSString()}), null);
+					IStatus status = new Status(IStatus.ERROR, ExternalToolsPlugin.PLUGIN_ID, 0, NLS.bind(ExternalToolsUIMessages.BuilderPropertyPage_Exists, new String[]{config.getName()}), null);
 					ErrorDialog.openError(getShell(), ExternalToolsUIMessages.BuilderPropertyPage_errorTitle,
 									NLS.bind(ExternalToolsUIMessages.BuilderPropertyPage_External_Tool_Builder__0__Not_Added_2, new String[]{config.getName()}),
 									status);
@@ -230,7 +233,7 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 				}
 			} else {
 				String builderID = commands[i].getBuilderName();
-				if (builderID.equals(ExternalToolBuilder.ID) && commands[i].getArguments().get(BuilderUtils.LAUNCH_CONFIG_HANDLE) != null) {
+				if (builderID.equals(ExternalToolBuilder.ID) && commands[i].getArguments().get(BuilderCoreUtils.LAUNCH_CONFIG_HANDLE) != null) {
 					// An invalid external tool entry.
 					element= new ErrorConfig(commands[i]);
 				} else {
@@ -272,16 +275,18 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 	 */
 	private Button createButton(Composite parent, String label) {
 		Button button = new Button(parent, SWT.PUSH);
-		GridData data = new GridData();
-		data.widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
-		button.setLayoutData(data);
 		button.setFont(parent.getFont());
 		button.setText(label);
 		button.setEnabled(false);
 		button.addSelectionListener(buttonListener);
+		GridData data = new GridData(GridData.FILL_HORIZONTAL);
+		data.grabExcessHorizontalSpace = true;
+		button.setLayoutData(data);
+		int widthHint = convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+		data.widthHint = Math.max(widthHint, button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
 		return button;
 	}
-
+	
 	/* (non-Javadoc)
 	 * Method declared on PreferencePage.
 	 */
@@ -423,13 +428,21 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
             }
             if (checked) {
             	enableCommand((ICommand)element, checked);
-            } else if (MessageDialog.openConfirm(shell, ExternalToolsUIMessages.BuilderPropertyPage_6, ExternalToolsUIMessages.BuilderPropertyPage_7)) {
-				enableCommand((ICommand)element, checked);
-			} else {
-				viewer.removeCheckStateListener(this);
-				viewer.setChecked(element, true);
-				viewer.addCheckStateListener(this);
+            	return;
+            } else if (!fWarned) {
+            	if(MessageDialog.openConfirm(shell, ExternalToolsUIMessages.BuilderPropertyPage_6, ExternalToolsUIMessages.BuilderPropertyPage_7)) {
+            		fWarned = true;
+            	}
+			} 
+            if(fWarned) {
+            	enableCommand((ICommand)element, checked);
+            }
+            else {
+            	viewer.removeCheckStateListener(this);
+    			viewer.setChecked(element, true);
+    			viewer.addCheckStateListener(this);
 			}
+            
 		}
 	}
 
@@ -755,7 +768,7 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 		if (e instanceof CoreException) {
 			status[0] = ((CoreException) e).getStatus();
 		} else {
-			status[0] = new Status(IStatus.ERROR, IExternalToolConstants.PLUGIN_ID, 0, ExternalToolsUIMessages.BuilderPropertyPage_statusMessage, e);
+			status[0] = new Status(IStatus.ERROR, ExternalToolsPlugin.PLUGIN_ID, 0, ExternalToolsUIMessages.BuilderPropertyPage_statusMessage, e);
 		}
 		Display.getDefault().asyncExec(new Runnable() {
 		    public void run() {
@@ -777,19 +790,25 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 		newButton.setEnabled(true);
 		Table builderTable= viewer.getTable();
 		TableItem[] items = builderTable.getSelection();
-		boolean validSelection= items != null && items.length > 0;
-		boolean enableEdit= validSelection;
-		boolean enableRemove= validSelection;
-		boolean enableUp= validSelection;
-		boolean enableDown= validSelection;
-		if (validSelection) {
+		boolean enableEdit = false;
+		boolean enableRemove = false;
+		boolean enableUp = false;
+		boolean enableDown = false;
+		if(items != null) {
+			boolean validSelection =  items.length > 0;
+			enableEdit = validSelection;
+			enableRemove = validSelection;
+			enableUp = validSelection;
+			enableDown = validSelection;
 			if (items.length > 1) {
 				enableEdit= false;
 			}
 			int indices[]= builderTable.getSelectionIndices();
 			int max = builderTable.getItemCount();
-			enableUp= indices[0] != 0;
-			enableDown= indices[indices.length - 1] < max - 1;
+			if(indices.length > 0) {
+				enableUp = indices[0] != 0;
+				enableDown = indices[indices.length - 1] < max - 1;
+			}
 			for (int i = 0; i < items.length; i++) {
 				TableItem item = items[i];
 				Object data= item.getData();
@@ -1148,10 +1167,10 @@ public final class BuilderPropertyPage extends PropertyPage implements ICheckSta
 				}
 				Map oldArgs= oldCommand.getArguments();
 				Map newArgs= newCommand.getArguments();
-				if (oldArgs == null && newArgs != null) {
-					return true;
-				}
-				if (oldArgs == null && newArgs == null) {
+				if (oldArgs == null) {
+					if(newArgs != null) {
+						return true;
+					}
 					continue;
 				}
 				if(oldArgs.size() != newArgs.size()) {
