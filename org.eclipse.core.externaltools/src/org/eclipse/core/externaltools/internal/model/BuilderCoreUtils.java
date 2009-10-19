@@ -266,7 +266,8 @@ public class BuilderCoreUtils {
 		if (!status.isOK()) {
 			name = "ExternalTool"; //$NON-NLS-1$
 		}
-		name = DebugPlugin.getDefault().getLaunchManager().generateLaunchConfigurationName(name);
+		name = DebugPlugin.getDefault().getLaunchManager()
+				.generateUniqueLaunchConfigurationNameFrom(name);
 		workingCopy.rename(name);
 		return workingCopy.doSave();
 	}

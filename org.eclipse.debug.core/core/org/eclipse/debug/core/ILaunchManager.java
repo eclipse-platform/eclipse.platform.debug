@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,16 @@ public interface ILaunchManager {
 	 * @since 3.0
 	 */
 	public static final String PROFILE_MODE= "profile"; //$NON-NLS-1$	
+
+	/**
+	 * Launch configuration attribute - a boolean value that indicates if the
+	 * launch configuration is 'private'. A private configuration is one that
+	 * does not appear in the user interface (launch history or the launch
+	 * configuration dialog).
+	 * 
+	 * @since 3.6
+	 */
+	public static final String ATTR_PRIVATE = "org.eclipse.debug.ui.private"; //$NON-NLS-1$
 	
 	/**
 	 * Launch configuration attribute name. The value is a map of environment
