@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2007 IBM Corporation and others.
+ * Copyright (c) 2006, 2009 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,7 @@ public class DebugPreferenceInitializer extends AbstractPreferenceInitializer {
 		// Step filter preferences
 		prefs.setDefault(StepFilterManager.PREF_USE_STEP_FILTERS, false);
 		prefs.setDefault(LaunchManager.PREF_DELETE_CONFIGS_ON_PROJECT_DELETE, true);
+		prefs.setDefault(IInternalDebugCoreConstants.PREF_ENABLE_STATUS_HANDLERS, true);
 	}
 
 }
