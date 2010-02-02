@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -1910,4 +1910,27 @@ public class InternalTreeModelViewer extends TreeViewer {
 			}
 		}
 	}
+	
+    public Object getChildElement(TreePath path, int index) {
+        TreeItem childItem = null;
+        if (path.getSegmentCount() == 0) {
+            Tree tree = (Tree)getControl();
+            try {
+                childItem = tree.getItem(index);
+            } catch (IllegalArgumentException e) {}
+        } else {
+            try {
+                Widget[] items = internalFindItems(path);
+                if (items.length > 0) {
+                    if (items[0] instanceof TreeItem) {
+                        childItem = ((TreeItem)items[0]).getItem(index);
+                    }
+                }
+            } catch (IllegalArgumentException e) {}
+        }
+        if (childItem != null) {
+            return childItem.getData();
+        } 
+        return null;
+    }
 }

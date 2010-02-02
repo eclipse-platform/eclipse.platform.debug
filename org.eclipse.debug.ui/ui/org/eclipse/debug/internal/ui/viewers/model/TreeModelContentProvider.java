@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2008 IBM Corporation and others.
+ * Copyright (c) 2006, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -104,10 +104,39 @@ public class TreeModelContentProvider extends ModelContentProvider implements IL
 	 * @see org.eclipse.debug.internal.ui.viewers.model.provisional.viewers.ModelContentProvider#handleAdd(org.eclipse.debug.internal.ui.viewers.provisional.IModelDelta)
 	 */
 	protected void handleAdd(IModelDelta delta) {
-		if (DEBUG_CONTENT_PROVIDER) {
-			System.out.println("handleAdd(" + delta.getElement() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		IModelDelta parentDelta = delta.getParentDelta();
+		TreePath parentPath = getViewerTreePath(parentDelta);
+		Object element = delta.getElement();
+		int count = parentDelta.getChildCount();
+		if (count > 0) {
+		    setModelChildCount(parentPath, count);
+		    int viewCount = modelToViewChildCount(parentPath, count);
+	        int modelIndex = count - 1;
+	        int viewIndex = viewCount - 1;
+			if (shouldFilter(parentPath, element)) {
+				addFilteredIndex(parentPath, modelIndex, element);
+				if (DEBUG_CONTENT_PROVIDER) {
+					System.out.println("[filtered] handleAdd(" + delta.getElement() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			} else {
+				if (isFiltered(parentPath, modelIndex)) {
+					clearFilteredChild(parentPath, modelIndex);
+				}
+				if (DEBUG_CONTENT_PROVIDER) {
+					System.out.println("handleAdd(" + delta.getElement() + ") viewIndex: " + viewCount + " modelIndex: " + modelIndex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				}
+				getTreeViewer().setChildCount(parentPath, viewCount);
+				getTreeViewer().replace(parentPath, viewIndex, element);
+				TreePath childPath = parentPath.createChildPath(element);
+				updateHasChildren(childPath);
+				doRestore(childPath, modelIndex, false, false);
+			}	        
+		} else {
+			if (DEBUG_CONTENT_PROVIDER) {
+				System.out.println("handleAdd(" + delta.getElement() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+		    doUpdateChildCount(getViewerTreePath(delta.getParentDelta()));
 		}
-		doUpdateChildCount(getViewerTreePath(delta.getParentDelta()));
 	}
 
 	/* (non-Javadoc)
