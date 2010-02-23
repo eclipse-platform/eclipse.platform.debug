@@ -159,6 +159,10 @@
             class="org.eclipse.debug.internal.core.sourcelookup.SourceLocatorMementoComparator"
             id="org.eclipse.debug.core.sourceLocatorMementoComparator">
       </launchConfigurationComparator>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.eclipse.debug.internal.core.DebugPreferenceInitializer"/>
    </extension>   
 
 </plugin>

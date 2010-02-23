@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -49,6 +49,7 @@ import org.eclipse.debug.core.model.RuntimeProcess;
 import org.eclipse.debug.internal.core.BreakpointManager;
 import org.eclipse.debug.internal.core.DebugCoreMessages;
 import org.eclipse.debug.internal.core.ExpressionManager;
+import org.eclipse.debug.internal.core.IInternalDebugCoreConstants;
 import org.eclipse.debug.internal.core.LaunchManager;
 import org.eclipse.debug.internal.core.LogicalStructureManager;
 import org.eclipse.debug.internal.core.MemoryBlockManager;
@@ -501,6 +502,10 @@ public class DebugPlugin extends Plugin {
 	 * @since 2.0
 	 */
 	public IStatusHandler getStatusHandler(IStatus status) {
+		boolean enabled = getPluginPreferences().getBoolean(IInternalDebugCoreConstants.PREF_ENABLE_STATUS_HANDLERS);
+		if (!enabled) {
+			return null;
+		}
 		StatusHandlerKey key = new StatusHandlerKey(status.getPlugin(), status.getCode());
 		if (fStatusHandlers == null) {
 			initializeStatusHandlers();
