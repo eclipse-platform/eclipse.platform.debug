@@ -24,6 +24,7 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.ModelDelta;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.TreeModelViewer;
 import org.eclipse.jface.viewers.IBasicPropertyConstants;
 import org.eclipse.jface.viewers.ILazyTreePathContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -348,7 +349,14 @@ public class TreeModelContentProvider extends ModelContentProvider implements IL
 	 */
 	protected void handleSelect(IModelDelta delta) {
 		int modelIndex = delta.getIndex();
-		TreeViewer treeViewer = getTreeViewer();
+		InternalTreeModelViewer treeViewer = (InternalTreeModelViewer) getTreeViewer();
+		// check if selection is allowed
+		IStructuredSelection candidate = new TreeSelection(getViewerTreePath(delta));
+		if (!treeViewer.overrideSelection(treeViewer.getSelection(), candidate)) {
+			return;
+		}
+		// empty the selection before replacing elements to avoid materializing elements (@see bug 305739)
+		treeViewer.clearSelection();
 		if (modelIndex >= 0) {
 			IModelDelta parentDelta = delta.getParentDelta();
 			TreePath parentPath = getViewerTreePath(parentDelta);
@@ -369,7 +377,7 @@ public class TreeModelContentProvider extends ModelContentProvider implements IL
 				treeViewer.replace(parentPath, viewIndex, delta.getElement());
 			}
 		}
-		treeViewer.setSelection(new TreeSelection(getViewerTreePath(delta)));
+		treeViewer.setSelection(candidate, true, true);
 	}
 
 	/* (non-Javadoc)

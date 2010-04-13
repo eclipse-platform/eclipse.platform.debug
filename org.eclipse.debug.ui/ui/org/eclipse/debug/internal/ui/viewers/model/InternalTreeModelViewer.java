@@ -1655,6 +1655,10 @@ public class InternalTreeModelViewer extends TreeViewer {
 		}
 	}
 	
+	void clearSelection() {
+		getTree().setSelection(new TreeItem[0]);
+	}
+	
 	/**
 	 * Registers the specified listener for view update notifications.
 	 * 
