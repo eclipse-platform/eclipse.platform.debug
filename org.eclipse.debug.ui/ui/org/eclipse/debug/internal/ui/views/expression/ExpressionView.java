@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ package org.eclipse.debug.internal.ui.views.expression;
 
  
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.ILaunch;
@@ -37,6 +38,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.DND;
@@ -95,8 +97,11 @@ public class ExpressionView extends VariablesView {
 	 * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#contextActivated(org.eclipse.jface.viewers.ISelection)
 	 */
 	protected void contextActivated(ISelection selection) {
+		if (!isAvailable() || !isVisible()) {
+			return;
+		}
 		if (selection == null || selection.isEmpty()) {
-			setViewerInput(DebugPlugin.getDefault().getExpressionManager());
+            super.contextActivated(new StructuredSelection(DebugPlugin.getDefault().getExpressionManager()));
 		} else {
 			super.contextActivated(selection);
 		}
@@ -109,7 +114,8 @@ public class ExpressionView extends VariablesView {
      * @see org.eclipse.debug.internal.ui.views.variables.VariablesView#viewerInputUpdateComplete(IViewerInputUpdate)
      */
 	protected void viewerInputUpdateComplete(IViewerInputUpdate update) {
-        if (update.getElement() != null) {
+        IStatus status = update.getStatus();
+        if ( (status == null || status.isOK()) && update.getElement() != null) {
             setViewerInput(update.getInputElement());
         } else {
             setViewerInput(DebugPlugin.getDefault().getExpressionManager());
