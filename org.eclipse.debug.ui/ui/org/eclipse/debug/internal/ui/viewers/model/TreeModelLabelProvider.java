@@ -220,6 +220,8 @@ public class TreeModelLabelProvider extends ColumnLabelProvider implements ITree
 	}	
 	
 	public synchronized boolean update(TreePath elementPath) {
+	    cancelPathUpdates(elementPath);
+	    
 		String[] visibleColumns = fViewer.getVisibleColumns();
 		Object element = elementPath.getLastSegment();
 		IElementLabelProvider presentation = ViewerAdapterService.getLabelProvider(element);
@@ -246,6 +248,21 @@ public class TreeModelLabelProvider extends ColumnLabelProvider implements ITree
 		    return false;
 		}
 	}
+	
+	/**
+     * Cancel any outstanding updates that are running for this element. 
+     */
+    protected void cancelPathUpdates(TreePath elementPath) {
+       synchronized (fUpdatesInProgress) {
+            Iterator updatesInProgress = fUpdatesInProgress.iterator();
+            while (updatesInProgress.hasNext()) {
+                ILabelUpdate currentUpdate = (ILabelUpdate) updatesInProgress.next();
+                if (elementPath.equals(currentUpdate.getElementPath())) {
+                    currentUpdate.cancel();
+                }
+            }
+        }
+    }
 	
 	private void startRequests(UIJob updateJob) {
 	    // Avoid calling providers inside a synchronized section.  Instead 
