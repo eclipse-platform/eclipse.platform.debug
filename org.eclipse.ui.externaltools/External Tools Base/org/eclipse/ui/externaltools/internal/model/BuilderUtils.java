@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2006 IBM Corporation and others.
+ * Copyright (c) 2000, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,13 @@ import org.eclipse.ui.externaltools.internal.registry.ExternalToolMigration;
  */
 public class BuilderUtils {
 
+	/**
+	 * Constant added to the build command to determine if we are doing an incremental build after a clean
+	 * 
+	 * @since 3.5.2 https://bugs.eclipse.org/bugs/show_bug.cgi?id=335967
+	 */
+	public static final String INC_CLEAN = "incclean"; //$NON-NLS-1$
+	
 	public static final String LAUNCH_CONFIG_HANDLE = "LaunchConfigHandle"; //$NON-NLS-1$
 
 	/**
@@ -148,15 +155,18 @@ public class BuilderUtils {
 		newCommand.setBuilding(IncrementalProjectBuilder.INCREMENTAL_BUILD, false);
 		newCommand.setBuilding(IncrementalProjectBuilder.AUTO_BUILD, false);
 		newCommand.setBuilding(IncrementalProjectBuilder.CLEAN_BUILD, false);
-		String buildKinds= config.getAttribute(IExternalToolConstants.ATTR_RUN_BUILD_KINDS, (String)null);
-		int[] triggers= BuilderUtils.buildTypesToArray(buildKinds);
+		String buildKinds = config.getAttribute(IExternalToolConstants.ATTR_RUN_BUILD_KINDS, (String) null);
+		int[] triggers = buildTypesToArray(buildKinds);
+		boolean isfull = false, isinc = false;
 		for (int i = 0; i < triggers.length; i++) {
 			switch (triggers[i]) {
 				case IncrementalProjectBuilder.FULL_BUILD:
 					newCommand.setBuilding(IncrementalProjectBuilder.FULL_BUILD, true);
+					isfull = true;
 					break;
 				case IncrementalProjectBuilder.INCREMENTAL_BUILD:
 					newCommand.setBuilding(IncrementalProjectBuilder.INCREMENTAL_BUILD, true);
+					isinc = true;
 					break;
 				case IncrementalProjectBuilder.AUTO_BUILD:
 					newCommand.setBuilding(IncrementalProjectBuilder.AUTO_BUILD, true);
@@ -165,6 +175,15 @@ public class BuilderUtils {
 					newCommand.setBuilding(IncrementalProjectBuilder.CLEAN_BUILD, true);
 					break;
 			}
+		}
+		if(!isfull && isinc) {
+			Map args = newCommand.getArguments();
+			if(args == null) {
+				args = new HashMap(2);
+			}
+			newCommand.setBuilding(IncrementalProjectBuilder.FULL_BUILD, true);
+			args.put(INC_CLEAN, Boolean.TRUE.toString());
+			newCommand.setArguments(args);
 		}
 		if (!config.getAttribute(IExternalToolConstants.ATTR_TRIGGERS_CONFIGURED, false)) {
 			ILaunchConfigurationWorkingCopy copy= config.getWorkingCopy();
