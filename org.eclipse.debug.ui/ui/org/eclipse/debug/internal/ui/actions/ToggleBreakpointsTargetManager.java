@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -76,7 +75,7 @@ public class ToggleBreakpointsTargetManager {
      */
     public static String DEFAULT_TOGGLE_TARGET_ID = "default"; //$NON-NLS-1$
     
-    private static Set DEFAULT_TOGGLE_TARGET_ID_SET = new HashSet();
+    private static Set DEFAULT_TOGGLE_TARGET_ID_SET = new TreeSet();
     static {
         DEFAULT_TOGGLE_TARGET_ID_SET.add(DEFAULT_TOGGLE_TARGET_ID);
     }
@@ -478,7 +477,7 @@ public class ToggleBreakpointsTargetManager {
     private Set getEnabledFactories(IWorkbenchPart part, ISelection selection) {
         if (fKnownFactories == null) initializeFactories();
 
-        Set set = new TreeSet();
+        Set set = new HashSet();
         for (Iterator itr = fKnownFactories.keySet().iterator(); itr.hasNext(); ) {
             String id = (String)itr.next();
             IToggleBreakpointsTargetFactory factory = (IToggleBreakpointsTargetFactory)fKnownFactories.get(id);
@@ -503,7 +502,7 @@ public class ToggleBreakpointsTargetManager {
      * @return Set of toggle target IDs or an empty set
      */
     private Set getEnabledTargetIDs(Collection factoriesToQuery, IWorkbenchPart part, ISelection selection){
-        Set idsForSelection = new LinkedHashSet();
+        Set idsForSelection = new TreeSet();
         Iterator factoriesItr = factoriesToQuery.iterator();
         while (factoriesItr.hasNext()) {
             IToggleBreakpointsTargetFactory factory = (IToggleBreakpointsTargetFactory) factoriesItr.next();
@@ -652,7 +651,7 @@ public class ToggleBreakpointsTargetManager {
             String token = entryTokenizer.nextToken();
             int valueStart = token.indexOf(':');
             StringTokenizer keyTokenizer = new StringTokenizer(token.substring(0,valueStart),","); //$NON-NLS-1$
-            Set keys = new LinkedHashSet();
+            Set keys = new TreeSet();
             while (keyTokenizer.hasMoreTokens()){
                 keys.add(keyTokenizer.nextToken());
             }
