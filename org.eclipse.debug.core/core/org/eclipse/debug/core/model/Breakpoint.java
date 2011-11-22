@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2005 IBM Corporation and others.
+ * Copyright (c) 2000, 2011 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,7 +32,7 @@ import org.eclipse.debug.internal.core.DebugCoreMessages;
 
 /**
  * Abstract implementation of a breakpoint. This class is
- * intended to be subclassed by implementations
+ * intended to be sub-classed by implementations
  * of breakpoints.
  * 
  * @see IBreakpoint
@@ -40,18 +40,12 @@ import org.eclipse.debug.internal.core.DebugCoreMessages;
  */
 
 public abstract class Breakpoint extends PlatformObject implements IBreakpoint {
-	
-	static {
-		// making sure that the BreakpointManager is correctly initialized
-		// before any breakpoint marker related operation (see bug 54993)
-		DebugPlugin.getDefault().getBreakpointManager().getBreakpoints();
-	}
-				
+			
 	/**
 	 * Underlying marker.
 	 */
 	private IMarker fMarker= null;
-	
+
 	/**
 	 * @see IBreakpoint#setMarker(IMarker)
 	 */

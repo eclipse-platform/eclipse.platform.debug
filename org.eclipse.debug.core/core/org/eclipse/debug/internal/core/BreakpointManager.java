@@ -331,13 +331,20 @@ public class BreakpointManager implements IBreakpointManager, IResourceChangeLis
 	public void shutdown() {
 		getWorkspace().removeResourceChangeListener(this);
 		getWorkspace().removeResourceChangeListener(fPostChangeListener);
-		fBreakpointListeners = null;
-        fBreakpointsListeners = null;
-        fBreakpointManagerListeners = null;
+		fBreakpointListeners.clear();
+        fBreakpointsListeners.clear();
+        fBreakpointManagerListeners.clear();
         if(fImportParticipants != null) {
         	fImportParticipants.clear();
         	fImportParticipants = null;
         	fDefaultParticipant = null;
+        }
+        if(fBreakpoints != null) {
+        	fBreakpoints.clear();
+        	fBreakpoints = null;
+        }
+        if(fMarkersToBreakpoints != null) {
+        	fMarkersToBreakpoints.clear();
         }
 	}
 
@@ -388,6 +395,17 @@ public class BreakpointManager implements IBreakpointManager, IResourceChangeLis
 			breakpoints.copyInto(temp);
 		}
 		return temp;
+	}
+	
+	/**
+	 * Perform any initialization of the manager. 
+	 * 
+	 * Called when {@link DebugPlugin#start(org.osgi.framework.BundleContext)} is called.
+	 * 
+	 * @since 3.8
+	 */
+	public void start() {
+		getBreakpoints0();
 	}
 	
 	/**
