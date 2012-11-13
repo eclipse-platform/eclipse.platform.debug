@@ -29,15 +29,12 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.IChildrenUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.ILabelUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IModelDelta;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IModelDeltaVisitor;
-import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationContext;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdate;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdateListener;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.ModelDelta;
-import org.eclipse.debug.internal.ui.viewers.model.provisional.PresentationContext;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.TreeModelViewer;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.VirtualItem;
 import org.eclipse.debug.internal.ui.viewers.model.provisional.VirtualTreeModelViewer;
-import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -158,47 +155,18 @@ public class VirtualFindAction extends Action implements IUpdate {
         VirtualTreeModelViewer fVirtualViewer = new VirtualTreeModelViewer(
             clientViewer.getDisplay(), 
             SWT.NONE, 
-            makeVirtualPresentationContext(clientViewer.getPresentationContext()));
+            clientViewer.getPresentationContext());
         fVirtualViewer.setFilters(clientViewer.getFilters());
         fVirtualViewer.addViewerUpdateListener(listener);
         fVirtualViewer.addLabelUpdateListener(listener);
+        String[] columns = clientViewer.getPresentationContext().getColumns();
         fVirtualViewer.setInput(input);
         if (fVirtualViewer.canToggleColumns()) {
             fVirtualViewer.setShowColumns(clientViewer.isShowColumns());
+            fVirtualViewer.setVisibleColumns(columns);
         }
         fVirtualViewer.updateViewer(stateDelta);
         return fVirtualViewer;
-	}
-	
-	private IPresentationContext makeVirtualPresentationContext(final IPresentationContext clientViewerContext) {
-	    return new PresentationContext(clientViewerContext.getId()) {
-	        
-	        {
-	            String[] clientProperties = clientViewerContext.getProperties();
-	            for (int i = 0; i < clientProperties.length; i++) {
-	                setProperty(clientProperties[i], clientViewerContext.getProperty(clientProperties[i]));
-	            }
-	                
-	        }
-	        
-	        public String[] getColumns() {
-	            String[] clientColumns = super.getColumns();
-	            
-	            if (clientColumns == null || clientColumns.length == 0) {
-	                // No columns are used.
-	                return null;
-	            }
-	            
-	            // Try to find the name column.
-	            for (int i = 0; i < clientColumns.length; i++) {
-	                if (IDebugUIConstants.COLUMN_ID_VARIABLE_NAME.equals(clientColumns[i])) {
-	                    return new String[] { IDebugUIConstants.COLUMN_ID_VARIABLE_NAME }; 
-	                }
-	            }
-	            
-	            return new String[] { clientColumns[0] };
-	        }
-	    };
 	}
 	
 	public void run() {
