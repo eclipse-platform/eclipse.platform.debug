@@ -789,7 +789,7 @@ public class DebugUITools {
 	 * @param data the editor or selected tree node
 	 * @param isShift is Shift pressed (use <code>false</code> if no support for
 	 *            Shift)
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	public static void storeLaunchToggleTerminate(Object data, Object isShift) {
 		synchronized (fgLaunchToggleTerminateMap) {
@@ -802,7 +802,7 @@ public class DebugUITools {
 	 * decide if previous launch for same configuration can be terminated.
 	 * 
 	 * @param data the editor or selected tree node
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	public static void removeLaunchToggleTerminate(Object data) {
 		synchronized (fgLaunchToggleTerminateMap) {
@@ -911,7 +911,7 @@ public class DebugUITools {
 	 * 
 	 * @param configuration the configuration to launch
 	 * @param mode launch mode - run or debug
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	public static void reLaunch(final ILaunchConfiguration configuration, final String mode) {
 		boolean launchInBackground = true;
@@ -942,7 +942,7 @@ public class DebugUITools {
 	 * @param mode launch mode - run or debug
 	 * @param isShift is Shift pressed (use <code>false</code> if no support for
 	 *            Shift)
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	public static void launch(final ILaunchConfiguration configuration, final String mode, boolean isShift) {
 		if (DebugUIPlugin.getDefault().getPreferenceStore().getBoolean(IInternalDebugUIConstants.PREF_TERMINATE_AND_RELAUNCH_LAUNCH_ACTION) != isShift) {

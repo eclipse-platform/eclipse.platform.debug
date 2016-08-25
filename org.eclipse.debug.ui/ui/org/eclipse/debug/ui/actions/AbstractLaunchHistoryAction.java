@@ -421,7 +421,7 @@ public abstract class AbstractLaunchHistoryAction implements IActionDelegate2, I
 	}
 
 	/**
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	protected void runInternal(IAction action, boolean isShift) {
 		run(action);

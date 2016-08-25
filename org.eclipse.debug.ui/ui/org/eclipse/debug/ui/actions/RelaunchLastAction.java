@@ -103,7 +103,7 @@ public abstract class RelaunchLastAction implements IWorkbenchWindowActionDelega
 	 * org.eclipse.ui.IActionDelegate2#init(org.eclipse.jface.action.IAction)
 	 */
 	/**
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	@Override
 	public void init(IAction action) {
@@ -130,7 +130,7 @@ public abstract class RelaunchLastAction implements IWorkbenchWindowActionDelega
 	 */
 
 	/**
-	 * @since 3.12
+	 * @since 3.11
 	 */
 	@Override
 	public void runWithEvent(IAction action, Event event) {

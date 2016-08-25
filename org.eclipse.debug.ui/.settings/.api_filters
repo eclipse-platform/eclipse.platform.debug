@@ -3,7 +3,7 @@
     <resource path="META-INF/MANIFEST.MF">
         <filter id="924844039">
             <message_arguments>
-                <message_argument value="3.11.200"/>
+                <message_argument value="3.11.201"/>
                 <message_argument value="3.11.200"/>
             </message_arguments>
         </filter>
@@ -56,36 +56,6 @@
             </message_arguments>
         </filter>
     </resource>
-    <resource path="ui/org/eclipse/debug/ui/DebugUITools.java" type="org.eclipse.debug.ui.DebugUITools">
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="launch(ILaunchConfiguration, String, boolean)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="reLaunch(ILaunchConfiguration, String)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="removeLaunchToggleTerminate(Object)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="storeLaunchToggleTerminate(Object, Object)"/>
-            </message_arguments>
-        </filter>
-    </resource>
     <resource path="ui/org/eclipse/debug/ui/actions/AbstractLaunchHistoryAction.java" type="org.eclipse.debug.ui.actions.AbstractLaunchHistoryAction">
         <filter comment="Known leaked internal types" id="576725006">
             <message_arguments>
@@ -98,29 +68,6 @@
                 <message_argument value="LaunchHistory"/>
                 <message_argument value="AbstractLaunchHistoryAction"/>
                 <message_argument value="getLaunchHistory()"/>
-            </message_arguments>
-        </filter>
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="runInternal(IAction, boolean)"/>
-            </message_arguments>
-        </filter>
-    </resource>
-    <resource path="ui/org/eclipse/debug/ui/actions/RelaunchLastAction.java" type="org.eclipse.debug.ui.actions.RelaunchLastAction">
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="init(IAction)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1141899266">
-            <message_arguments>
-                <message_argument value="3.12"/>
-                <message_argument value="3.11"/>
-                <message_argument value="runWithEvent(IAction, Event)"/>
             </message_arguments>
         </filter>
     </resource>
