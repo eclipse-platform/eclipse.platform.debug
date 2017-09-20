@@ -240,7 +240,7 @@ public interface ILaunchConfigurationTab {
 	 * Checks if it is OK to leave the Tab.
 	 *
 	 * @return <code>true</code> if OK to leave the tab or <code>false</code>
-	 * @since 3.12
+	 * @since 3.13
 	 */
 	public default boolean OkToLeaveTab() {
 		return true;
@@ -249,7 +249,7 @@ public interface ILaunchConfigurationTab {
 	/**
 	 * Perform the changes after apply.
 	 *
-	 * @since 3.12
+	 * @since 3.13
 	 */
 	public default void postApply() {
 	}

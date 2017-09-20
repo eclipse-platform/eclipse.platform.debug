@@ -61,6 +61,20 @@
                 <message_argument value="postApply()"/>
             </message_arguments>
         </filter>
+        <filter id="1209008130">
+            <message_arguments>
+                <message_argument value="3.13"/>
+                <message_argument value="3.12"/>
+                <message_argument value="OkToLeaveTab()"/>
+            </message_arguments>
+        </filter>
+        <filter id="1209008130">
+            <message_arguments>
+                <message_argument value="3.13"/>
+                <message_argument value="3.12"/>
+                <message_argument value="postApply()"/>
+            </message_arguments>
+        </filter>
     </resource>
     <resource path="ui/org/eclipse/debug/ui/actions/AbstractLaunchHistoryAction.java" type="org.eclipse.debug.ui.actions.AbstractLaunchHistoryAction">
         <filter comment="Known leaked internal types" id="576725006">
