@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -72,7 +73,12 @@ public final class XMLMemento {
 		StringBuffer strNewValue = new StringBuffer(FILE_STRING);
 		if (attributeOldValue instanceof String && ((String) attributeOldValue).length() != 0) {
 			String strOldValue = (String) attributeOldValue;
-			boolean exists = Arrays.asList(strOldValue.split(",")).stream().anyMatch(x -> x.trim().equals(FILE_STRING)); //$NON-NLS-1$
+			boolean exists = Arrays.asList(strOldValue.split(",")).stream().anyMatch(new Predicate<String>() { //$NON-NLS-1$
+				@Override
+				public boolean test(String x) {
+					return x.trim().equals(FILE_STRING);
+				}
+			});
 			if (!exists) {
 				strNewValue.append(", ").append(strOldValue); //$NON-NLS-1$
 			} else {
