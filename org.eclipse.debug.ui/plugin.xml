@@ -550,6 +550,16 @@
                label="%DebugDropDownAction.label"
                style="pulldown">
          </action>
+         <action
+             allowLabelUpdate="true"
+             class="org.eclipse.debug.ui.actions.StopProcessPullDownToolbarDelegate"
+             disabledIcon="$nl$/icons/full/etool16/stop_disabled.gif"
+             icon="$nl$/icons/full/etool16/stop.gif"
+             id="org.eclipse.debug.ui.actions.StopProcessPullDownToolbarDelegate"
+             label="Terminate Checking"
+             style="pulldown"
+             toolbarPath="org.eclipse.debug.ui.launchActionSet/debug">
+         </action>
       </actionSet>
       <actionSet
             label="%ProfileActionSet.label"
