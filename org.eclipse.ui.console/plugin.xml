@@ -94,4 +94,23 @@ M4 = Platform-specific fourth key
     <extension point="org.eclipse.core.runtime.preferences">
 		<initializer class="org.eclipse.ui.internal.console.ConsoleUIPreferenceInitializer"/>
 	</extension>
+	
+<extension point="org.eclipse.ui.console.consolePageParticipants">
+	<consolePageParticipant class="org.eclipse.ui.console.AnsiConsolePageParticipant" id="org.eclipse.ui.console.ansiConsolePageParticipant">
+		<enablement>
+			<instanceof value="org.eclipse.ui.console.IConsole" />
+		</enablement>
+	</consolePageParticipant>
+</extension>
+<extension point="org.eclipse.ui.preferencePages">
+	<page
+       class="org.eclipse.ui.internal.console.AnsiConsolePreferencePage"
+       id="org.eclipse.ui.internal.console.AnsiConsolePreferencePage"
+       name="%AnsiConsoleName">
+ </page>
+</extension>
+
+<extension point="org.eclipse.core.runtime.preferences">
+	<initializer class="org.eclipse.ui.internal.console.AnsiConsolePreferenceInitializer" />
+</extension>
 </plugin>
