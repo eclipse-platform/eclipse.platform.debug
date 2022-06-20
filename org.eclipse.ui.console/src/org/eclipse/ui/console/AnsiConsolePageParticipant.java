@@ -28,7 +28,6 @@ public class AnsiConsolePageParticipant implements IConsolePageParticipant {
 
 	@Override
 	public void dispose() {
-		// PrettyConsoleActivator.getDefault().removeViewerWithPageParticipant(this);
 	}
 
 	@Override
@@ -40,7 +39,6 @@ public class AnsiConsolePageParticipant implements IConsolePageParticipant {
 				return;
 			}
 			AnsiLineStyleListener.getDefault().install(viewer);
-			// PrettyConsoleActivator.getDefault().addViewer(viewer, this);
 		}
 	}
 

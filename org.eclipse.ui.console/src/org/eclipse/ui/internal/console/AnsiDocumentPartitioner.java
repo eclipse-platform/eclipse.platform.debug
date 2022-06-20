@@ -10,9 +10,12 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.Position;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GlyphMetrics;
 
 public class AnsiDocumentPartitioner implements IDocumentPartitioner {
@@ -211,7 +214,7 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 	@Override
 	public boolean documentChanged(DocumentEvent event) {
 
-		if (!AnsiConsolePreferences.isPrettyConsoleEnabled()) {
+		if (!AnsiConsolePreferences.interpretAnsiEscapeSequences()) {
 			// disable this partitioner
 			if (enable) {
 				disconnect();
@@ -279,7 +282,7 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 		return null;
 	}
 
-	private static abstract class AbstractStyledPosition extends org.eclipse.jface.text.Position {
+	private static abstract class AbstractStyledPosition extends Position {
 
 		protected AbstractStyledPosition(int offset, int length) {
 			super(offset, length);
@@ -426,8 +429,7 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 	}
 
 	private static class EscapeCodePosition extends AbstractStyledPosition {
-		// private static final Font MONO_FONT = new Font(null, "Monospaced", 6,
-		// SWT.NORMAL); //$NON-NLS-1$
+		private static final Font MONO_FONT = new Font(null, "Monospaced", 6, SWT.NORMAL); //$NON-NLS-1$
 		private static final GlyphMetrics HIDE_CODE = new GlyphMetrics(0, 0, 0);
 
 		/**
@@ -448,9 +450,9 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 
 			final var style = new StyleRange(offset, length, null, null);
 			// update the the Style according to current preferences
-			// if (AnsiConsolePreferences.showEscapeCodes()) {
-			// style.font = MONO_FONT; // Show the codes in small, monospaced font
-			// } else
+			if (AnsiConsolePreferences.showEscapeCodes()) {
+				style.font = MONO_FONT; // Show the codes in small, monospaced font
+			} else
 			{
 				style.metrics = HIDE_CODE; // Hide the codes
 			}

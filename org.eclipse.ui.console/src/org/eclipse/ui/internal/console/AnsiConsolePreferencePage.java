@@ -1,7 +1,7 @@
 package org.eclipse.ui.internal.console;
 
-import static org.eclipse.ui.console.IAnsiConsoleConstants.P_CUSTOM_COLORS;
 import static org.eclipse.ui.console.IAnsiConsoleConstants.P_COLOR_PALETTE_NAME;
+import static org.eclipse.ui.console.IAnsiConsoleConstants.P_CUSTOM_COLORS;
 import static org.eclipse.ui.console.IAnsiConsoleConstants.P_INTERPRET_ANSI_ESCAPE_SEQUENCES;
 import static org.eclipse.ui.console.IAnsiConsoleConstants.P_SHOW_ESCAPE_SEQUENCES;
 
@@ -463,14 +463,6 @@ public class AnsiConsolePreferencePage extends FieldEditorPreferencePage impleme
 		}
 		group.setFieldEditors(Arrays.asList(colorSelectors));
 
-		/*
-		 * createLink(parent, true,
-		 * "<a href=\"https://github.com/ydaveluy/pretty-console/wiki/\">Wiki</a>:" +
-		 * " documentation."); createLink(parent, false,
-		 * "<a href=\"https://github.com/ydaveluy/pretty-console/\">GitHub repository</a>:"
-		 * + " source code, issues, etc.");
-		 */
-
 	}
 
 	@Override
@@ -513,32 +505,6 @@ public class AnsiConsolePreferencePage extends FieldEditorPreferencePage impleme
 		// Nothing to do, but we are forced to implement it for IWorkbenchPreferencePage
 	}
 
-	/*
-	 * private void createLink(Composite parent, boolean fillGap, String text) {
-	 * final Link link = new Link(parent, SWT.WRAP); link.setText(text);
-	 *
-	 * final GridData gridData = new GridData(); gridData.horizontalSpan = 2;
-	 * gridData.grabExcessVerticalSpace = fillGap; gridData.verticalAlignment =
-	 * SWT.BOTTOM; link.setLayoutData(gridData);
-	 *
-	 * link.addListener(SWT.Selection, event -> { try {
-	 * PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(
-	 * new URL(event.text)); } catch (final Exception e) { LOGGER.log(new
-	 * Status(IStatus.ERROR, PrettyConsoleActivator.PLUGIN_ID,
-	 * "Cannot open url in browser." + "URL: " + event.text + " : " +
-	 * e.getMessage()));
-	 *
-	 * } }); }
-	 */
-	/*
-	 * @Override public boolean performOk() { final boolean result =
-	 * super.performOk(); final IHandlerService handlerService =
-	 * PlatformUI.getWorkbench().getService(IHandlerService.class); try {
-	 * handlerService.executeCommand(EnableDisableHandler.COMMAND_ID, new Event());
-	 * } catch (final Exception e) { LOGGER.log(new Status(IStatus.ERROR,
-	 * PrettyConsoleActivator.PLUGIN_ID, "Command '" +
-	 * EnableDisableHandler.COMMAND_ID + "' not found" + " : " + e.getMessage())); }
-	 * return result; }
-	 */
+
 
 }

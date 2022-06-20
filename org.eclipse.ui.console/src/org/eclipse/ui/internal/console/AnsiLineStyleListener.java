@@ -43,8 +43,7 @@ public class AnsiLineStyleListener implements LineStyleListener {
 	@Override
 	public void lineGetStyle(LineStyleEvent event) {
 
-		// update the event only if pretty console is enabled
-		if (!AnsiConsolePreferences.isPrettyConsoleEnabled() || !(event.widget instanceof StyledText)) {
+		if (!AnsiConsolePreferences.interpretAnsiEscapeSequences() || !(event.widget instanceof StyledText)) {
 			return;
 		}
 
