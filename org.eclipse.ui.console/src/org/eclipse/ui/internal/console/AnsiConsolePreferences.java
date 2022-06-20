@@ -27,7 +27,6 @@ public class AnsiConsolePreferences {
 		// Utility class, should not be instantiated
 	}
 
-
 	public static boolean interpretAnsiEscapeSequences() {
 		return interpretAnsiEscapeSequences;
 	}
@@ -47,12 +46,11 @@ public class AnsiConsolePreferences {
 	public static void refresh(PropertyChangeEvent evt) {
 
 		if (P_COLOR_PALETTE_NAME.equals(evt.getProperty())) {
-			preferredPalette = (String) evt.getNewValue();
+			preferredPalette = PREF_STORE.getString(evt.getProperty());
 		} else if (P_SHOW_ESCAPE_SEQUENCES.equals(evt.getProperty())) {
-			showEscapeCodes = (boolean) evt.getNewValue();
+			showEscapeCodes = PREF_STORE.getBoolean(evt.getProperty());
 		} else if (P_INTERPRET_ANSI_ESCAPE_SEQUENCES.equals(evt.getProperty())) {
-			interpretAnsiEscapeSequences = (boolean) evt.getNewValue();
-
+			interpretAnsiEscapeSequences = PREF_STORE.getBoolean(evt.getProperty());
 		} else {
 			for (var i = 0; i < P_CUSTOM_COLORS.length; ++i) {
 				if (P_CUSTOM_COLORS[i].equals(evt.getProperty())) {
