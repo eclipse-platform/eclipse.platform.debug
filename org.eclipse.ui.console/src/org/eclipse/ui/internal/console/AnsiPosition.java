@@ -59,28 +59,29 @@ abstract class AnsiPosition extends Position {
 					// existing : ________=====
 					// . result : ++++____=====
 					// nothing to do
-				} else if (end < existingEnd) {
-					// new style overlaps start of existing.
-					// new style: ++++++++_____
-					// existing : _____========
-					// . result : ++++++++=====
-					final var overlap = end - existingStart;
-					existingRange.start += overlap;
-					existingRange.length -= overlap;
 				} else {
-					// new style completely overlaps existing.
-					// new style: ___++++++++++
-					// existing : ___======____
-					// . result : ___++++++++++
-					ranges.remove(i);
+					if (end < existingEnd) {
+						// new style overlaps start of existing.
+						// new style: ++++++++_____
+						// existing : _____========
+						// . result : ++++++++=====
+						final var overlap = end - existingStart;
+						existingRange.start += overlap;
+						existingRange.length -= overlap;
+					} else {
+						// new style completely overlaps existing.
+						// new style: ___++++++++++
+						// existing : ___======____
+						// . result : ___++++++++++
+						ranges.remove(i);
 
+					}
 					if (existingRange.foreground != null) {
 						fg = existingRange.foreground;
 					}
 					if (existingRange.background != null) {
 						bg = existingRange.background;
 					}
-
 				}
 			} else if (existingEnd < this.offset) {
 				// new style lies after existing style. No overlapping.
@@ -105,13 +106,12 @@ abstract class AnsiPosition extends Position {
 				clonedRange.start = end;
 				clonedRange.length = existingEnd - end;
 				ranges.add(i + 1, clonedRange);
-			}
-
-			if (existingRange.foreground != null) {
-				fg = existingRange.foreground;
-			}
-			if (existingRange.background != null) {
-				bg = existingRange.background;
+				if (existingRange.foreground != null) {
+					fg = existingRange.foreground;
+				}
+				if (existingRange.background != null) {
+					bg = existingRange.background;
+				}
 			}
 
 		}
