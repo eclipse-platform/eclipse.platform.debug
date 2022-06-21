@@ -257,9 +257,10 @@ public class AnsiConsoleColorPalette {
 
 		var index = 0;
 		palette = new RGB[256];
-		final var defaultPalette = KNOWN_PALETTES.get(PALETTE_NAME).clone();
+		final var defaultPalette = KNOWN_PALETTES.get(PALETTE_NAME);
 		for (; index < defaultPalette.length; ++index) {
-			palette[index] = defaultPalette[index];
+			palette[index] = new RGB(defaultPalette[index].red, defaultPalette[index].green,
+					defaultPalette[index].blue);
 		}
 
 		final int vals[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff };
@@ -285,11 +286,24 @@ public class AnsiConsoleColorPalette {
 
 	}
 
+	/**
+	 * Get a color in the range 0;255, no check performed
+	 *
+	 * @param index the color index
+	 * @return the color
+	 */
 	public static RGB getColor(int index) {
 		return palette[index];
 	}
 
-	public static RGB get8bitColor(int index) {
+	/**
+	 * Get a color in the range 0;255, if the index is out of range this function
+	 * returns null
+	 *
+	 * @param index the color index
+	 * @return the color or null
+	 */
+	public static RGB getSafeColor(int index) {
 		if (index < 0 || index > 255) {
 			return null;
 		}

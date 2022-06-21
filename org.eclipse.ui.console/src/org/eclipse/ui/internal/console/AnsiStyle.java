@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 
 public class AnsiStyle {
@@ -98,53 +99,59 @@ public class AnsiStyle {
 		return result.toString();
 	}
 
-	// This function maps from the current attributes as "described" by escape
-	// sequences to real,
-	// Eclipse console specific attributes (resolving color palette, default colors,
-	// etc.)
-	public static void updateRangeStyle(StyleRange range, final AnsiStyle attribute) {
+	/**
+	 * Convert this ANSI Style to a StyleRange
+	 *
+	 * @param offset          the offset
+	 * @param length          the length
+	 * @param foregroundColor the default foreground color
+	 * @param backgroundColor the default background color
+	 * @return the StyleRange
+	 */
+	public StyleRange toStyleRange(int offset, int length, Color foregroundColor, Color backgroundColor) {
 
+		final var range = new StyleRange(offset, length, foregroundColor, backgroundColor);
 		// update the foreground color
-		if (attribute.foreground != null) {
-			range.foreground = AnsiConsoleColorPalette.getColor(attribute.foreground);
+		if (foreground != null) {
+			range.foreground = AnsiConsoleColorPalette.getColor(foreground);
 		}
 
 		// update the background color
-		if (attribute.background != null) {
-			range.background = AnsiConsoleColorPalette.getColor(attribute.background);
+		if (background != null) {
+			range.background = AnsiConsoleColorPalette.getColor(background);
 		}
 
-		if ((attribute.style & INVERT) != 0) {
+		if ((style & INVERT) != 0) {
 			// swap background/foreground
 			final var tmp = range.background;
 			range.background = range.foreground;
 			range.foreground = tmp;
 		}
 
-		if ((attribute.style & CONCEAL) != 0) {
+		if ((style & CONCEAL) != 0) {
 			range.foreground = range.background;
 		}
 
 		range.font = null;
-		range.fontStyle = attribute.style & FONT_STYLE_MASK;
+		range.fontStyle = style & FONT_STYLE_MASK;
 
 		// Prepare the rest of the attributes
-		if ((attribute.style & UNDERLINE_STYLE_MASK) != 0) {
+		if ((style & UNDERLINE_STYLE_MASK) != 0) {
 			range.underline = true;
 			range.underlineColor = range.foreground;
-			range.underlineStyle = (attribute.style & UNDERLINE_DOUBLE) != 0 ? SWT.UNDERLINE_DOUBLE
-					: SWT.UNDERLINE_SINGLE;
+			range.underlineStyle = (style & UNDERLINE_DOUBLE) != 0 ? SWT.UNDERLINE_DOUBLE : SWT.UNDERLINE_SINGLE;
 		}
 
-		range.strikeout = (attribute.style & STRIKETHROUGH) != 0;
+		range.strikeout = (style & STRIKETHROUGH) != 0;
 		if (range.strikeout) {
 			range.strikeoutColor = range.foreground;
 		}
 
-		if ((attribute.style & SWT.BORDER) != 0) {
+		if ((style & SWT.BORDER) != 0) {
 			range.borderStyle = SWT.BORDER_SOLID;
 			range.borderColor = range.foreground;
 		}
+		return range;
 	}
 
 	/**
@@ -175,10 +182,10 @@ public class AnsiStyle {
 			switch (iter.next()) {
 			case 5: // 256 color
 				if (iter.hasNext()) {
-					return AnsiConsoleColorPalette.get8bitColor(iter.next());
+					return AnsiConsoleColorPalette.getSafeColor(iter.next());
 				}
 				break;
-			case 2:
+			case 2: // rgb color
 				if (iter.hasNext()) {
 					final var r = iter.next();
 					if (iter.hasNext()) {

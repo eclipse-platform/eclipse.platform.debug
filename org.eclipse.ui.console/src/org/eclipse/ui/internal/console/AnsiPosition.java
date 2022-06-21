@@ -143,12 +143,7 @@ abstract class AnsiPosition extends Position {
 		 */
 		@Override
 		public StyleRange getStyle(Color foregroundColor, Color backgroundColor) {
-
-			final var styleRange = new StyleRange(offset, length, foregroundColor, backgroundColor);
-
-			// update the style with the attributes
-			AnsiStyle.updateRangeStyle(styleRange, style);
-			return styleRange;
+			return style.toStyleRange(offset, length, foregroundColor, backgroundColor);
 		}
 
 		@Override
