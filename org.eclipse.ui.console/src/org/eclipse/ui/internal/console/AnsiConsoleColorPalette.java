@@ -1,12 +1,33 @@
+/*******************************************************************************
+ * Copyright (c) 2022 Mihai Nita and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Mihai Nita - initial implementation
+ *     Yannick Daveluy - eclipse integration
+ *******************************************************************************/
 package org.eclipse.ui.internal.console;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 
+/**
+ * Ansi Console Color Palette
+ *
+ * @since 4.25
+ * @noextend This interface is not intended to be extended by clients.
+ */
 public class AnsiConsoleColorPalette {
 	public static final String PALETTE_VGA = "paletteVGA"; //$NON-NLS-1$
 	public static final String PALETTE_WINXP = "paletteXP";//$NON-NLS-1$
@@ -19,9 +40,6 @@ public class AnsiConsoleColorPalette {
 	public static final String PALETTE_TANGO = "paletteTango";//$NON-NLS-1$
 	public static final String PALETTE_RXVT = "paletteRxvt";//$NON-NLS-1$
 	public static final String PALETTE_CUSTOM = "paletteCustom";//$NON-NLS-1$
-
-	private static final int PALETTE_SIZE = 256;
-	private static final int TRUE_RGB_FLAG = 0x10000000; // Representing true RGB colors as 0x10RRGGBB
 
 	private AnsiConsoleColorPalette() {
 		// Utility class, should not be instantiated
@@ -215,7 +233,7 @@ public class AnsiConsoleColorPalette {
 		KNOWN_PALETTES.put(PALETTE_RXVT, paletteRxvt);
 	}
 	private static final String PALETTE_NAME = getBestPaletteForOS();
-	private static RGB[] palette = KNOWN_PALETTES.get(PALETTE_NAME).clone();
+	private static RGB[] palette;
 
 	public static RGB[] getCurrentPalette() {
 		return palette;
@@ -226,65 +244,68 @@ public class AnsiConsoleColorPalette {
 
 	}
 
-	public static boolean isValidIndex(int value) {
-		return value >= 0 && value < PALETTE_SIZE;
-	}
-
-	public static int hackRgb(int r, int g, int b) {
-		if (!isValidIndex(r) || !isValidIndex(g) || !isValidIndex(b)) {
-			return -1;
-		}
-		return TRUE_RGB_FLAG | r << 16 | g << 8 | b;
-	}
-
-	private static int safe256(int value, int modulo) {
-		final int result = value * PALETTE_SIZE / modulo;
-		return result < PALETTE_SIZE ? result : PALETTE_SIZE - 1;
-	}
-
 	private static final HashMap<RGB, Color> CACHE = new HashMap<>();
 
 	public static synchronized Color getColor(RGB rgb) {
 		return CACHE.computeIfAbsent(rgb, color -> new Color(null, color));
 	}
 
-	public static RGB getColor(Integer index) {
-		if (null == index) {
+	/**
+	 * Pre-calculate the palette table
+	 */
+	static {
+
+		var index = 0;
+		palette = new RGB[256];
+		final var defaultPalette = KNOWN_PALETTES.get(PALETTE_NAME).clone();
+		for (; index < defaultPalette.length; ++index) {
+			palette[index] = defaultPalette[index];
+		}
+
+		final int vals[] = { 0x00, 0x5f, 0x87, 0xaf, 0xd7, 0xff };
+		Assert.isTrue(index == 16);
+		for (var r = 0; r < 6; r++) {
+			for (var g = 0; g < 6; g++) {
+				for (var b = 0; b < 6; b++) {
+					palette[index] = new RGB(vals[r], vals[g], vals[b]);
+					index++;
+				}
+			}
+		}
+
+		final int greys[] = { 0x08, 0x12, 0x1c, 0x26, 0x30, 0x3a, 0x44, 0x4e, 0x58, 0x62, 0x6c, 0x76, 0x80, 0x8a, 0x94,
+				0x9e, 0xa8, 0xb2, 0xbc, 0xc6, 0xd0, 0xda, 0xe4, 0xee };
+
+		Assert.isTrue(index == 232);
+		for (final int g : greys) {
+			palette[index] = new RGB(g, g, g);
+			index++;
+		}
+		Assert.isTrue(index == 256);
+
+	}
+
+	public static RGB getColor(int index) {
+		return palette[index];
+	}
+
+	public static RGB get8bitColor(int index) {
+		if (index < 0 || index > 255) {
 			return null;
 		}
+		return palette[index];
+	}
 
-		if (index >= TRUE_RGB_FLAG) {
-			final int red = index >> 16 & 0xff;
-			final int green = index >> 8 & 0xff;
-			final int blue = index & 0xff;
-			return new RGB(red, green, blue);
+	public static RGB getRgbColor(int red, int green, int blue) {
+		if (red > 255 || red < 0 || green > 255 || green < 0 || blue > 255 || blue < 0) {
+			return null;
 		}
-
-		if (index >= 0 && index < palette.length) { // basic, 16 color palette
-			return palette[index];
-		}
-
-		if (index >= 16 && index < 232) { // 6x6x6 color matrix
-			int color = index - 16;
-			final int blue = color % 6;
-			color = color / 6;
-			final int green = color % 6;
-			final int red = color / 6;
-
-			return new RGB(safe256(red, 6), safe256(green, 6), safe256(blue, 6));
-		}
-
-		if (index >= 232 && index < PALETTE_SIZE) { // grayscale
-			final int gray = safe256(index - 232, 24);
-			return new RGB(gray, gray, gray);
-		}
-
-		return null;
+		return new RGB(red, green, blue);
 	}
 
 	public static String getBestPaletteForOS() {
 
-		final String os = Platform.getOS();
+		final var os = Platform.getOS();
 		if (os == null) {
 			return PALETTE_VGA;
 		}

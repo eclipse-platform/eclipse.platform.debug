@@ -1,9 +1,23 @@
+/*******************************************************************************
+ * Copyright (c) 2022 Mihai Nita and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Mihai Nita - initial implementation
+ *     Yannick Daveluy - eclipse integration
+ *******************************************************************************/
 package org.eclipse.ui.internal.console;
 
-import static org.eclipse.ui.console.IAnsiConsoleConstants.P_COLOR_PALETTE_NAME;
-import static org.eclipse.ui.console.IAnsiConsoleConstants.P_CUSTOM_COLORS;
-import static org.eclipse.ui.console.IAnsiConsoleConstants.P_INTERPRET_ANSI_ESCAPE_SEQUENCES;
-import static org.eclipse.ui.console.IAnsiConsoleConstants.P_SHOW_ESCAPE_SEQUENCES;
+import static org.eclipse.ui.internal.console.IAnsiConsoleConstants.P_COLOR_PALETTE_NAME;
+import static org.eclipse.ui.internal.console.IAnsiConsoleConstants.P_CUSTOM_COLORS;
+import static org.eclipse.ui.internal.console.IAnsiConsoleConstants.P_INTERPRET_ANSI_ESCAPE_SEQUENCES;
+import static org.eclipse.ui.internal.console.IAnsiConsoleConstants.P_SHOW_ESCAPE_SEQUENCES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +47,6 @@ import org.eclipse.ui.console.ConsolePlugin;
 
 public class AnsiConsolePreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-//	private static final ILog LOGGER = Platform.getLog(FrameworkUtil.getBundle(AnsiConsolePreferencePage.class));
 	private ComboFieldEditor paletteSelector;
 	private ColorFieldEditor[] colorSelectors;
 
@@ -91,7 +104,7 @@ public class AnsiConsolePreferencePage extends FieldEditorPreferencePage impleme
 		/**
 		 * Sets the FieldeditorChildren for this {@link GroupFieldEditor}
 		 *
-		 * @param membersParam
+		 * @param membersParam the field editor members
 		 */
 		public void setFieldEditors(Collection<FieldEditor> membersParam) {
 			this.members = membersParam;
@@ -504,7 +517,5 @@ public class AnsiConsolePreferencePage extends FieldEditorPreferencePage impleme
 	public void init(IWorkbench workbench) {
 		// Nothing to do, but we are forced to implement it for IWorkbenchPreferencePage
 	}
-
-
 
 }

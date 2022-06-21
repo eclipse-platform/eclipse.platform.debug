@@ -1,4 +1,18 @@
-package org.eclipse.ui.console;
+/*******************************************************************************
+ * Copyright (c) 2022 Mihai Nita and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Mihai Nita - initial implementation
+ *     Yannick Daveluy - eclipse integration
+ *******************************************************************************/
+package org.eclipse.ui.internal.console;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -7,7 +21,8 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TypedListener;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.internal.console.AnsiLineStyleListener;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
 
 public class AnsiConsolePageParticipant implements IConsolePageParticipant {

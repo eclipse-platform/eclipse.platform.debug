@@ -1,3 +1,16 @@
+/*******************************************************************************
+ * Copyright (c) 2022 daveluy and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     Yannick Daveluy - initial implementation
+ *******************************************************************************/
 package org.eclipse.ui.internal.console;
 
 import java.util.ArrayList;
@@ -10,37 +23,36 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.jface.text.Position;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GlyphMetrics;
 
 public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 
-	// store the last processed attributes
-	private AnsiStyleAttribute attributes = AnsiStyleAttribute.DEFAULT;
+	// store the last processed style
+	private AnsiStyle style = AnsiStyle.DEFAULT;
 	// match full escape sequence and incomplete escape sequence at the end
-	private static final Pattern ESCAPE_SEQUENCE_REGEX_TXT = Pattern
+	private static final Pattern ESCAPE_SEQUENCE_PATTERN = Pattern
 			.compile("\u001b(?:\\[[\\d;]*[A-HJKSTfimnsu]|(?:(?:\\[[\\d;]*)?\\z))"); //$NON-NLS-1$
 
 	// the matcher used to find escape sequences
-	private final Matcher matcher = ESCAPE_SEQUENCE_REGEX_TXT.matcher("");//$NON-NLS-1$
+	private final Matcher matcher = ESCAPE_SEQUENCE_PATTERN.matcher("");//$NON-NLS-1$
 	// the last incomplete escape sequence
-	private String incompleteEscapeSequence = "";//$NON-NLS-1$
+	private final StringBuilder incompleteEscapeSequence = new StringBuilder();
 
 	public static final String PARTITION_NAME = "ansi_console";//$NON-NLS-1$
 
 	private boolean enable;
 	private IDocument document;
 
-	// the styled positions
-	private final List<AbstractStyledPosition> positions = new ArrayList<>();
+	// the list of ANSI positions
+	private final List<AnsiPosition> positions = new ArrayList<>();
 
 	// Style list
 	final List<StyleRange> styles = new ArrayList<>();
+
+	// Store the last processed position index
+	int indexHint = 0;
 
 	public void updateEventStyles(LineStyleEvent event, Color foregroundColor, Color backgroundColor) {
 
@@ -48,6 +60,7 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 		if (positions.isEmpty() || event.lineText == null || event.lineText.isEmpty()) {
 			return;
 		}
+		styles.clear();
 
 		// keep existing styles if any
 		if (event.styles != null) {
@@ -63,65 +76,65 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 		var left = 0;
 		var right = positions.size() - 1;
 
-		int mid;
-		AbstractStyledPosition position;
+		var mid = indexHint <= right ? indexHint : (left + right) / 2;
+		AnsiPosition position;
 
 		// find the first overlapping position
-		while (left < right) {
-			mid = (left + right) / 2;
+		while (left <= right) {
+
 			position = positions.get(mid);
-			if (rangeEnd < position.getOffset()) {
-				if (left == mid) {
-					right = left;
-				} else {
-					right = mid - 1;
-				}
-			} else if (offset > position.getOffset() + position.getLength() - 1) {
-				if (right == mid) {
-					left = right;
-				} else {
-					left = mid + 1;
-				}
+			if (position.getOffset() > rangeEnd) {
+				right = mid - 1;
+			} else if (position.getOffset() + position.getLength() <= offset) {
+				left = mid + 1;
 			} else {
-				left = right = mid;
+				left = mid;
+				break;
 			}
+			mid = (left + right) / 2;
 		}
 
 		var index = left - 1;
 		if (index >= 0) {
 			position = positions.get(index);
-			while (index >= 0 && position.getOffset() + position.getLength() > offset) {
+			while (position.getOffset() + position.getLength() - 1 > offset) {
 				index--;
-				if (index > 0) {
-					position = positions.get(index);
+				if (index < 0) {
+					break;
 				}
-			}
-		}
-		index++;
-		position = positions.get(index);
-		var found = false;
-
-		// process positions that overlap with the current line
-		while (index < positions.size() && position.getOffset() < rangeEnd) {
-
-			position.overrideStyleRange(styles, offset, length, foregroundColor, backgroundColor);
-
-			found = true;
-			index++;
-			if (index < positions.size()) {
 				position = positions.get(index);
 			}
 		}
 
-		// update event styles if found an overlapping position
-		if (found) {
-			event.styles = styles.toArray(new StyleRange[0]);
+		var found = false;
+
+		// process positions that overlap with the current line
+		while (++index < positions.size()) {
+			position = positions.get(index);
+			if (position.getOffset() >= rangeEnd) {
+				break;
+			}
+
+			position.overrideStyleRange(styles, foregroundColor, backgroundColor);
+
+			found = true;
 		}
 
-		styles.clear();
+		// update event styles if found an overlapping position
+		if (found) {
+			indexHint = index;
+			event.styles = styles.toArray(new StyleRange[styles.size()]);
+		}
 	}
 
-	protected void doUpdate(int offset, String text) {
+	/**
+	 *
+	 * @param offset the text offset
+	 * @param text   the new text
+	 * @return true if the text is entirely processed (no partial escape sequence at
+	 *         the end)
+	 */
+	private boolean doUpdate(int offset, CharSequence text) {
 
 		matcher.reset(text);
 
@@ -133,24 +146,26 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 
 			// add a position between two escape codes (or from the beginning to an escape
 			// code)
-			// add this position only if the attributes is of interest (different from
+			// add this position only if the style is of interest (different from
 			// default)
-			if (attributes != AnsiStyleAttribute.DEFAULT && mstart > start) {
-				positions.add(new StyledPosition(start + offset, mstart - start, attributes));
+			if (style != AnsiStyle.DEFAULT && mstart > start) {
+				positions.add(new AnsiPosition.Style(start + offset, mstart - start, style));
 			}
 			final var group = matcher.group();
 
 			// save the incomplete escape sequence if any
 			if (matcher.hitEnd()) {
-				incompleteEscapeSequence = group;
-				return;
+
+				incompleteEscapeSequence.setLength(0);
+				incompleteEscapeSequence.append(group);
+				return false;
 			}
 
 			// add a position to hide the escape code
-			positions.add(new EscapeCodePosition(mstart + offset, group.length()));
+			positions.add(new AnsiPosition.EscapeCode(mstart + offset, group.length()));
 
-			// update the attributes
-			attributes = attributes.apply(group);
+			// update the style
+			style = style.apply(group);
 
 			// update the start offset
 			start = matcher.end();
@@ -159,34 +174,33 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 		// add a position between the last escape code (or from the beginning) and the
 		// end of the appended text
 		// add this position only if the attribute is of interest
-		if (attributes != AnsiStyleAttribute.DEFAULT && text.length() > start) {
-			positions.add(new StyledPosition(start + offset, text.length() - start, attributes));
+		if (style != AnsiStyle.DEFAULT && text.length() > start) {
+			positions.add(new AnsiPosition.Style(start + offset, text.length() - start, style));
 		}
+		return true;
 
 	}
 
-	protected void update(int offset, String text) {
+	private void update(int offset, String text) {
 
 		if (text == null || text.isEmpty()) {
 			return;
 		}
+		final var length = incompleteEscapeSequence.length();
 
-		// Reuse the incomplete escape sequence if any
-		if (!incompleteEscapeSequence.isEmpty()) {
-			final var newText = incompleteEscapeSequence + text;
-			final var newOffset = offset - incompleteEscapeSequence.length();
-			incompleteEscapeSequence = "";//$NON-NLS-1$
-			doUpdate(newOffset, newText);
-		} else {
+		if (length == 0) {
 			doUpdate(offset, text);
+		} else if (doUpdate(offset - length, incompleteEscapeSequence.append(text))) {
+			// reset
+			incompleteEscapeSequence.setLength(0);
 		}
 
 	}
 
 	private void doConnect() {
 
-		attributes = AnsiStyleAttribute.DEFAULT;
-		incompleteEscapeSequence = "";//$NON-NLS-1$
+		style = AnsiStyle.DEFAULT;
+		incompleteEscapeSequence.setLength(0);
 		enable = true;
 
 		positions.clear();
@@ -195,8 +209,8 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 	}
 
 	@Override
-	public void connect(IDocument document) {
-		this.document = document;
+	public void connect(IDocument newDocument) {
+		this.document = newDocument;
 		doConnect();
 	}
 
@@ -282,181 +296,4 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 		return null;
 	}
 
-	private static abstract class AbstractStyledPosition extends Position {
-
-		protected AbstractStyledPosition(int offset, int length) {
-			super(offset, length);
-		}
-
-		protected abstract StyleRange getStyle(int offset, int length, Color foregroundColor, Color backgroundColor);
-
-		public void overrideStyleRange(List<StyleRange> ranges, int offset, int length, Color foregroundColor,
-				Color backgroundColor) {
-
-			final var overrideStart = Math.max(offset, this.offset);
-			final var overrideEnd = Math.min(offset + length, this.offset + this.length);
-			var insertIndex = ranges.size();
-			for (var i = ranges.size() - 1; i >= 0; i--) {
-				final var existingRange = ranges.get(i);
-				final var existingStart = existingRange.start;
-				final var existingEnd = existingStart + existingRange.length;
-
-				// Find first position to insert where offset of new style is smaller then all
-				// offsets before. This way the list is still sorted by offset after insert if
-				// it was sorted before and it will not fail if list was not sorted.
-				if (overrideStart <= existingStart) {
-					insertIndex = i;
-				}
-
-				// adjust the existing style if required
-				if (overrideStart <= existingStart) { // new style starts before or with existing
-					if (overrideEnd < existingStart) {
-						// new style lies before existing style. No overlapping.
-						// new style: ++++_________
-						// existing : ________=====
-						// . result : ++++____=====
-						// nothing to do
-					} else if (overrideEnd < existingEnd) {
-						// new style overlaps start of existing.
-						// new style: ++++++++_____
-						// existing : _____========
-						// . result : ++++++++=====
-						final var overlap = overrideEnd - existingStart;
-						existingRange.start += overlap;
-						existingRange.length -= overlap;
-						// TODO combine overlapping part
-					} else {
-						// new style completely overlaps existing.
-						// new style: ___++++++++++
-						// existing : ___======____
-						// . result : ___++++++++++
-						ranges.remove(i);
-
-						if (existingRange.foreground != null) {
-							foregroundColor = existingRange.foreground;
-						}
-						if (existingRange.background != null) {
-							backgroundColor = existingRange.background;
-						}
-
-					}
-				} else if (existingEnd < overrideStart) {
-					// new style lies after existing style. No overlapping.
-					// new style: _________++++
-					// existing : =====________
-					// . result : =====____++++
-					// nothing to do
-				} else if (overrideEnd >= existingEnd) {
-					// new style overlaps end of existing.
-					// new style: _____++++++++
-					// existing : ========_____
-					// . result : =====++++++++
-					existingRange.length -= existingEnd - overrideStart;
-				} else {
-					// new style lies inside existing style but not overrides all of it
-					// (and does not touch first or last offset of existing)
-					// new style: ____+++++____
-					// existing : =============
-					// . result : ====+++++====
-					final var clonedRange = (StyleRange) existingRange.clone();
-					existingRange.length = overrideStart - existingStart;
-					clonedRange.start = overrideEnd;
-					clonedRange.length = existingEnd - overrideEnd;
-					ranges.add(i + 1, clonedRange);
-				}
-
-				if (existingRange.foreground != null) {
-					foregroundColor = existingRange.foreground;
-				}
-				if (existingRange.background != null) {
-					backgroundColor = existingRange.background;
-				}
-
-			}
-			ranges.add(insertIndex,
-					getStyle(overrideStart, overrideEnd - overrideStart, foregroundColor, backgroundColor));
-		}
-	}
-
-	private static class StyledPosition extends AbstractStyledPosition {
-
-		// StyleRange for the current position
-		protected final AnsiStyleAttribute attributes;
-
-		/**
-		 * Build a position with a specific style
-		 *
-		 * @param offset     the position offset
-		 * @param length     the position length
-		 * @param attributes the style
-		 */
-		public StyledPosition(int offset, int length, AnsiStyleAttribute attributes) {
-			super(offset, length);
-			this.attributes = attributes;
-
-		}
-
-		/**
-		 * Get the Style of the position
-		 *
-		 * @return the Style of the position
-		 */
-		@Override
-		public StyleRange getStyle(int offset, int length, Color foregroundColor, Color backgroundColor) {
-
-			final var style = new StyleRange(offset, length, foregroundColor, backgroundColor);
-
-			// update the style with the attributes
-			AnsiStyleAttribute.updateRangeStyle(style, attributes);
-
-			return style;
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			if (other instanceof StyledPosition) {
-				final var rp = (StyledPosition) other;
-				return attributes.equals(rp.attributes) && super.equals(other);
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return super.hashCode() ^ attributes.hashCode();
-		}
-
-	}
-
-	private static class EscapeCodePosition extends AbstractStyledPosition {
-		private static final Font MONO_FONT = new Font(null, "Monospaced", 6, SWT.NORMAL); //$NON-NLS-1$
-		private static final GlyphMetrics HIDE_CODE = new GlyphMetrics(0, 0, 0);
-
-		/**
-		 * Build an escape code position
-		 *
-		 * @param offset the position offset
-		 * @param length the position length
-		 */
-		protected EscapeCodePosition(int offset, int length) {
-			super(offset, length);
-		}
-
-		/**
-		 * update the style according to preferences
-		 */
-		@Override
-		protected StyleRange getStyle(int offset, int length, Color foregroundColor, Color backgroundColor) {
-
-			final var style = new StyleRange(offset, length, null, null);
-			// update the the Style according to current preferences
-			if (AnsiConsolePreferences.showEscapeCodes()) {
-				style.font = MONO_FONT; // Show the codes in small, monospaced font
-			} else
-			{
-				style.metrics = HIDE_CODE; // Hide the codes
-			}
-			return style;
-		}
-	}
 }
