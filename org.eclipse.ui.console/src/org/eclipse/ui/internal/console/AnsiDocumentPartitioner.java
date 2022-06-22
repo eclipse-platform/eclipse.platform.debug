@@ -115,7 +115,7 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 				break;
 			}
 
-			position.overrideStyleRange(styles, foregroundColor, backgroundColor);
+			position.overrideStyleRange(styles, offset, rangeEnd, foregroundColor, backgroundColor);
 
 			found = true;
 		}
@@ -125,6 +125,37 @@ public class AnsiDocumentPartitioner implements IDocumentPartitioner {
 			indexHint = index;
 			event.styles = styles.toArray(new StyleRange[styles.size()]);
 		}
+
+		// debug(event);
+	}
+
+	/**
+	 * Print the resulting LineStyleEvent
+	 *
+	 * @param event the LineStyleEvent to print
+	 */
+	@SuppressWarnings("unused")
+	private static void debug(LineStyleEvent event) {
+		final var length = event.lineText.length();
+		System.out.println(event.lineText);
+		for (final StyleRange style : event.styles) {
+			System.out.print(style.start < event.lineOffset ? "]" : "["); //$NON-NLS-1$//$NON-NLS-2$
+			for (var i = event.lineOffset; i < style.start; ++i) {
+				System.out.print("_"); //$NON-NLS-1$
+			}
+			for (var i = Math.max(style.start, event.lineOffset); i < Math.min(style.start + style.length,
+					event.lineOffset + length); ++i) {
+				System.out.print("X"); //$NON-NLS-1$
+			}
+			for (var i = Math.max(style.start + style.length, event.lineOffset); i < event.lineOffset + length; ++i) {
+				System.out.print("_"); //$NON-NLS-1$
+			}
+
+			System.out.print(style.start + style.length > event.lineOffset + length ? "[" : "]"); //$NON-NLS-1$//$NON-NLS-2$
+			System.out.println(" " + style); //$NON-NLS-1$
+		}
+		System.out.println();
+
 	}
 
 	/**

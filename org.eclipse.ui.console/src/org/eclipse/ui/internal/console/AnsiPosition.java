@@ -29,16 +29,19 @@ abstract class AnsiPosition extends Position {
 		super(offset, length);
 	}
 
-	protected abstract StyleRange getStyle(Color foregroundColor, Color backgroundColor);
+	protected abstract void overrideStyleRange(StyleRange style, Color defaultForegroundColor,
+			Color defaultBackgroundColor);
 
-	public void overrideStyleRange(List<StyleRange> ranges, Color foregroundColor, Color backgroundColor) {
+	public void overrideStyleRange(List<StyleRange> ranges, int rangeStart, int rangeEnd, Color foregroundColor,
+			Color backgroundColor) {
 
-		final var end = this.offset + this.length;
+		var start = Math.max(rangeStart, this.offset);
+		var end = Math.min(this.offset + this.length, rangeEnd);
 
 		var insertIndex = ranges.size();
 
-		var fg = foregroundColor;
-		var bg = backgroundColor;
+		StyleRange newRange = null;
+
 		for (var i = ranges.size() - 1; i >= 0; i--) {
 			final var existingRange = ranges.get(i);
 			final var existingStart = existingRange.start;
@@ -47,43 +50,49 @@ abstract class AnsiPosition extends Position {
 			// Find first position to insert where offset of new style is smaller then all
 			// offsets before. This way the list is still sorted by offset after insert if
 			// it was sorted before and it will not fail if list was not sorted.
-			if (this.offset <= existingStart) {
+			if (start <= existingStart) {
 				insertIndex = i;
 			}
 
-			// adjust the existing style if required
-			if (this.offset <= existingStart) { // new style starts before or with existing
+			if (start == existingStart && end == existingEnd) {
+				overrideStyleRange(existingRange, foregroundColor, backgroundColor);
+				return;
+			}
+			if (start <= existingStart) { // new style starts before or with existing
 				if (end < existingStart) {
 					// new style lies before existing style. No overlapping.
 					// new style: ++++_________
 					// existing : ________=====
 					// . result : ++++____=====
 					// nothing to do
-				} else {
-					if (end < existingEnd) {
-						// new style overlaps start of existing.
-						// new style: ++++++++_____
-						// existing : _____========
-						// . result : ++++++++=====
-						final var overlap = end - existingStart;
-						existingRange.start += overlap;
-						existingRange.length -= overlap;
-					} else {
-						// new style completely overlaps existing.
-						// new style: ___++++++++++
-						// existing : ___======____
-						// . result : ___++++++++++
-						ranges.remove(i);
+				} else if (end < existingEnd) {
+					// new style overlaps start of existing.
+					// new style: ++++++++_____
+					// existing : _____========
+					// . result : +++++xxx=====
+					final var overlap = end - existingStart;
+					if (overlap > 0) {
+						final var clonedRange = (StyleRange) existingRange.clone();
+						clonedRange.start += overlap;
+						clonedRange.length -= overlap;
+						ranges.add(i + 1, clonedRange);
 
+						existingRange.length = overlap;
+						overrideStyleRange(existingRange, foregroundColor, backgroundColor);
+
+						end -= overlap;
 					}
-					if (existingRange.foreground != null) {
-						fg = existingRange.foreground;
-					}
-					if (existingRange.background != null) {
-						bg = existingRange.background;
-					}
+				} else {
+					// new style completely overlaps existing.
+					// new style: ___++++++++++
+					// existing : ___======____
+					// . result : ___xxxxxx++++
+					// update the existing range and add the new one after
+
+					overrideStyleRange(existingRange, foregroundColor, backgroundColor);
+					start = existingEnd;
 				}
-			} else if (existingEnd < this.offset) {
+			} else if (existingEnd < start) {
 				// new style lies after existing style. No overlapping.
 				// new style: _________++++
 				// existing : =====________
@@ -93,8 +102,17 @@ abstract class AnsiPosition extends Position {
 				// new style overlaps end of existing.
 				// new style: _____++++++++
 				// existing : ========_____
-				// . result : =====++++++++
-				existingRange.length -= existingEnd - this.offset;
+				// . result : =====xxx+++++
+				final var overlap = existingEnd - start;
+				if (overlap > 0) {
+					final var clonedRange = (StyleRange) existingRange.clone();
+					clonedRange.start = existingEnd;
+					clonedRange.length = overlap;
+					overrideStyleRange(clonedRange, foregroundColor, backgroundColor);
+					ranges.add(i + 1, clonedRange);
+				}
+				existingRange.length -= overlap;
+				start += overlap;
 			} else {
 				// new style lies inside existing style but not overrides all of it
 				// (and does not touch first or last offset of existing)
@@ -102,20 +120,24 @@ abstract class AnsiPosition extends Position {
 				// existing : =============
 				// . result : ====+++++====
 				final var clonedRange = (StyleRange) existingRange.clone();
-				existingRange.length = this.offset - existingStart;
+				existingRange.length = start - existingStart;
 				clonedRange.start = end;
 				clonedRange.length = existingEnd - end;
 				ranges.add(i + 1, clonedRange);
-				if (existingRange.foreground != null) {
-					fg = existingRange.foreground;
-				}
-				if (existingRange.background != null) {
-					bg = existingRange.background;
-				}
+				newRange = (StyleRange) existingRange.clone();
 			}
 
 		}
-		ranges.add(insertIndex, getStyle(fg, bg));
+		if (end <= start) {
+			return;
+		}
+		if (newRange == null) {
+			newRange = new StyleRange();
+		}
+		newRange.start = start;
+		newRange.length = end - start;
+		overrideStyleRange(newRange, foregroundColor, backgroundColor);
+		ranges.add(insertIndex, newRange);
 	}
 
 	public static class Style extends AnsiPosition {
@@ -139,11 +161,10 @@ abstract class AnsiPosition extends Position {
 		/**
 		 * Get the Style Range of the position
 		 *
-		 * @return the Style Range of the position
 		 */
 		@Override
-		public StyleRange getStyle(Color foregroundColor, Color backgroundColor) {
-			return style.toStyleRange(offset, length, foregroundColor, backgroundColor);
+		public void overrideStyleRange(StyleRange range, Color defaultForegroundColor, Color defaultBackgroundColor) {
+			style.overrideStyleRange(range, defaultForegroundColor, defaultBackgroundColor);
 		}
 
 		@Override
@@ -177,21 +198,18 @@ abstract class AnsiPosition extends Position {
 		}
 
 		/**
-		 * Get the Style Range of the position
+		 * Override the Style Range of the position
 		 *
-		 * @return the Style Range of the position
 		 */
 		@Override
-		protected StyleRange getStyle(Color foregroundColor, Color backgroundColor) {
-
-			final var style = new StyleRange(offset, length, null, null);
+		protected void overrideStyleRange(StyleRange range, Color defaultForegroundColor,
+				Color defaultBackgroundColor) {
 			// update the the Style according to current preferences
 			if (AnsiConsolePreferences.showEscapeCodes()) {
-				style.font = MONO_FONT; // Show the codes in small, monospaced font
+				range.font = MONO_FONT; // Show the codes in small, monospaced font
 			} else {
-				style.metrics = HIDE_CODE; // Hide the codes
+				range.metrics = HIDE_CODE; // Hide the codes
 			}
-			return style;
 		}
 	}
 }

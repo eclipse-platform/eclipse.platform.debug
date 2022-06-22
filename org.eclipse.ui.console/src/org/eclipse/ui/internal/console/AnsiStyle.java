@@ -100,17 +100,14 @@ public class AnsiStyle {
 	}
 
 	/**
-	 * Convert this ANSI Style to a StyleRange
+	 * Apply this ANSI Style to a StyleRange
 	 *
-	 * @param offset          the offset
-	 * @param length          the length
-	 * @param foregroundColor the default foreground color
-	 * @param backgroundColor the default background color
-	 * @return the StyleRange
+	 * @param range                  the StyleRange to override
+	 * @param defaultForegroundColor the default foreground color
+	 * @param defaultBackgroundColor the default background color
 	 */
-	public StyleRange toStyleRange(int offset, int length, Color foregroundColor, Color backgroundColor) {
+	public void overrideStyleRange(StyleRange range, Color defaultForegroundColor, Color defaultBackgroundColor) {
 
-		final var range = new StyleRange(offset, length, foregroundColor, backgroundColor);
 		// update the foreground color
 		if (foreground != null) {
 			range.foreground = AnsiConsoleColorPalette.getColor(foreground);
@@ -123,13 +120,13 @@ public class AnsiStyle {
 
 		if ((style & INVERT) != 0) {
 			// swap background/foreground
-			final var tmp = range.background;
-			range.background = range.foreground;
+			final var tmp = range.background == null ? defaultBackgroundColor : range.background;
+			range.background = range.foreground == null ? defaultForegroundColor : range.foreground;
 			range.foreground = tmp;
 		}
 
 		if ((style & CONCEAL) != 0) {
-			range.foreground = range.background;
+			range.foreground = range.background == null ? defaultBackgroundColor : range.background;
 		}
 
 		range.font = null;
@@ -151,7 +148,6 @@ public class AnsiStyle {
 			range.borderStyle = SWT.BORDER_SOLID;
 			range.borderColor = range.foreground;
 		}
-		return range;
 	}
 
 	/**
