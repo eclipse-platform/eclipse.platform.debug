@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -388,15 +389,14 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 			try {
 				Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-				Position[] overlap = findPosition(offset, length, positions);
-				if (overlap != null) {
-					Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
-					for (Position position : overlap) {
-						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
-						linkRange.underline = true;
-						overrideStyleRange(ranges, linkRange);
-					}
-				}
+
+				Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
+				visitOverlappingPositions(offset, length, positions, position -> {
+					StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
+					linkRange.underline = true;
+					overrideStyleRange(ranges, linkRange);
+				});
+
 			} catch (BadPositionCategoryException e) {
 			}
 
@@ -492,12 +492,13 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	 * @param offset    the offset of the range
 	 * @param length    the length of the range
 	 * @param positions the positions to search
-	 * @return the positions overlapping the given range, or <code>null</code>
+	 * @param visitor   the overlapping position visitor
 	 */
-	private static Position[] findPosition(int offset, int length, Position[] positions) {
+	private static void visitOverlappingPositions(int offset, int length, Position[] positions,
+			Consumer<Position> visitor) {
 
 		if (positions.length == 0) {
-			return null;
+			return;
 		}
 
 		// filters all the positions that overlap with the current event line
@@ -524,7 +525,6 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			}
 		}
 
-		List<Position> list = new ArrayList<>();
 		var index = left - 1;
 		if (index >= 0) {
 			position = positions[index];
@@ -543,13 +543,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			if (position.getOffset() >= rangeEnd) {
 				break;
 			}
-			list.add(position);
+			visitor.accept(position);
 		}
-
-		if (list.isEmpty()) {
-			return null;
-		}
-		return list.toArray(new Position[list.size()]);
 	}
 
 	@Override
