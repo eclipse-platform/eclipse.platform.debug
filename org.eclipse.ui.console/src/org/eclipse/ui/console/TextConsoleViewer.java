@@ -387,10 +387,10 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			}
 
 			try {
-				Position[] positions = getDocument().getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
+				Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
 				Position[] overlap = findPosition(offset, length, positions);
-				Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
 				if (overlap != null) {
+					Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
 					for (Position position : overlap) {
 						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
 						linkRange.underline = true;
@@ -494,59 +494,56 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	 * @param positions the positions to search
 	 * @return the positions overlapping the given range, or <code>null</code>
 	 */
-	private Position[] findPosition(int offset, int length, Position[] positions) {
+	private static Position[] findPosition(int offset, int length, Position[] positions) {
 
 		if (positions.length == 0) {
 			return null;
 		}
 
-		int rangeEnd = offset + length;
-		int left = 0;
-		int right = positions.length - 1;
-		int mid = 0;
-		Position position = null;
+		// filters all the positions that overlap with the current event line
 
-		while (left < right) {
+		final var rangeEnd = offset + length;
+		var left = 0;
+		var right = positions.length - 1;
+
+		int mid;
+		Position position;
+
+		// find the first overlapping position
+		while (left <= right) {
 
 			mid = (left + right) / 2;
-
 			position = positions[mid];
-			if (rangeEnd < position.getOffset()) {
-				if (left == mid) {
-					right = left;
-				} else {
-					right = mid - 1;
-				}
-			} else if (offset > (position.getOffset() + position.getLength() - 1)) {
-				if (right == mid) {
-					left = right;
-				} else {
-					left = mid + 1;
-				}
+			if (position.getOffset() > rangeEnd) {
+				right = mid - 1;
+			} else if (position.getOffset() + position.getLength() <= offset) {
+				left = mid + 1;
 			} else {
-				left = right = mid;
+				left = mid;
+				break;
 			}
 		}
 
 		List<Position> list = new ArrayList<>();
-		int index = left - 1;
+		var index = left - 1;
 		if (index >= 0) {
 			position = positions[index];
-			while (index >= 0 && (position.getOffset() + position.getLength()) > offset) {
+			while (position.getOffset() + position.getLength() - 1 > offset) {
 				index--;
-				if (index > 0) {
-					position = positions[index];
+				if (index < 0) {
+					break;
 				}
-			}
-		}
-		index++;
-		position = positions[index];
-		while (index < positions.length && (position.getOffset() < rangeEnd)) {
-			list.add(position);
-			index++;
-			if (index < positions.length) {
 				position = positions[index];
 			}
+		}
+
+		// process the positions in the given range
+		while (++index < positions.length) {
+			position = positions[index];
+			if (position.getOffset() >= rangeEnd) {
+				break;
+			}
+			list.add(position);
 		}
 
 		if (list.isEmpty()) {
