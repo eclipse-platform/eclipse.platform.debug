@@ -20,8 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.debug.tests.AbstractDebugTest;
 import org.eclipse.jface.text.Position;
@@ -310,10 +310,10 @@ public class TextConsoleViewerTest extends AbstractDebugTest {
 	 * Test that findPosition returns only all overlapping positions
 	 */
 	@Test
-	public void testFindPosition() throws Throwable {
+	public void testVisitOverlappingPositions() throws Throwable {
 
 		try {
-			final Method method = TextConsoleViewer.class.getDeclaredMethod("findPosition", int.class, int.class, Position[].class);
+			final Method method = TextConsoleViewer.class.getDeclaredMethod("visitOverlappingPositions", int.class, int.class, Position[].class, Consumer.class);
 			method.setAccessible(true);
 			assertTrue("Required method <" + method + "> is not static.", Modifier.isStatic(method.getModifiers()));
 
@@ -324,8 +324,15 @@ public class TextConsoleViewerTest extends AbstractDebugTest {
 
 			var length = 10;
 			for (int i = 0; i < 100; ++i) {
-				var result = (Position[]) method.invoke(null, i, length, positions);
-				var overlappingPositions = result != null ? Arrays.asList(result) : new ArrayList<>();
+				var overlappingPositions = new ArrayList<>();
+
+				method.invoke(null, i, length, positions, new Consumer<Position>() {
+					@Override
+					public void accept(Position t)
+					 {
+						 overlappingPositions.add(t);
+					 }
+				});
 
 				for (var p : positions) {
 					assertTrue(p.overlapsWith(i, length) == overlappingPositions.contains(p));
