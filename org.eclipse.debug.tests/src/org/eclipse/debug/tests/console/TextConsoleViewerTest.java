@@ -318,7 +318,7 @@ public class TextConsoleViewerTest extends AbstractDebugTest {
 			assertTrue("Required method <" + method + "> is not static.", Modifier.isStatic(method.getModifiers()));
 
 			Position[] positions = {
-					new Position(12, 5), new Position(17, 3),
+					new Position(12, 5), new Position(17, 12),
 					new Position(30, 10), new Position(41, 9),
 					new Position(60, 20) };
 

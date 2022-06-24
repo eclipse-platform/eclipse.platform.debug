@@ -528,7 +528,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 		var index = left - 1;
 		if (index >= 0) {
 			position = positions[index];
-			while (position.getOffset() + position.getLength() - 1 > offset) {
+			while (position.getOffset() + position.getLength() > offset) {
 				index--;
 				if (index < 0) {
 					break;
