@@ -28,6 +28,7 @@ import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.AbstractDocument;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -388,14 +389,31 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			}
 
 			try {
-				Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-
 				Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
-				visitOverlappingPositions(offset, length, positions, position -> {
-					StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
-					linkRange.underline = true;
-					overrideStyleRange(ranges, linkRange);
-				});
+
+				// when the document is an AbstractDocument, prefer to use the method
+				// AbstractDocument.getPositions(String, int, int, boolean, boolean)
+				// which is faster than IDocument.getPositions(String)
+				if (document instanceof AbstractDocument) {
+					var aDoc = (AbstractDocument) document;
+					Position[] positions = aDoc.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY, offset,
+							length, true, true);
+					for (var position : positions) {
+						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
+						linkRange.underline = true;
+						overrideStyleRange(ranges, linkRange);
+					}
+				} else {
+					// this method is very expensive when document contains a lot of positions as it
+					// returns all document positions
+					Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
+
+					visitOverlappingPositions(offset, length, positions, position -> {
+						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
+						linkRange.underline = true;
+						overrideStyleRange(ranges, linkRange);
+					});
+				}
 
 			} catch (BadPositionCategoryException e) {
 			}
