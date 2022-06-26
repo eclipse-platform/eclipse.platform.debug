@@ -279,6 +279,11 @@ public class DebugUIMessages extends NLS {
 	public static String GroupLaunchConfigurationTabGroup_6;
 	public static String GroupLaunchConfigurationTabGroup_7;
 	public static String GroupLaunchConfigurationTabGroup_lblAdopt;
+	public static String AbstractLaunchToolbarPulldown_No_Active_Processes;
+	public static String AbstractLaunchToolbarPulldown_No_Processes_Found;
+	public static String AbstractLaunchToolbarPulldown_Rendering_1;
+	public static String AbstractLaunchToolbarPulldown_Stop;
+	public static String AbstractLaunchToolbarPulldown_Terminate_All;
 
 	//
 	// Blocks
