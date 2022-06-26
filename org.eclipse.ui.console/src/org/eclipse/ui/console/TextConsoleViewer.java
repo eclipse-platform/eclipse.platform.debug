@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,6 +28,7 @@ import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.AbstractDocument;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -387,16 +389,32 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			}
 
 			try {
-				Position[] positions = getDocument().getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-				Position[] overlap = findPosition(offset, length, positions);
 				Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
-				if (overlap != null) {
-					for (Position position : overlap) {
+
+				// when the document is an AbstractDocument, prefer to use the method
+				// AbstractDocument.getPositions(String, int, int, boolean, boolean)
+				// which is faster than IDocument.getPositions(String)
+				if (document instanceof AbstractDocument) {
+					var aDoc = (AbstractDocument) document;
+					Position[] positions = aDoc.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY, offset,
+							length, true, true);
+					for (var position : positions) {
 						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
 						linkRange.underline = true;
 						overrideStyleRange(ranges, linkRange);
 					}
+				} else {
+					// this method is very expensive when document contains a lot of positions as it
+					// returns all document positions
+					Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
+
+					visitOverlappingPositions(offset, length, positions, position -> {
+						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
+						linkRange.underline = true;
+						overrideStyleRange(ranges, linkRange);
+					});
 				}
+
 			} catch (BadPositionCategoryException e) {
 			}
 
@@ -492,67 +510,59 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	 * @param offset    the offset of the range
 	 * @param length    the length of the range
 	 * @param positions the positions to search
-	 * @return the positions overlapping the given range, or <code>null</code>
+	 * @param visitor   the overlapping position visitor
 	 */
-	private Position[] findPosition(int offset, int length, Position[] positions) {
+	private static void visitOverlappingPositions(int offset, int length, Position[] positions,
+			Consumer<Position> visitor) {
 
 		if (positions.length == 0) {
-			return null;
+			return;
 		}
 
-		int rangeEnd = offset + length;
-		int left = 0;
-		int right = positions.length - 1;
-		int mid = 0;
-		Position position = null;
+		// filters all the positions that overlap with the current event line
 
-		while (left < right) {
+		final var rangeEnd = offset + length;
+		var left = 0;
+		var right = positions.length - 1;
+
+		int mid;
+		Position position;
+
+		// find the first overlapping position
+		while (left <= right) {
 
 			mid = (left + right) / 2;
-
 			position = positions[mid];
-			if (rangeEnd < position.getOffset()) {
-				if (left == mid) {
-					right = left;
-				} else {
-					right = mid - 1;
-				}
-			} else if (offset > (position.getOffset() + position.getLength() - 1)) {
-				if (right == mid) {
-					left = right;
-				} else {
-					left = mid + 1;
-				}
+			if (position.getOffset() > rangeEnd) {
+				right = mid - 1;
+			} else if (position.getOffset() + position.getLength() <= offset) {
+				left = mid + 1;
 			} else {
-				left = right = mid;
+				left = mid;
+				break;
 			}
 		}
 
-		List<Position> list = new ArrayList<>();
-		int index = left - 1;
+		var index = left - 1;
 		if (index >= 0) {
 			position = positions[index];
-			while (index >= 0 && (position.getOffset() + position.getLength()) > offset) {
+			while (position.getOffset() + position.getLength() > offset) {
 				index--;
-				if (index > 0) {
-					position = positions[index];
+				if (index < 0) {
+					break;
 				}
-			}
-		}
-		index++;
-		position = positions[index];
-		while (index < positions.length && (position.getOffset() < rangeEnd)) {
-			list.add(position);
-			index++;
-			if (index < positions.length) {
 				position = positions[index];
 			}
 		}
 
-		if (list.isEmpty()) {
-			return null;
+		// process the positions in the given range
+		while (++index < positions.length) {
+			position = positions[index];
+			if (position.getOffset() >= rangeEnd) {
+				break;
+			}
+			visitor.accept(position);
 		}
-		return list.toArray(new Position[list.size()]);
 	}
 
 	@Override

@@ -21,8 +21,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.debug.tests.AbstractDebugTest;
+import org.eclipse.jface.text.Position;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.console.TextConsoleViewer;
@@ -301,6 +303,51 @@ public class TextConsoleViewerTest extends AbstractDebugTest {
 			assertTrue("Styles overlap or not sorted.", lastEnd <= s.start);
 			assertTrue("Empty style.", s.length > 0);
 			lastEnd = s.start + s.length;
+		}
+	}
+
+	/**
+	 * Test that findPosition returns only all overlapping positions
+	 */
+	@Test
+	public void testVisitOverlappingPositions() throws Throwable {
+
+		try {
+			final Method method = TextConsoleViewer.class.getDeclaredMethod("visitOverlappingPositions", int.class, int.class, Position[].class, Consumer.class);
+			method.setAccessible(true);
+			assertTrue("Required method <" + method + "> is not static.", Modifier.isStatic(method.getModifiers()));
+
+			Position[] positions = {
+					new Position(12, 5), new Position(17, 12),
+					new Position(30, 10), new Position(41, 9),
+					new Position(60, 20) };
+
+			var length = 10;
+			for (int i = 0; i < 100; ++i) {
+				var overlappingPositions = new ArrayList<>();
+
+				method.invoke(null, i, length, positions, new Consumer<Position>() {
+					@Override
+					public void accept(Position t)
+					 {
+						 overlappingPositions.add(t);
+					 }
+				});
+
+				for (var p : positions) {
+					assertTrue(p.overlapsWith(i, length) == overlappingPositions.contains(p));
+				}
+
+			}
+
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() != null) {
+				throw e.getTargetException();
+			}
+			throw e;
+		} catch (Exception e) {
+			// if this happened the method may have be renamed or moved
+			throw e;
 		}
 	}
 }

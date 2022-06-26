@@ -100,6 +100,11 @@ public class ConsoleDocument extends Document {
 		return super.getPositions(category);
 	}
 
+	@Override
+	public synchronized Position[] getPositions(String category, int offset, int length, boolean canStartBefore,
+			boolean canEndAfter) throws BadPositionCategoryException {
+		return super.getPositions(category, offset, length, canStartBefore, canEndAfter);
+	}
 	/** for debug only **/
 	@Override
 	public synchronized String toString() {
