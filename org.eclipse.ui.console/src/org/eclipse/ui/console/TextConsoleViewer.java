@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -27,7 +28,6 @@ import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentAdapter;
@@ -196,20 +196,30 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 		return false;
 	}
 
+
 	private IPositionUpdater positionUpdater = event -> {
-		try {
-			IDocument document = getDocument();
-			if (document != null) {
-				for (Position position : document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY)) {
-					if (position.offset == event.fOffset && position.length <= event.fLength) {
-						position.delete();
-					}
-					if (position.isDeleted) {
-						document.removePosition(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY, position);
-					}
+		// adapt existing positions (we are interested only by remove events)
+		if (event.getOffset() == 0) {
+
+			final var length = event.getLength();
+			var positions = console.getPositions();
+
+			// remove all the starting positions
+			var it = positions.iterator();
+			while (it.hasNext()) {
+				Position position = it.next();
+				if (position.getOffset() < length) {
+					it.remove();
+				} else {
+					break;
 				}
 			}
-		} catch (BadPositionCategoryException e) {
+
+
+			if (length > 0) {
+				// update remaining positions
+				positions.parallelStream().forEach(p -> p.offset -= length);
+			}
 		}
 	};
 
@@ -386,19 +396,14 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 				}
 			}
 
-			try {
-				Position[] positions = getDocument().getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-				Position[] overlap = findPosition(offset, length, positions);
-				Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
-				if (overlap != null) {
-					for (Position position : overlap) {
-						StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
-						linkRange.underline = true;
-						overrideStyleRange(ranges, linkRange);
-					}
-				}
-			} catch (BadPositionCategoryException e) {
-			}
+			Color color = JFaceColors.getHyperlinkText(Display.getCurrent());
+
+			visitOverlappingPositions(offset, length, console.getPositions(), position -> {
+				StyleRange linkRange = new StyleRange(position.offset, position.length, color, null);
+				linkRange.underline = true;
+				overrideStyleRange(ranges, linkRange);
+			});
+
 
 			if (ranges.size() > 0) {
 				event.styles = ranges.toArray(new StyleRange[ranges.size()]);
@@ -492,67 +497,59 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	 * @param offset    the offset of the range
 	 * @param length    the length of the range
 	 * @param positions the positions to search
-	 * @return the positions overlapping the given range, or <code>null</code>
+	 * @param visitor   the overlapping position visitor
 	 */
-	private Position[] findPosition(int offset, int length, Position[] positions) {
+	private static void visitOverlappingPositions(int offset, int length, List<ConsoleHyperlinkPosition> positions,
+			Consumer<Position> visitor) {
 
-		if (positions.length == 0) {
-			return null;
+		if (positions.isEmpty()) {
+			return;
 		}
 
-		int rangeEnd = offset + length;
-		int left = 0;
-		int right = positions.length - 1;
-		int mid = 0;
-		Position position = null;
+		// filters all the positions that overlap with the current event line
 
-		while (left < right) {
+		final var rangeEnd = offset + length;
+		var left = 0;
+		var right = positions.size() - 1;
+
+		int mid;
+		Position position;
+
+		// find the first overlapping position
+		while (left <= right) {
 
 			mid = (left + right) / 2;
-
-			position = positions[mid];
-			if (rangeEnd < position.getOffset()) {
-				if (left == mid) {
-					right = left;
-				} else {
-					right = mid - 1;
-				}
-			} else if (offset > (position.getOffset() + position.getLength() - 1)) {
-				if (right == mid) {
-					left = right;
-				} else {
-					left = mid + 1;
-				}
+			position = positions.get(mid);
+			if (position.getOffset() > rangeEnd) {
+				right = mid - 1;
+			} else if (position.getOffset() + position.getLength() <= offset) {
+				left = mid + 1;
 			} else {
-				left = right = mid;
+				left = mid;
+				break;
 			}
 		}
 
-		List<Position> list = new ArrayList<>();
-		int index = left - 1;
+		var index = left - 1;
 		if (index >= 0) {
-			position = positions[index];
-			while (index >= 0 && (position.getOffset() + position.getLength()) > offset) {
+			position = positions.get(index);
+			while (position.getOffset() + position.getLength() > offset) {
 				index--;
-				if (index > 0) {
-					position = positions[index];
+				if (index < 0) {
+					break;
 				}
-			}
-		}
-		index++;
-		position = positions[index];
-		while (index < positions.length && (position.getOffset() < rangeEnd)) {
-			list.add(position);
-			index++;
-			if (index < positions.length) {
-				position = positions[index];
+				position = positions.get(index);
 			}
 		}
 
-		if (list.isEmpty()) {
-			return null;
+		// process the positions in the given range
+		while (++index < positions.size()) {
+			position = positions.get(index);
+			if (position.getOffset() >= rangeEnd) {
+				break;
+			}
+			visitor.accept(position);
 		}
-		return list.toArray(new Position[list.size()]);
 	}
 
 	@Override
