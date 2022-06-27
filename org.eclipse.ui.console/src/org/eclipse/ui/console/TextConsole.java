@@ -524,7 +524,13 @@ public abstract class TextConsole extends AbstractConsole {
 	 * @throws BadLocationException if the specified location is not valid.
 	 */
 	public void addHyperlink(IHyperlink hyperlink, int offset, int length) throws BadLocationException {
+
+		if ((0 > offset) || (0 > length) || (offset + length > fDocument.getLength())) {
+			throw new BadLocationException();
+		}
+
 		ConsoleHyperlinkPosition hyperlinkPosition = new ConsoleHyperlinkPosition(hyperlink, offset, length);
+
 
 		int index = Collections.binarySearch(fPositions, hyperlinkPosition, (p1, p2) -> p1.offset - p2.offset);
 		if (index >= 0) {
