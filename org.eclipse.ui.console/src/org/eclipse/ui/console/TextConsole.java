@@ -15,6 +15,7 @@
 package org.eclipse.ui.console;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -399,40 +400,18 @@ public abstract class TextConsole extends AbstractConsole {
 	 */
 	private ConsoleHyperlinkPosition findPosition(int offset) {
 
-		if (fPositions.isEmpty()) {
-			return null;
-		}
+		int index = Collections.binarySearch(fPositions, new Position(offset, 0), (p1, p2) -> p1.offset - p2.offset);
+		if (index >= 0) {
+			return fPositions.get(index);
+		} else {
+			index = -index - 1 - 1; // put index on the preceding position
+			if (index >= 0) {
+				ConsoleHyperlinkPosition position = fPositions.get(index);
 
-		int left= 0;
-		int right = fPositions.size() - 1;
-		int mid= 0;
-		ConsoleHyperlinkPosition position = null;
-
-		while (left < right) {
-
-			mid= (left + right) / 2;
-
-			position = fPositions.get(mid);
-			if (offset < position.getOffset()) {
-				if (left == mid) {
-					right= left;
-				} else {
-					right= mid -1;
+				if (position.getOffset() + position.getLength() >= offset) {
+					return position;
 				}
-			} else if (offset > (position.getOffset() + position.getLength() - 1)) {
-				if (right == mid) {
-					left= right;
-				} else {
-					left= mid  +1;
-				}
-			} else {
-				left= right= mid;
 			}
-		}
-
-		position = fPositions.get(left);
-		if (offset >= position.getOffset() && (offset < (position.getOffset() + position.getLength()))) {
-			return position;
 		}
 		return null;
 	}
@@ -546,32 +525,14 @@ public abstract class TextConsole extends AbstractConsole {
 	 */
 	public void addHyperlink(IHyperlink hyperlink, int offset, int length) throws BadLocationException {
 		ConsoleHyperlinkPosition hyperlinkPosition = new ConsoleHyperlinkPosition(hyperlink, offset, length);
-		fPositions.add(getInsertionIndex(offset), hyperlinkPosition);
+
+		int index = Collections.binarySearch(fPositions, hyperlinkPosition, (p1, p2) -> p1.offset - p2.offset);
+		if (index >= 0) {
+			fPositions.add(index, hyperlinkPosition);
+		} else {
+			fPositions.add(-index - 1, hyperlinkPosition);
+		}
 		fConsoleManager.refresh(this);
-	}
-
-	private int getInsertionIndex(int offset) {
-		if (fPositions.isEmpty()) {
-			return 0;
-		}
-
-		var left = 0;
-		var right = fPositions.size() - 1;
-
-		int mid;
-		Position position;
-
-		while (left <= right) {
-
-			mid = (left + right) / 2;
-			position = fPositions.get(mid);
-			if (position.getOffset() > offset) {
-				right = mid - 1;
-			} else {
-				left = mid + 1;
-			}
-		}
-		return left;
 	}
 
 	/**
