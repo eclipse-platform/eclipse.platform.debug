@@ -198,28 +198,29 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 
 	private IPositionUpdater positionUpdater = event -> {
-		// adapt existing positions (we are interested only by remove events)
-		if (event.getOffset() == 0) {
 
-			final var length = event.getLength();
+		// adapt existing positions (we are interested only by remove events)
+		final var length = event.getLength();
+		if (event.getOffset() == 0 && length > 0) {
+
 			var positions = console.getPositions();
 
-			// remove all the starting positions
-			var it = positions.iterator();
-			while (it.hasNext()) {
-				Position position = it.next();
-				if (position.getOffset() < length) {
-					it.remove();
-				} else {
-					break;
-				}
+			int index = Collections.binarySearch(positions, new Position(length, 0),
+					(p1, p2) -> p1.offset + p1.length - p2.offset - p2.length);
+			// put index on the preceding position
+			if (index >= 0) {
+				index--;
+			} else {
+				index = -index - 1 - 1;
 			}
 
-
-			if (length > 0) {
-				// update remaining positions
-				positions.parallelStream().forEach(p -> p.offset -= length);
+			if (index >= 0) {
+				// remove all the starting positions
+				positions.subList(0, index + 1).clear();
 			}
+
+			// update remaining positions
+			positions.forEach(p -> p.offset -= length);
 		}
 	};
 
