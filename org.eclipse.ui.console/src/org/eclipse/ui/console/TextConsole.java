@@ -14,7 +14,10 @@
 
 package org.eclipse.ui.console;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -22,7 +25,6 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
@@ -108,6 +110,12 @@ public abstract class TextConsole extends AbstractConsole {
 	private ScopedPreferenceStore store;
 	private IPropertyChangeListener propListener;
 
+	private List<ConsoleHyperlinkPosition> fPositions;
+
+	List<ConsoleHyperlinkPosition> getPositions() {
+		return fPositions;
+	}
+
 	@Override
 	protected void dispose() {
 		super.dispose();
@@ -131,10 +139,10 @@ public abstract class TextConsole extends AbstractConsole {
 	public TextConsole(String name, String consoleType, ImageDescriptor imageDescriptor, boolean autoLifecycle) {
 		super(name, consoleType, imageDescriptor, autoLifecycle);
 		fDocument = new ConsoleDocument();
-		fDocument.addPositionCategory(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
 		fPatternMatcher = new ConsolePatternMatcher(this);
 		fDocument.addDocumentListener(fPatternMatcher);
 		fTabWidth = IConsoleConstants.DEFAULT_TAB_SIZE;
+		fPositions = new ArrayList<>();
 	}
 
 	@Override
@@ -362,17 +370,12 @@ public abstract class TextConsole extends AbstractConsole {
 	 * @return all hyperlinks in this console
 	 */
 	public IHyperlink[] getHyperlinks() {
-		try {
-			Position[] positions = getDocument().getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-			IHyperlink[] hyperlinks = new IHyperlink[positions.length];
-			for (int i = 0; i < positions.length; i++) {
-				ConsoleHyperlinkPosition position = (ConsoleHyperlinkPosition) positions[i];
-				hyperlinks[i] = position.getHyperLink();
-			}
-			return hyperlinks;
-		} catch (BadPositionCategoryException e) {
-			return new IHyperlink[0];
+		IHyperlink[] hyperlinks = new IHyperlink[fPositions.size()];
+		for (int i = 0; i < fPositions.size(); i++) {
+			ConsoleHyperlinkPosition position = fPositions.get(i);
+			hyperlinks[i] = position.getHyperLink();
 		}
+		return hyperlinks;
 	}
 
 	/**
@@ -382,16 +385,9 @@ public abstract class TextConsole extends AbstractConsole {
 	 * @return the hyperlink at the given offset or <code>null</code> if none
 	 */
 	public IHyperlink getHyperlink(int offset) {
-		try {
-			IDocument document = getDocument();
-			if (document != null) {
-				Position[] positions = document.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-				Position position = findPosition(offset, positions);
-				if (position instanceof ConsoleHyperlinkPosition) {
-					return ((ConsoleHyperlinkPosition) position).getHyperLink();
-				}
-			}
-		} catch (BadPositionCategoryException e) {
+		ConsoleHyperlinkPosition position = findPosition(offset);
+		if (position != null) {
+			return position.getHyperLink();
 		}
 		return null;
 	}
@@ -400,45 +396,22 @@ public abstract class TextConsole extends AbstractConsole {
 	 * Binary search for the position at a given offset.
 	 *
 	 * @param offset    the offset whose position should be found
-	 * @param positions the positions list to search in
 	 * @return the position containing the offset, or <code>null</code>
 	 */
-	private Position findPosition(int offset, Position[] positions) {
+	private ConsoleHyperlinkPosition findPosition(int offset) {
 
-		if (positions.length == 0) {
-			return null;
-		}
+		int index = Collections.binarySearch(fPositions, new Position(offset, 0), (p1, p2) -> p1.offset - p2.offset);
+		if (index >= 0) {
+			return fPositions.get(index);
+		} else {
+			index = -index - 1 - 1; // put index on the preceding position
+			if (index >= 0) {
+				ConsoleHyperlinkPosition position = fPositions.get(index);
 
-		int left= 0;
-		int right= positions.length -1;
-		int mid= 0;
-		Position position= null;
-
-		while (left < right) {
-
-			mid= (left + right) / 2;
-
-			position= positions[mid];
-			if (offset < position.getOffset()) {
-				if (left == mid) {
-					right= left;
-				} else {
-					right= mid -1;
+				if (position.getOffset() + position.getLength() >= offset) {
+					return position;
 				}
-			} else if (offset > (position.getOffset() + position.getLength() - 1)) {
-				if (right == mid) {
-					left= right;
-				} else {
-					left= mid  +1;
-				}
-			} else {
-				left= right= mid;
 			}
-		}
-
-		position= positions[left];
-		if (offset >= position.getOffset() && (offset < (position.getOffset() + position.getLength()))) {
-			return position;
 		}
 		return null;
 	}
@@ -545,19 +518,27 @@ public abstract class TextConsole extends AbstractConsole {
 	 * Adds a hyperlink to this console.
 	 *
 	 * @param hyperlink the hyperlink to add
-	 * @param offset the offset in the console document at which the hyperlink should be added
-	 * @param length the length of the text which should be hyperlinked
+	 * @param offset    the offset in the console document at which the hyperlink
+	 *                  should be added
+	 * @param length    the length of the text which should be hyperlinked
 	 * @throws BadLocationException if the specified location is not valid.
 	 */
 	public void addHyperlink(IHyperlink hyperlink, int offset, int length) throws BadLocationException {
-		IDocument document = getDocument();
-		ConsoleHyperlinkPosition hyperlinkPosition = new ConsoleHyperlinkPosition(hyperlink, offset, length);
-		try {
-			document.addPosition(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY, hyperlinkPosition);
-			fConsoleManager.refresh(this);
-		} catch (BadPositionCategoryException e) {
-			ConsolePlugin.log(e);
+
+		if ((0 > offset) || (0 > length) || (offset + length > fDocument.getLength())) {
+			throw new BadLocationException();
 		}
+
+		ConsoleHyperlinkPosition hyperlinkPosition = new ConsoleHyperlinkPosition(hyperlink, offset, length);
+
+
+		int index = Collections.binarySearch(fPositions, hyperlinkPosition, (p1, p2) -> p1.offset - p2.offset);
+		if (index >= 0) {
+			fPositions.add(index, hyperlinkPosition);
+		} else {
+			fPositions.add(-index - 1, hyperlinkPosition);
+		}
+		fConsoleManager.refresh(this);
 	}
 
 	/**
@@ -567,18 +548,11 @@ public abstract class TextConsole extends AbstractConsole {
 	 * @return the region associated with the hyperlink or null if the hyperlink is not found.
 	 */
 	public IRegion getRegion(IHyperlink link) {
-		try {
-			IDocument doc = getDocument();
-			if (doc != null) {
-				Position[] positions = doc.getPositions(ConsoleHyperlinkPosition.HYPER_LINK_CATEGORY);
-				for (Position p : positions) {
-					ConsoleHyperlinkPosition position = (ConsoleHyperlinkPosition) p;
-					if (position.getHyperLink().equals(link)) {
-						return new Region(position.getOffset(), position.getLength());
-					}
-				}
+		for (Position p : fPositions) {
+			ConsoleHyperlinkPosition position = (ConsoleHyperlinkPosition) p;
+			if (position.getHyperLink().equals(link)) {
+				return new Region(position.getOffset(), position.getLength());
 			}
-		} catch (BadPositionCategoryException e) {
 		}
 		return null;
 	}
@@ -606,4 +580,6 @@ public abstract class TextConsole extends AbstractConsole {
 			fAttributes.put(key, value);
 		}
 	}
+
+
 }
