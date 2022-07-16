@@ -172,6 +172,17 @@ public class InspectPopupDialog extends DebugPopup {
 	}
 
 	/**
+	 * The viewer is initialized after the dialog is constructed, so only after open
+	 * is called.
+	 *
+	 * @since 3.17
+	 * @return the tree model viewer used by the dialog.
+	 */
+	public TreeModelViewer getTreeModelViewer() {
+		return fViewer;
+	}
+
+	/**
 	 * Initializes the sash form weights from the preference store (using default values if
 	 * no sash weights were stored previously).
 	 */
