@@ -133,7 +133,6 @@ M4 = Platform-specific fourth key
           locationURI="menu:org.eclipse.ui.console.ConsoleView">
         <command
             commandId="AnsiConsole.command.enable_disable"
-            icon="$nl$/icons/full/eview16/ansiconsole.png"
             style="toggle">
         </command>
         <command
