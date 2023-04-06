@@ -113,9 +113,12 @@ public class ActionMessages extends NLS {
 	public static String RemoveAllTriggerPointsAction_0;
 	public static String RemoveAllTriggerPointsAction_1;
 
+	public static String EnableAllBreakPointsAction_0;
+	public static String EnableAllBreakPointsAction_1;
+
 	public static String DisableAllBreakPointsAction_0;
 	public static String DisableAllBreakPointsAction_1;
-	public static String DisableAllBreakPointsAction_2;
+	public static String AllBreakPointsActionEnablement_DontAskAgain;
 
 	public static String DeleteBreakpointOperationName;
 	public static String DeleteBreakpointsOperationName;

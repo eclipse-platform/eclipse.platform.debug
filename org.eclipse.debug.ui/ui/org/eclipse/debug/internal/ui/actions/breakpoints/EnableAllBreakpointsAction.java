@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 IBM Corporation and others.
+ * Copyright (c) 2023 Simeon Andreev and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -9,15 +9,15 @@
  * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
+ *     Simeon Andreev - initial API and implementation
  *******************************************************************************/
 package org.eclipse.debug.internal.ui.actions.breakpoints;
 
 import org.eclipse.debug.internal.ui.actions.ActionMessages;
 
-public class DisableAllBreakpointsAction extends AllBreakpointsEnablementAction {
+public class EnableAllBreakpointsAction extends AllBreakpointsEnablementAction {
 
-	public DisableAllBreakpointsAction() {
-		super(false, ActionMessages.DisableAllBreakPointsAction_0, ActionMessages.DisableAllBreakPointsAction_1);
+	public EnableAllBreakpointsAction() {
+		super(true, ActionMessages.EnableAllBreakPointsAction_0, ActionMessages.EnableAllBreakPointsAction_1);
 	}
 }
