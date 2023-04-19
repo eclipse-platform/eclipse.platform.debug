@@ -45,6 +45,7 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -442,6 +443,7 @@ public class LaunchConfigurationView extends AbstractDebugView implements ILaunc
 		}
 		fFilteredNotice = SWTFactory.createLabel(parent, IInternalDebugCoreConstants.EMPTY_STRING, 1);
 		fFilteredNotice.setBackground(parent.getBackground());
+		((GridData) fFilteredNotice.getLayoutData()).grabExcessHorizontalSpace = true;
 	}
 
 	/**
