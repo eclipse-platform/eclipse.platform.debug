@@ -250,6 +250,27 @@ public class SWTFactory {
 	}
 
 	/**
+	 * Creates a new label widget
+	 *
+	 * @param parent  the parent composite to add this label widget to
+	 * @param text    the text for the label
+	 * @param hspan   the horizontal span to take up in the parent composite
+	 * @param gdSpace to grab the excess horizontal space of the Label
+	 * @return the new label
+	 * @since 3.18
+	 */
+	public static Label createLabel(Composite parent, String text, int hspan, boolean gdSpace) {
+		Label l = new Label(parent, SWT.NONE);
+		l.setFont(parent.getFont());
+		l.setText(text);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = hspan;
+		gd.grabExcessHorizontalSpace = gdSpace;
+		l.setLayoutData(gd);
+		return l;
+	}
+
+	/**
 	 * Creates a wrapping label
 	 * @param parent the parent composite to add this label to
 	 * @param text the text to be displayed in the label
