@@ -105,7 +105,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 		@Override
 		public void documentChanged(DocumentEvent event) {
-			updateLinks(event.fOffset);
+			updateLinks(getTextWidget().getCaretOffset());
 		}
 	};
 	// event listener used to send event to hyperlink for IHyperlink2
@@ -569,6 +569,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 		if (handCursor == null) {
 			handCursor = ConsolePlugin.getStandardDisplay().getSystemCursor(SWT.CURSOR_HAND);
 		}
+
 		return handCursor;
 	}
 
