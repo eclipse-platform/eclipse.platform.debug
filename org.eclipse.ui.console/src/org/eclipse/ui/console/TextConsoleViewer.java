@@ -569,7 +569,6 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 		if (handCursor == null) {
 			handCursor = ConsolePlugin.getStandardDisplay().getSystemCursor(SWT.CURSOR_HAND);
 		}
-
 		return handCursor;
 	}
 
