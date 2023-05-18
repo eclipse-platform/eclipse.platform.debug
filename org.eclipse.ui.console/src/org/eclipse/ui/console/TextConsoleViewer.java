@@ -75,7 +75,8 @@ import org.eclipse.ui.progress.WorkbenchJob;
  *
  * @since 3.1
  */
-public class TextConsoleViewer extends SourceViewer implements LineStyleListener, LineBackgroundListener, MouseTrackListener, MouseMoveListener, MouseListener {
+public class TextConsoleViewer extends SourceViewer
+		implements LineStyleListener, LineBackgroundListener, MouseTrackListener, MouseMoveListener, MouseListener {
 	/**
 	 * Adapts document to the text widget.
 	 */
@@ -93,8 +94,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 	private boolean consoleAutoScrollLock = true;
 
-	private int mouseOffset;
-
+	private int mouseOffset = -1;
 
 	private IPropertyChangeListener propertyChangeListener;
 
@@ -107,7 +107,9 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 		@Override
 		public void documentChanged(DocumentEvent event) {
-			updateLinks(mouseOffset);
+			if (hyperlink != null) {
+				updateLinks(mouseOffset);
+			}
 		}
 	};
 	// event listener used to send event to hyperlink for IHyperlink2
@@ -170,8 +172,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	}
 
 	/*
-	 * Check if user preference is enabled for auto scroll lock and the document is empty or the line count is smaller than each
-	 * vertical scroll
+	 * Check if user preference is enabled for auto scroll lock and the document is
+	 * empty or the line count is smaller than each vertical scroll
 	 */
 	private boolean isAutoScrollLockNotApplicable() {
 		if (!consoleAutoScrollLock) {
@@ -218,8 +220,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	/**
 	 * Constructs a new viewer in the given parent for the specified console.
 	 *
-	 * @param parent the containing composite
-	 * @param console the text console
+	 * @param parent                  the containing composite
+	 * @param console                 the text console
 	 * @param scrollLockStateProvider the scroll lock state provider
 	 * @since 3.6
 	 */
@@ -227,13 +229,12 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 		this(parent, console);
 		this.scrollLockStateProvider = scrollLockStateProvider;
 
-
 	}
 
 	/**
 	 * Constructs a new viewer in the given parent for the specified console.
 	 *
-	 * @param parent containing widget
+	 * @param parent  containing widget
 	 * @param console text console
 	 */
 	public TextConsoleViewer(Composite parent, TextConsole console) {
@@ -336,8 +337,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	/**
 	 * Sets the tab width used by this viewer.
 	 *
-	 * @param tabWidth
-	 *            the tab width used by this viewer
+	 * @param tabWidth the tab width used by this viewer
 	 */
 	public void setTabWidth(int tabWidth) {
 		StyledText styledText = getTextWidget();
@@ -350,8 +350,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	/**
 	 * Sets the font used by this viewer.
 	 *
-	 * @param font
-	 *            the font used by this viewer
+	 * @param font the font used by this viewer
 	 */
 	public void setFont(Font font) {
 		StyledText styledText = getTextWidget();
@@ -589,8 +588,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	/**
 	 * Notification a hyperlink has been entered.
 	 *
-	 * @param link
-	 *            the link that was entered
+	 * @param link the link that was entered
 	 */
 	protected void linkEntered(IHyperlink link) {
 		Control control = getTextWidget();
@@ -607,8 +605,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	/**
 	 * Notification a link was exited.
 	 *
-	 * @param link
-	 *            the link that was exited
+	 * @param link the link that was exited
 	 */
 	protected void linkExited(IHyperlink link) {
 		link.linkExited();
@@ -675,8 +672,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	}
 
 	/**
-	 * Returns the hyperlink at the specified offset, or <code>null</code> if
-	 * none.
+	 * Returns the hyperlink at the specified offset, or <code>null</code> if none.
 	 *
 	 * @param offset offset at which a hyperlink has been requested
 	 * @return hyperlink at the specified offset, or <code>null</code> if none
@@ -721,11 +717,10 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	}
 
 	/**
-	 * Sets the console to have a fixed character width. Use -1 to indicate that
-	 * a fixed width should not be used.
+	 * Sets the console to have a fixed character width. Use -1 to indicate that a
+	 * fixed width should not be used.
 	 *
-	 * @param width
-	 *            fixed character width of the console, or -1
+	 * @param width fixed character width of the console, or -1
 	 */
 	public void setConsoleWidth(int width) {
 		if (consoleWidth != width) {
@@ -763,7 +758,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	class HyperlinkColorChangeListener implements IPropertyChangeListener {
 		@Override
 		public void propertyChange(PropertyChangeEvent event) {
-			if (event.getProperty().equals(JFacePreferences.ACTIVE_HYPERLINK_COLOR) || event.getProperty().equals(JFacePreferences.HYPERLINK_COLOR)) {
+			if (event.getProperty().equals(JFacePreferences.ACTIVE_HYPERLINK_COLOR)
+					|| event.getProperty().equals(JFacePreferences.HYPERLINK_COLOR)) {
 				getTextWidget().redraw();
 			}
 		}
@@ -798,7 +794,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 			// if window is smaller than 5 lines, always center position is
 			// chosen
 			int bufferZone = 2;
-			if (startLine >= top + bufferZone && startLine <= bottom - bufferZone && endLine >= top + bufferZone && endLine <= bottom - bufferZone) {
+			if (startLine >= top + bufferZone && startLine <= bottom - bufferZone && endLine >= top + bufferZone
+					&& endLine <= bottom - bufferZone) {
 
 				// do not scroll at all as it is already visible
 			} else {
@@ -854,6 +851,5 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 		}
 	}
-
 
 }
