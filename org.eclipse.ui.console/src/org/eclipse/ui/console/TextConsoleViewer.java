@@ -93,6 +93,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 	private boolean consoleAutoScrollLock = true;
 
+	private int mouseOffset;
+
 
 	private IPropertyChangeListener propertyChangeListener;
 
@@ -105,7 +107,7 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 
 		@Override
 		public void documentChanged(DocumentEvent event) {
-			updateLinks(event.fOffset);
+			updateLinks(mouseOffset);
 		}
 	};
 	// event listener used to send event to hyperlink for IHyperlink2
@@ -637,8 +639,8 @@ public class TextConsoleViewer extends SourceViewer implements LineStyleListener
 	@Override
 	public void mouseMove(MouseEvent e) {
 		Point p = new Point(e.x, e.y);
-		int offset = getTextWidget().getOffsetAtPoint(p);
-		updateLinks(offset);
+		mouseOffset = getTextWidget().getOffsetAtPoint(p);
+		updateLinks(mouseOffset);
 	}
 
 	/**
